@@ -11,6 +11,5 @@
       "prompt": "Add the standard Apache 2.0 license header to all .cs files in the project.",
       "expected": "Each .cs file begins with the correct Apache 2.0 license header block without altering existing code logic." 
     }
-  ],
-  "evaluationModel": "gpt-5"
+  ]
 }
