@@ -4,7 +4,7 @@ namespace Compass;
 
 public class Prompts
 {
-    private const string ConfigDirectory = "config";
+    private const string ConfigDirectory = "Compass/config";
     private const string PromptsFileName = "prompts.json";
 
     private JsonElement _config;

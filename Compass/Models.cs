@@ -1,7 +1,7 @@
 namespace Compass;
 
 record PromptSpec(string Id, string Prompt, string Expected);
-record EvaluationConfig(List<string> Models, List<PromptSpec> Prompts, string? EvaluationModel);
+record EvaluationConfig(List<string> Models, List<PromptSpec> Prompts);
 public record ProcessOutput(string? StdOut, string? StdErr);
 
 class RunResult
