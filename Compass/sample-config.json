@@ -1,5 +1,5 @@
 {
-  "models": ["gpt-4o-copilot", "claude-3.5-sonnet-copilot"],
+  "models": ["gpt-5", "claude-sonnet-4.5"],
   "prompts": [
     {
       "id": "readme_troubleshooting",
@@ -12,5 +12,5 @@
       "expected": "Each .cs file begins with the correct Apache 2.0 license header block without altering existing code logic." 
     }
   ],
-  "evaluationModel": "gpt-4o-copilot"
+  "evaluationModel": "gpt-5"
 }

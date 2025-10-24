@@ -63,11 +63,11 @@ static class Program {
                     RunGit(repoPath, "reset --hard");
                     RunGit(repoPath, "clean -fd");
 
-                    var agentOutput = RunProcess(repoPath, "copilot", $"agent --model {Escape(model)} --prompt {EscapeArg(prompt.Prompt)} --non-interactive");
+                    var agentOutput = RunProcess(repoPath, "copilot", $"--model {Escape(model)} --add-dir {EscapeArg(repoPath)} --allow-all-tools --allow-all-paths -p {EscapeArg(prompt.Prompt)}");
                     var diff = RunGit(repoPath, "--no-pager diff");
 
                     string evaluationPrompt = $"You are evaluating if a result satisfies an expected outcome. Expected: '{prompt.Expected}'. Copilot agent raw output: '{Truncate(agentOutput, 4000)}'. Git diff produced: '{Truncate(diff, 4000)}'.\nRespond with EXACTLY one of: SUCCESS, PARTIAL, FAILURE.";
-                    var evalOutput = RunProcess(repoPath, "copilot", $"cli --model {Escape(evaluationModel)} --prompt {EscapeArg(evaluationPrompt)} --non-interactive");
+                    var evalOutput = RunProcess(repoPath, "copilot", $"--model {Escape(evaluationModel)} --allow-all-tools --allow-all-paths -p {EscapeArg(evaluationPrompt)}");
                     string classification = ParseClassification(evalOutput);
                     int points = classification switch { "SUCCESS" => 10, "PARTIAL" => 5, _ => 0 };
 
@@ -91,8 +91,11 @@ static class Program {
             .OrderBy(a => a.Model).ThenBy(a => a.PromptId).ToList();
 
         if (outputMode is "stdout" or "both") {
+            foreach (var r in allRunResults) {
+                Console.WriteLine($"RUN model={r.Model} prompt={r.PromptId} iter={r.Iteration} class={r.Classification} points={r.Points}\nRAW_OUTPUT:\n{Truncate(r.RawOutput, 500)}\nDIFF:\n{Truncate(r.GitDiff, 500)}\n");
+            }
             foreach (var a in aggregates) {
-                Console.WriteLine($"Model={a.Model} Prompt={a.PromptId} Runs={a.Runs} AvgPoints={a.AveragePoints:F2}");
+                Console.WriteLine($"AGG model={a.Model} prompt={a.PromptId} runs={a.Runs} avgPoints={a.AveragePoints:F2}");
             }
         }
         if (outputMode is "json" or "both") {
