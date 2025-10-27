@@ -2,6 +2,7 @@ namespace Compass;
 
 using System.Text.Json;
 using System.Diagnostics;
+using Compass.Agents;
 
 static class Program
 {
@@ -24,16 +25,27 @@ static class Program
             {
                 for (int i = 1; i <= cliConfig.RunCount; i++)
                 {
+                    IAgent agent;
+                    if (cliConfig.UseCache)
+                    {
+                        agent = new CachedAgent(new GithubCopilot());
+                    }
+                    else
+                    {
+                        agent = new GithubCopilot();
+                    }
+
                     await ProcessUtils.Git(cliConfig.RepoPath, "reset --hard");
                     await ProcessUtils.Git(cliConfig.RepoPath, "clean -fd");
 
-                    var agentOut = await ProcessUtils.Run(cliConfig.RepoPath, "copilot", $"--model {model.EscapeArg()} --add-dir {cliConfig.RepoPath.EscapeArg()} --allow-all-tools --allow-all-paths -p {prompt.Prompt.EscapeArg()}");
+                    var agentProcessOutput = await agent.Execute(prompt.Prompt, model, cliConfig.RepoPath);
+
                     var diff = await ProcessUtils.Git(cliConfig.RepoPath, "--no-pager diff");
 
                     var agentOutput = new AgentOutput
                     {
-                        StdOut = agentOut.StdOut,
-                        StdErr = agentOut.StdErr,
+                        StdOut = agentProcessOutput.StdOut,
+                        StdErr = agentProcessOutput.StdErr,
                         GitDiff = diff.StdOut
                     };
 
@@ -44,7 +56,8 @@ static class Program
                         .Replace("{{RESULT_FILE_PATH}}", tempResultFile)
                         .Replace("{{EXPECTED}}", prompt.Expected);
 
-                    var evalOutput = await ProcessUtils.Run(cliConfig.RepoPath, "copilot", $"--model {model.EscapeArg()} --allow-all-tools --allow-all-paths -p {generalPrompts.Evaluator.EscapeArg()}");
+                    var evalOutput = await agent.Execute(evalPrompt, model, cliConfig.RepoPath);
+
                     var classification = ParseClassification(evalOutput);
 
                     int points = (int)classification;

@@ -7,7 +7,8 @@ class CLIConfig
     public string RepoPath { get; set; } = "";
     public string ConfigFile { get; set; } = "";
     public int RunCount { get; set; } = 1;
-    public OutputMode OutputMode { get; set; } = OutputMode.StdOut; // stdout | json | both
+    public OutputMode OutputMode { get; set; } = OutputMode.StdOut;
+    public bool UseCache { get; set; } = true;
     public string EvalModel { get; set; } = DefaultEvaluationModel;
 
     public CLIConfig()
@@ -29,6 +30,8 @@ class CLIConfig
         string runsCount = GetArg(args, "--runs") ?? "1";
         string outputMode = GetArg(args, "--output") ?? OutputMode.StdOut.ToString();
         string? evalModel = GetArg(args, "--eval-model");
+
+        bool useCache = GetArg(args, "--no-cache") == null;
 
         if (repoPath == null || configFile == null)
         {
@@ -61,7 +64,8 @@ class CLIConfig
             ConfigFile = configFile,
             RunCount = runs,
             OutputMode = parsedOutputMode,
-            EvalModel = evalModel ?? DefaultEvaluationModel
+            EvalModel = evalModel ?? DefaultEvaluationModel,
+            UseCache = useCache
         };
     }
 }

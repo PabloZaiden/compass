@@ -31,7 +31,7 @@ public static class ProcessUtils
                 RedirectStandardError = true
             };
             var p = Process.Start(psi)!;
-            
+
             string stdout = await p.StandardOutput.ReadToEndAsync();
             string stderr = await p.StandardError.ReadToEndAsync();
             await p.WaitForExitAsync();
@@ -40,4 +40,30 @@ public static class ProcessUtils
         }
         catch (Exception ex) { return new ProcessOutput(null, $"PROCESS_ERROR: {ex.Message}"); }
     }
+}
+
+public static class Logger
+{
+    public enum LogLevel
+    {
+        Verbose = 0,
+        Info = 1,
+        Warning = 2,
+        Error = 3
+    }
+
+    private static LogLevel CurrentLogLevel = LogLevel.Info;
+
+    public static void Log(string message, LogLevel level = LogLevel.Info)
+    {
+        if (level < CurrentLogLevel) return;
+
+        var text = $"[LOG {DateTime.Now:HH:mm:ss}] {message}";
+        LogToConsole(text);
+    }
+
+    public static void LogToConsole(string text)
+    {
+        Console.WriteLine(text);
+    }        
 }
