@@ -10,12 +10,19 @@ static class Program
     {
         var generalPrompts = new Prompts();
         var cliConfig = CLIConfig.FromArgs(args);
+        Logger.Log($"Compass evaluation started. repo={cliConfig.RepoPath} config={cliConfig.ConfigFile} runs={cliConfig.RunCount}", Logger.LogLevel.Info);
 
         var cfg = JsonSerializer.Deserialize<EvaluationConfig>(
             File.ReadAllText(cliConfig.ConfigFile),
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        if (cfg is null) throw new("Failed to parse config file: " + cliConfig.ConfigFile);
+        if (cfg is null)
+        {
+            Logger.Log("Evaluation config deserialization returned null", Logger.LogLevel.Error);
+            throw new("Failed to parse config file: " + cliConfig.ConfigFile);
+        }
+
+        Logger.Log($"Loaded evaluation config for {cfg.Models.Count} models and {cfg.Prompts.Count} prompts", Logger.LogLevel.Info);
 
         var allRunResults = new List<RunResult>();
 
@@ -25,6 +32,7 @@ static class Program
             {
                 for (int i = 1; i <= cliConfig.RunCount; i++)
                 {
+                    Logger.Log($"Starting run: model={model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Verbose);
                     IAgent agent;
                     if (cliConfig.UseCache)
                     {
@@ -62,6 +70,15 @@ static class Program
 
                     int points = (int)classification;
 
+                    var classificationLogLevel = classification switch
+                    {
+                        Classification.Success => Logger.LogLevel.Info,
+                        Classification.Partial => Logger.LogLevel.Warning,
+                        _ => Logger.LogLevel.Error
+                    };
+
+                    Logger.Log($"Run completed: model={model} prompt={prompt.Id} iteration={i} classification={classification} points={points}", classificationLogLevel);
+
                     allRunResults.Add(new RunResult
                     {
                         Model = model,
@@ -81,8 +98,11 @@ static class Program
             .Select(g => new AggregatedResult { Model = g.Key.Model, PromptId = g.Key.PromptId, Runs = g.Count(), AveragePoints = g.Average(r => r.Points) })
             .OrderBy(a => a.Model).ThenBy(a => a.PromptId).ToList();
 
+        Logger.Log("Aggregated results calculated", Logger.LogLevel.Info);
+
         if ((cliConfig.OutputMode & OutputMode.StdOut) == OutputMode.StdOut)
         {
+            Logger.Log("Emitting run and aggregate details to standard output", Logger.LogLevel.Info);
             foreach (var r in allRunResults)
             {
                 Console.WriteLine($"RUN model={r.Model} \n\nprompt={r.PromptId} \n\niter={r.Iteration} \n\nclass={r.Classification} \n\npoints={r.Points}\n\nAgent output:\n{r.AgentOutput.ToJsonString()}\n\n");
@@ -97,6 +117,7 @@ static class Program
         {
             var outObj = new { results = allRunResults, aggregates };
             Console.WriteLine(outObj.ToJsonString());
+            Logger.Log("Emitting results as JSON", Logger.LogLevel.Info);
         }
     }
 
