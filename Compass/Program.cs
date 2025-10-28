@@ -29,6 +29,7 @@ static class Program
         Logger.Log($"Loaded evaluation config for {cfg.Models.Count} models and {cfg.Prompts.Count} prompts", Logger.LogLevel.Verbose);
 
         var allRunResults = new List<RunResult>();
+        IAgent evaluationAgent = new GithubCopilot();
 
         Logger.Log("Beginning evaluation runs", Logger.LogLevel.Info);
         foreach (var model in cfg.Models)
@@ -80,7 +81,7 @@ static class Program
 
 
                     Logger.Log($"Executing evaluation prompt", Logger.LogLevel.Verbose);
-                    var evalOutput = await agent.Execute(evalPrompt, model, cliConfig.RepoPath);
+                    var evalOutput = await evaluationAgent.Execute(evalPrompt, model, cliConfig.RepoPath);
 
                     Logger.Log("Evaluation output", evalOutput, Logger.LogLevel.Verbose);
 

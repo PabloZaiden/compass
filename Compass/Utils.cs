@@ -57,7 +57,7 @@ public static class Logger
         Error = 3
     }
 
-    private static LogLevel CurrentLogLevel = LogLevel.Info;
+    public static LogLevel CurrentLogLevel = LogLevel.Verbose;
 
     public static void Log(string message, object obj, LogLevel level = LogLevel.Info)
     {

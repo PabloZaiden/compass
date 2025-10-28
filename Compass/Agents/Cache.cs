@@ -14,23 +14,30 @@ namespace Compass.Agents
         public CachedAgent(IAgent innerAgent)
         {
             _innerAgent = innerAgent;
+
+            Logger.Log($"Initializing cache directory at: {CacheDir}", Logger.LogLevel.Verbose);
             Directory.CreateDirectory(CacheDir);
         }
 
         private string GetCacheKey(string prompt, string model, string workingDirectory)
         {
             string id = $"{prompt}-{model}-{workingDirectory}";
+            Logger.Log($"Generating cache key for id: {id}", Logger.LogLevel.Verbose);
             byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(id));
-            return Convert.ToBase64String(hashBytes);
+            return Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-").TrimEnd('=');
         }
 
         public async Task<ProcessOutput> Execute(string prompt, string model, string workingDirectory)
         {
             var cacheKey = GetCacheKey(prompt, model, workingDirectory);
+
             var cacheFile = Path.Combine(CacheDir, cacheKey + ".json");
+            Logger.Log($"Looking for cache file: {cacheFile}", Logger.LogLevel.Verbose);
 
             if (File.Exists(cacheFile))
             {
+                Logger.Log($"Found cache file: {cacheFile}", Logger.LogLevel.Verbose);
+
                 var cachedJson = await File.ReadAllTextAsync(cacheFile);
                 var cachedOutput = await JsonSerializer.DeserializeAsync<ProcessOutput>(
                     new MemoryStream(Encoding.UTF8.GetBytes(cachedJson))
@@ -48,6 +55,8 @@ namespace Compass.Agents
 
             Logger.Log($"Caching output for key: {cacheKey}", Logger.LogLevel.Verbose);
             var outputJson = JsonSerializer.Serialize(output, new JsonSerializerOptions { WriteIndented = true });
+
+            Logger.Log($"Writing cache file: {cacheFile}", Logger.LogLevel.Verbose);
             await File.WriteAllTextAsync(cacheFile, outputJson);
 
             return output;
