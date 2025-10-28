@@ -22,7 +22,6 @@ namespace Compass.Agents
         private string GetCacheKey(string prompt, string model, string workingDirectory)
         {
             string id = $"{prompt}-{model}-{workingDirectory}";
-            Logger.Log($"Generating cache key for id: {id}", Logger.LogLevel.Verbose);
             byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(id));
             return Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-").TrimEnd('=');
         }

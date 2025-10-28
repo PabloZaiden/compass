@@ -7,7 +7,7 @@ class CLIConfig
     public string RepoPath { get; set; } = "";
     public string ConfigFile { get; set; } = "";
     public int RunCount { get; set; } = 1;
-    public OutputMode OutputMode { get; set; } = OutputMode.StdOut;
+    public OutputMode OutputMode { get; set; } = OutputMode.Aggregated;
     public bool UseCache { get; set; } = true;
     public string EvalModel { get; set; } = DefaultEvaluationModel;
 
@@ -28,7 +28,7 @@ class CLIConfig
         string? configFile = GetArg(args, "--config");
 
         string runsCount = GetArg(args, "--runs") ?? "1";
-        string outputMode = GetArg(args, "--output") ?? OutputMode.StdOut.ToString();
+        string outputMode = GetArg(args, "--output") ?? OutputMode.Aggregated.ToString();
         string? evalModel = GetArg(args, "--eval-model");
 
         bool useCache = GetArg(args, "--no-cache") == null;

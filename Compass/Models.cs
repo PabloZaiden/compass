@@ -39,8 +39,6 @@ enum Classification
 
 enum OutputMode
 {
-    None = 0,
-    StdOut = 1,
-    Json = 2,
-    File = 4,
+    Detailed,
+    Aggregated
 }

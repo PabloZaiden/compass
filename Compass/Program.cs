@@ -114,25 +114,18 @@ static class Program
 
         Logger.Log("Aggregated results calculated", Logger.LogLevel.Info);
 
-        if ((cliConfig.OutputMode & OutputMode.StdOut) == OutputMode.StdOut)
+        object outObj;
+        if (cliConfig.OutputMode == OutputMode.Aggregated)
         {
-            Logger.Log("Emitting run and aggregate details to standard output", Logger.LogLevel.Info);
-            foreach (var r in allRunResults)
-            {
-                Console.WriteLine($"RUN model={r.Model} \n\nprompt={r.PromptId} \n\niter={r.Iteration} \n\nclass={r.Classification} \n\npoints={r.Points}\n\nAgent output:\n{r.AgentOutput.ToJsonString()}\n\n");
-            }
-            foreach (var a in aggregates)
-            {
-                Console.WriteLine($"AGG model={a.Model} \n\nprompt={a.PromptId} \n\nruns={a.Runs} \n\navgPoints={a.AveragePoints:F2}");
-            }
+            outObj = new { aggregates };
         }
-
-        if ((cliConfig.OutputMode & OutputMode.Json) == OutputMode.Json)
+        else
         {
-            var outObj = new { results = allRunResults, aggregates };
-            Console.WriteLine(outObj.ToJsonString());
-            Logger.Log("Emitting results as JSON", Logger.LogLevel.Info);
+            outObj = new { results = allRunResults, aggregates };
         }
+        
+        Console.WriteLine(outObj.ToJsonString());
+        Logger.Log("Emitting results as JSON", Logger.LogLevel.Info);
     }
 
     static Classification ParseClassification(ProcessOutput evalOutput)
