@@ -38,12 +38,15 @@ namespace Compass.Agents
 
                 if (cachedOutput != null)
                 {
+                    Logger.Log($"Cache hit for key: {cacheKey}", Logger.LogLevel.Verbose);
                     return cachedOutput;
                 }
             }
+            Logger.Log($"Cache miss for key: {cacheKey}", Logger.LogLevel.Verbose);
 
             var output = await _innerAgent.Execute(prompt, model, workingDirectory);
 
+            Logger.Log($"Caching output for key: {cacheKey}", Logger.LogLevel.Verbose);
             var outputJson = JsonSerializer.Serialize(output, new JsonSerializerOptions { WriteIndented = true });
             await File.WriteAllTextAsync(cacheFile, outputJson);
 

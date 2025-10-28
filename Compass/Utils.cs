@@ -22,6 +22,7 @@ public static class ProcessUtils
 
     public static async Task<ProcessOutput> Run(string workingDirectory, string fileNameOrCommand, string arguments)
     {
+        Logger.Log($"Running command: {fileNameOrCommand} {arguments} in {workingDirectory}", Logger.LogLevel.Verbose);
         try
         {
             var psi = new ProcessStartInfo(fileNameOrCommand, arguments)
@@ -38,7 +39,11 @@ public static class ProcessUtils
 
             return new ProcessOutput(stdout, stderr);
         }
-        catch (Exception ex) { return new ProcessOutput(null, $"PROCESS_ERROR: {ex.Message}"); }
+        catch (Exception ex)
+        {
+            Logger.Log($"Error running process: {ex.Message}", Logger.LogLevel.Error);
+            return new ProcessOutput(null, $"PROCESS_ERROR: {ex.Message}");
+        }
     }
 }
 
@@ -54,6 +59,11 @@ public static class Logger
 
     private static LogLevel CurrentLogLevel = LogLevel.Info;
 
+    public static void Log(string message, object obj, LogLevel level = LogLevel.Info)
+    {
+        Log($"{message}\n{obj.ToJsonString()}", level);
+    }
+
     public static void Log(string message, LogLevel level = LogLevel.Info)
     {
         if (level < CurrentLogLevel) return;
@@ -65,5 +75,5 @@ public static class Logger
     public static void LogToConsole(string text)
     {
         Console.WriteLine(text);
-    }        
+    }
 }
