@@ -8,6 +8,7 @@ class CLIConfig
     public string ConfigFile { get; set; } = "";
     public int RunCount { get; set; } = 1;
     public OutputMode OutputMode { get; set; } = OutputMode.Aggregated;
+    public bool VerboseLogging { get; set; } = false;
     public bool UseCache { get; set; } = true;
     public string EvalModel { get; set; } = DefaultEvaluationModel;
 
@@ -17,9 +18,20 @@ class CLIConfig
 
     static string? GetArg(string[] args, string name)
     {
-        var idx = Array.IndexOf(args, name);
-        if (idx >= 0 && idx + 1 < args.Length) return args[idx + 1];
-        return null;
+        var index = Array.IndexOf(args, name);
+
+        if (index < 0)
+        {
+            return null;
+        }
+
+        if (index >= 0 && index + 1 < args.Length)
+        {
+            return args[index + 1];
+        }
+
+        // if it's the last arg and has no value, return the name itself (for flags)
+        return name;
     }
 
     public static CLIConfig FromArgs(string[] args)
@@ -32,6 +44,7 @@ class CLIConfig
         string? evalModel = GetArg(args, "--eval-model");
 
         bool useCache = GetArg(args, "--no-cache") == null;
+        bool verboseLogging = GetArg(args, "--verbose") != null;
 
         if (repoPath == null || configFile == null)
         {
@@ -65,7 +78,8 @@ class CLIConfig
             RunCount = runs,
             OutputMode = parsedOutputMode,
             EvalModel = evalModel ?? DefaultEvaluationModel,
-            UseCache = useCache
+            UseCache = useCache,
+            VerboseLogging = verboseLogging
         };
     }
 }

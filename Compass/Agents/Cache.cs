@@ -26,7 +26,7 @@ namespace Compass.Agents
             return Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-").TrimEnd('=');
         }
 
-        public async Task<ProcessOutput> Execute(string prompt, string model, string workingDirectory)
+        public async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
         {
             var cacheKey = GetCacheKey(prompt, model, workingDirectory);
 
@@ -38,12 +38,22 @@ namespace Compass.Agents
                 Logger.Log($"Found cache file: {cacheFile}", Logger.LogLevel.Verbose);
 
                 var cachedJson = await File.ReadAllTextAsync(cacheFile);
-                var cachedOutput = await JsonSerializer.DeserializeAsync<ProcessOutput>(
+                var cachedOutput = await JsonSerializer.DeserializeAsync<AgentOutput>(
                     new MemoryStream(Encoding.UTF8.GetBytes(cachedJson))
                 );
 
                 if (cachedOutput != null)
                 {
+                    // re-apply the git diff from cache in the working directory
+                    var diffContent = cachedOutput.GitDiff ?? "";
+                    if (!string.IsNullOrEmpty(diffContent))
+                    {
+                        var tempDiffFile = Path.GetTempFileName();
+                        await File.WriteAllTextAsync(tempDiffFile, diffContent);
+                        await ProcessUtils.Run(workingDirectory, "git", $"apply {tempDiffFile.EscapeArg()}");
+                        File.Delete(tempDiffFile);
+                    }
+
                     Logger.Log($"Cache hit for key: {cacheKey}", Logger.LogLevel.Verbose);
                     return cachedOutput;
                 }

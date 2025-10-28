@@ -1,7 +1,6 @@
 namespace Compass;
 
 using System.Text.Json;
-using System.Diagnostics;
 using Compass.Agents;
 
 static class Program
@@ -10,6 +9,8 @@ static class Program
     {
         var generalPrompts = new Prompts();
         var cliConfig = CLIConfig.FromArgs(args);
+        Logger.CurrentLogLevel = cliConfig.VerboseLogging ? Logger.LogLevel.Verbose : Logger.LogLevel.Info;
+
         Logger.Log($"Compass evaluation started.", Logger.LogLevel.Info);
         Logger.Log($"Repository: {cliConfig.RepoPath}", Logger.LogLevel.Verbose);
         Logger.Log($"Config: {cliConfig.ConfigFile}", Logger.LogLevel.Verbose);
@@ -57,17 +58,8 @@ static class Program
                     await ProcessUtils.Git(cliConfig.RepoPath, "clean -fd");
 
                     Logger.Log($"Executing agent for prompt", Logger.LogLevel.Verbose);
-                    var agentProcessOutput = await agent.Execute(prompt.Prompt, model, cliConfig.RepoPath);
+                    var agentOutput = await agent.Execute(prompt.Prompt, model, cliConfig.RepoPath);
 
-                    Logger.Log($"Collecting git diff after agent execution", Logger.LogLevel.Verbose);
-                    var diff = await ProcessUtils.Git(cliConfig.RepoPath, "--no-pager diff");
-
-                    var agentOutput = new AgentOutput
-                    {
-                        StdOut = agentProcessOutput.StdOut,
-                        StdErr = agentProcessOutput.StdErr,
-                        GitDiff = diff.StdOut
-                    };
                     Logger.Log("Agent output", agentOutput, Logger.LogLevel.Verbose);
 
                     var tempResultFile = Path.GetTempFileName() + ".json";
@@ -107,25 +99,26 @@ static class Program
             }
         }
 
+        Logger.Log("Aggregating results", Logger.LogLevel.Info);
+
         var aggregates = allRunResults
             .GroupBy(r => (r.Model, r.PromptId))
             .Select(g => new AggregatedResult { Model = g.Key.Model, PromptId = g.Key.PromptId, Runs = g.Count(), AveragePoints = g.Average(r => r.Points) })
             .OrderBy(a => a.Model).ThenBy(a => a.PromptId).ToList();
 
-        Logger.Log("Aggregated results calculated", Logger.LogLevel.Info);
-
         object outObj;
         if (cliConfig.OutputMode == OutputMode.Aggregated)
         {
+            Logger.Log("Output mode is Aggregated, emitting only aggregates", Logger.LogLevel.Verbose);
             outObj = new { aggregates };
         }
         else
         {
+            Logger.Log("Output mode is Detailed, emitting all results", Logger.LogLevel.Verbose);
             outObj = new { results = allRunResults, aggregates };
         }
         
         Console.WriteLine(outObj.ToJsonString());
-        Logger.Log("Emitting results as JSON", Logger.LogLevel.Info);
     }
 
     static Classification ParseClassification(ProcessOutput evalOutput)

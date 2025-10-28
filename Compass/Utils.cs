@@ -37,12 +37,20 @@ public static class ProcessUtils
             string stderr = await p.StandardError.ReadToEndAsync();
             await p.WaitForExitAsync();
 
-            return new ProcessOutput(stdout, stderr);
+            return new ProcessOutput()
+            {
+                StdOut = stdout,
+                StdErr = stderr
+            };
         }
         catch (Exception ex)
         {
             Logger.Log($"Error running process: {ex.Message}", Logger.LogLevel.Error);
-            return new ProcessOutput(null, $"PROCESS_ERROR: {ex.Message}");
+            return new ProcessOutput()
+            {
+                StdOut = null,
+                StdErr = $"PROCESS_ERROR: {ex.Message}"
+            };      
         }
     }
 }
@@ -68,12 +76,15 @@ public static class Logger
     {
         if (level < CurrentLogLevel) return;
 
-        var text = $"[LOG {DateTime.Now:HH:mm:ss}] {message}";
+        message = System.Text.RegularExpressions.Regex.Unescape(message);
+        var text = $"[{DateTime.Now:HH:mm:ss}] {message}";
         LogToConsole(text);
     }
 
     public static void LogToConsole(string text)
     {
+        
+
         Console.WriteLine(text);
     }
 }
