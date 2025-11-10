@@ -11,6 +11,8 @@ namespace Compass.Agents
         private string CacheDir => Path.Combine(".cache", Name);
         public string Name => _innerAgent.Name + " (Cached)";
 
+        public string CacheKeyPrefix { get; set; } = "cache";
+
         public CachedAgent(IAgent innerAgent)
         {
             _innerAgent = innerAgent;
@@ -21,7 +23,7 @@ namespace Compass.Agents
 
         private string GetCacheKey(string prompt, string model, string workingDirectory)
         {
-            string id = $"{prompt}-{model}-{workingDirectory}";
+            string id = $"{CacheKeyPrefix}-{prompt}-{model}-{workingDirectory}";
             byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(id));
             return Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-").TrimEnd('=');
         }

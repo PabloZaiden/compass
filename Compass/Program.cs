@@ -46,7 +46,9 @@ static class Program
 
                     if (cliConfig.UseCache)
                     {
-                        agent = new CachedAgent(new GithubCopilot());
+                        var cachedAgent = new CachedAgent(new GithubCopilot());
+                        cachedAgent.CacheKeyPrefix = i.ToString(); // separate cache per iteration
+                        agent = cachedAgent;
                     }
                     else
                     {
