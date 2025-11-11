@@ -2,3 +2,4 @@ bin
 obj
 ignore
 .cache
+.DS_Store
