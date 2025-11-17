@@ -2,6 +2,11 @@
 
 Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes.
 
+## Requirements
+
+- .NET 9 SDK
+- `copilot` in path for GitHub Copilot CLI
+
 ## Usage
 
 ```bash

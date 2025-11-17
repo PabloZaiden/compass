@@ -8,7 +8,14 @@ static class Program
     static async Task Main(string[] args)
     {
         var generalPrompts = new Prompts();
-        var cliConfig = CLIConfig.FromArgs(args);
+
+        CLIConfig cliConfig;
+        try {
+        cliConfig = CLIConfig.FromArgs(args);
+        } catch (ArgumentException ex) {
+            Logger.Log($"Error parsing arguments." + Environment.NewLine + ex.Message, Logger.LogLevel.Error);
+            return;
+        }
         Logger.CurrentLogLevel = cliConfig.VerboseLogging ? Logger.LogLevel.Verbose : Logger.LogLevel.Info;
 
         Logger.Log($"Compass evaluation started.", Logger.LogLevel.Info);
