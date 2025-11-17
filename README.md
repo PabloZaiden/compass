@@ -6,6 +6,7 @@ Console tool to benchmark Coding agents using different agents and models across
 
 - .NET 9 SDK
 - `copilot` in path for GitHub Copilot CLI
+- `codex` in path for OpenAI Codex CLI
 
 ## Usage
 
