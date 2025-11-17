@@ -23,7 +23,7 @@ namespace Compass.Agents
 
         private string GetCacheKey(string prompt, string model, string workingDirectory)
         {
-            string id = $"{CacheKeyPrefix}-{prompt}-{model}-{workingDirectory}";
+            string id = $"{CacheKeyPrefix}-{_innerAgent.GetType().Name}-{prompt}-{model}-{workingDirectory}";
             byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(id));
             return Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-").TrimEnd('=');
         }
