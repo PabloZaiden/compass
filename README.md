@@ -23,7 +23,7 @@ dotnet run --project Compass -- \
 ## Docker
 
 ```bash
-docker build -t compass .
+docker build -f ./docker/Dockerfile -t compass .
 
 docker run --rm -ti \
   -e GH_TOKEN=$(gh auth token) \
@@ -37,9 +37,8 @@ docker run --rm -ti \
   --eval-model gpt-4o
 ```
 
-Mount your evaluation repo at `/workspace/target-repo` (or adjust the path) so the container can reset git state via git commands. The image already bundles `Compass/config`, but you can bind-mount your own config folder if desired.
+Mount your configuration as `/config.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands. The image already bundles `Compass/config`, but you can bind-mount your own config folder if desired.
 
 ## Configuration File
 
 See `Compass/config/sample-config.json` for structure.
-
