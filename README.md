@@ -23,7 +23,7 @@ dotnet run --project Compass -- \
 ## Docker
 
 ```bash
-docker build -f ./docker/Dockerfile -t compass .
+docker build -f Dockerfile -t compass .
 
 docker run --rm -ti \
   -e GH_TOKEN=$(gh auth token) \
