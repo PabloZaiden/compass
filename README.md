@@ -4,6 +4,7 @@ Console tool to benchmark Coding agents using different agents and models across
 
 ## Requirements
 
+- Git
 - .NET 9 SDK
 - `copilot` in path for GitHub Copilot CLI
 

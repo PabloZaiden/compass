@@ -17,7 +17,7 @@ WORKDIR /workspace
 COPY --from=build /src/Compass/config ./Compass/config
 COPY --from=build /app/publish ./app
 
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl git
 
 # install node
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
@@ -27,4 +27,8 @@ RUN bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION"
 # install github copilot cli
 RUN bash -c "source $NVM_DIR/nvm.sh && npm install -g @github/copilot"
 
-ENTRYPOINT ["dotnet", "/workspace/app/Compass.dll"]
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
