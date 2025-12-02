@@ -37,7 +37,7 @@ static class Program
         Logger.Log($"Loaded evaluation config for {cfg.Models.Count} models and {cfg.Prompts.Count} prompts", Logger.LogLevel.Verbose);
 
         var allRunResults = new List<RunResult>();
-        IAgent evaluationAgent = new GithubCopilot();
+        Agent evaluationAgent = new GithubCopilot();
 
         Logger.Log("Beginning evaluation runs", Logger.LogLevel.Info);
         foreach (var model in cfg.Models)
@@ -49,7 +49,7 @@ static class Program
                 for (int i = 1; i <= cliConfig.RunCount; i++)
                 {
                     Logger.Log($"Starting run: model={model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Info);
-                    IAgent agent;
+                    Agent agent;
 
                     if (cliConfig.UseCache)
                     {

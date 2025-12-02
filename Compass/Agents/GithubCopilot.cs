@@ -1,11 +1,11 @@
 ﻿
 namespace Compass.Agents;
 
-public class GithubCopilot : IAgent
+public class GithubCopilot : Agent
 {
-    public string Name => "GitHub Copilot";
+    public override string Name => "GitHub Copilot";
 
-    public async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
+    public override async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
     {
         var processOutput = await ProcessUtils.Run(
             workingDirectory,

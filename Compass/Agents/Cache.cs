@@ -4,16 +4,16 @@ using System.Text.Json;
 
 namespace Compass.Agents
 {
-    public class CachedAgent : IAgent
+    public class CachedAgent : Agent
     {
-        private readonly IAgent _innerAgent;
+        private readonly Agent _innerAgent;
         
         private string CacheDir => Path.Combine(".cache", Name);
-        public string Name => _innerAgent.Name + " (Cached)";
+        public override string Name => _innerAgent.Name + " (Cached)";
 
         public string CacheKeyPrefix { get; set; } = "cache";
 
-        public CachedAgent(IAgent innerAgent)
+        public CachedAgent(Agent innerAgent)
         {
             _innerAgent = innerAgent;
 
@@ -28,7 +28,7 @@ namespace Compass.Agents
             return Convert.ToBase64String(hashBytes).Replace("/", "_").Replace("+", "-").TrimEnd('=');
         }
 
-        public async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
+        public override async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
         {
             var cacheKey = GetCacheKey(prompt, model, workingDirectory);
 

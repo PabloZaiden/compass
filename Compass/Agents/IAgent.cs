@@ -1,7 +1,23 @@
 namespace Compass.Agents;
 
-public interface IAgent
+public abstract class Agent
 {
-    string Name { get; }
-    Task<AgentOutput> Execute(string prompt, string model, string workingDirectory);
+    public abstract string Name { get; }
+    public abstract Task<AgentOutput> Execute(string prompt, string model, string workingDirectory);
+
+    public static Agent Create(Types agentType)
+    {
+        return agentType switch
+        {
+            Types.GithubCopilot => new GithubCopilot(),
+            Types.Codex => new Codex(),
+            _ => throw new ArgumentException("Unsupported agent type: " + agentType),
+        };
+    }
+
+    public enum Types
+    {
+        GithubCopilot,
+        Codex,
+    }
 }

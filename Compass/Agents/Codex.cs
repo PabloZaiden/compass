@@ -1,11 +1,11 @@
 ﻿
 namespace Compass.Agents;
 
-public class Codex : IAgent
+public class Codex : Agent
 {
-    public string Name => "Codex";
+    public override string Name => "Codex";
 
-    public async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
+    public override async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
     {
         var processOutput = await ProcessUtils.Run(
             workingDirectory,

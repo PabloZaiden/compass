@@ -2,14 +2,14 @@
   "models": ["gpt-5", "claude-sonnet-4.5"],
   "prompts": [
     {
-      "id": "readme_troubleshooting",
-      "prompt": "Add a Troubleshooting section with at least 3 common issues to the README.",
-      "expected": "README now contains a 'Troubleshooting' section listing >=3 distinct common issues with brief resolutions."
+      "id": "explain_repo",
+      "prompt": "Summarize what this repository does in 2-3 sentences.",
+      "expected": "The repository is a C# project that provides a framework for evaluating AI agents using various models and prompts. It includes functionality for running evaluations, logging results, and managing different agent types."
     },
     {
-      "id": "add_license_header",
-      "prompt": "Add the standard Apache 2.0 license header to all .cs files in the project.",
-      "expected": "Each .cs file begins with the correct Apache 2.0 license header block without altering existing code logic." 
+      "id": "check_language",
+      "prompt": "Identify the primary programming language used in this repository.",
+      "expected": "The primary programming language used in this repository is C#."
     }
   ]
 }

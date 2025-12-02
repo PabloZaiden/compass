@@ -1,3 +1,5 @@
+using Compass.Agents;
+
 namespace Compass;
 
 class CLIConfig
@@ -11,7 +13,7 @@ class CLIConfig
     public bool VerboseLogging { get; set; } = false;
     public bool UseCache { get; set; } = true;
     public string EvalModel { get; set; } = DefaultEvaluationModel;
-
+    public Agent.Types AgentType { get; set; }
     public CLIConfig()
     {
     }
@@ -42,6 +44,7 @@ class CLIConfig
         string runsCount = GetArg(args, "--runs") ?? "1";
         string outputMode = GetArg(args, "--output") ?? OutputMode.Aggregated.ToString();
         string? evalModel = GetArg(args, "--eval-model");
+        string agentTypeStr = GetArg(args, "--agent-type") ?? Agent.Types.GithubCopilot.ToString();
 
         bool useCache = GetArg(args, "--no-cache") == null;
         bool verboseLogging = GetArg(args, "--verbose") != null;
@@ -71,6 +74,11 @@ class CLIConfig
             throw new ArgumentException("Invalid --output");
         }
 
+        if (Enum.TryParse<Agent.Types>(agentTypeStr, true, out var parsedAgentType) == false)
+        {
+            throw new ArgumentException("Invalid --agent-type");
+        }
+
         return new CLIConfig
         {
             RepoPath = repoPath,
@@ -79,7 +87,8 @@ class CLIConfig
             OutputMode = parsedOutputMode,
             EvalModel = evalModel ?? DefaultEvaluationModel,
             UseCache = useCache,
-            VerboseLogging = verboseLogging
+            VerboseLogging = verboseLogging,
+            AgentType = parsedAgentType
         };
     }
 }
