@@ -25,6 +25,7 @@ static class Program
         Logger.Log($"Repository: {cliConfig.RepoPath}", Logger.LogLevel.Verbose);
         Logger.Log($"Config: {cliConfig.ConfigFile}", Logger.LogLevel.Verbose);
         Logger.Log($"Runs: {cliConfig.RunCount}", Logger.LogLevel.Verbose);
+        Logger.Log($"Agent Type: {cliConfig.AgentType}", Logger.LogLevel.Verbose);
         Logger.Log($"Use Cache: {cliConfig.UseCache}", Logger.LogLevel.Verbose);
 
         var cfg = JsonSerializer.Deserialize<EvaluationConfig>(
@@ -40,7 +41,7 @@ static class Program
         Logger.Log($"Loaded evaluation config for {cfg.Models.Count} models and {cfg.Prompts.Count} prompts", Logger.LogLevel.Verbose);
 
         var allRunResults = new List<RunResult>();
-        Agent evaluationAgent = new GithubCopilot();
+        Agent evaluationAgent = Agent.Create(cliConfig.AgentType);
 
         Logger.Log("Beginning evaluation runs", Logger.LogLevel.Info);
         foreach (var model in cfg.Models)
@@ -57,19 +58,15 @@ static class Program
                     FileSystemUtils.CopyDirectory(cliConfig.RepoPath, tempRepoPath);
 
                     Logger.Log($"Starting run: model={model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Info);
-                    Agent agent;
-
+                    
+                    Agent agent = Agent.Create(cliConfig.AgentType);
                     if (cliConfig.UseCache)
                     {
-                        var cachedAgent = new CachedAgent(new GithubCopilot());
+                        var cachedAgent = new CachedAgent(agent);
                         cachedAgent.CacheKeyPrefix = i.ToString(); // separate cache per iteration
                         agent = cachedAgent;
                     }
-                    else
-                    {
-                        agent = new GithubCopilot();
-                    }
-
+                    
                     Logger.Log($"Resetting repository to clean state", Logger.LogLevel.Verbose);
                     await ProcessUtils.Git(tempRepoPath, "reset --hard");
                     await ProcessUtils.Git(tempRepoPath, "clean -fd");
