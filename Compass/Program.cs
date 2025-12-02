@@ -3,9 +3,9 @@ namespace Compass;
 using System.Text.Json;
 using Compass.Agents;
 
-static class Program
+public static class Program
 {
-    static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var generalPrompts = new Prompts();
 
