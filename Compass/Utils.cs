@@ -99,26 +99,33 @@ public static class Logger
         Error = 3
     }
 
+    public static TextWriter Writer { get; set; } = Console.Out;
+
     public static LogLevel CurrentLogLevel = LogLevel.Verbose;
 
-    public static void Log(string message, object obj, LogLevel level = LogLevel.Info)
+    public static void Log(string message, object obj, LogLevel level = LogLevel.Info, bool includeTimestamp = true)
     {
-        Log($"{message}\n{obj.ToJsonString()}", level);
+        Log($"{message}\n{obj.ToJsonString()}", level, includeTimestamp);
     }
 
-    public static void Log(string message, LogLevel level = LogLevel.Info)
+    public static void Log(string message, LogLevel level = LogLevel.Info, bool includeTimestamp = true)
     {
         if (level < CurrentLogLevel) return;
 
         message = System.Text.RegularExpressions.Regex.Unescape(message);
-        var text = $"[{DateTime.Now:HH:mm:ss}] {message}";
-        LogToConsole(text);
+        if (includeTimestamp)
+        {
+            message = $"[{DateTime.Now:HH:mm:ss}] {message}";
+        }
+        var text = message;
+        
+        LogToWriter(text);
     }
 
-    public static void LogToConsole(string text)
+    public static void LogToWriter(string text)
     {
-
-
-        Console.WriteLine(text);
+        Writer.WriteLine(text);
     }
+
+
 }

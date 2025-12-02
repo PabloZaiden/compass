@@ -142,7 +142,7 @@ public static class Program
             outObj = new { results = allRunResults, aggregates };
         }
 
-        Console.WriteLine(outObj.ToJsonString());
+        Logger.Log(outObj.ToJsonString(), Logger.LogLevel.Info, false);
     }
 
     static Classification ParseClassification(ProcessOutput evalOutput)
