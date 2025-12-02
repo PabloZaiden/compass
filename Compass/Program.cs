@@ -10,9 +10,12 @@ static class Program
         var generalPrompts = new Prompts();
 
         CLIConfig cliConfig;
-        try {
-        cliConfig = CLIConfig.FromArgs(args);
-        } catch (ArgumentException ex) {
+        try
+        {
+            cliConfig = CLIConfig.FromArgs(args);
+        }
+        catch (ArgumentException ex)
+        {
             Logger.Log($"Error parsing arguments." + Environment.NewLine + ex.Message, Logger.LogLevel.Error);
             return;
         }
@@ -48,6 +51,11 @@ static class Program
                 Logger.Log($"Starting evaluations for prompt: {prompt.Id}", Logger.LogLevel.Info);
                 for (int i = 1; i <= cliConfig.RunCount; i++)
                 {
+                    var tempRepoPath = Path.Combine(Path.GetTempPath(), $"compass-run-{Guid.NewGuid():N}");
+                    Logger.Log($"Creating temporary repository copy at: {tempRepoPath}", Logger.LogLevel.Verbose);
+
+                    FileSystemUtils.CopyDirectory(cliConfig.RepoPath, tempRepoPath);
+
                     Logger.Log($"Starting run: model={model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Info);
                     Agent agent;
 
@@ -63,26 +71,25 @@ static class Program
                     }
 
                     Logger.Log($"Resetting repository to clean state", Logger.LogLevel.Verbose);
-                    await ProcessUtils.Git(cliConfig.RepoPath, "reset --hard");
-                    await ProcessUtils.Git(cliConfig.RepoPath, "clean -fd");
+                    await ProcessUtils.Git(tempRepoPath, "reset --hard");
+                    await ProcessUtils.Git(tempRepoPath, "clean -fd");
 
                     Logger.Log($"Executing agent for prompt", Logger.LogLevel.Verbose);
-                    var agentOutput = await agent.Execute(prompt.Prompt, model, cliConfig.RepoPath);
-
+                    var agentOutput = await agent.Execute(prompt.Prompt, model, tempRepoPath);
                     Logger.Log("Agent output", agentOutput, Logger.LogLevel.Verbose);
 
                     var tempResultFile = Path.GetTempFileName() + ".json";
                     File.WriteAllText(tempResultFile, JsonSerializer.Serialize(agentOutput));
 
                     Logger.Log($"Temporary result file created at: {tempResultFile}", Logger.LogLevel.Verbose);
-                    
+
                     var evalPrompt = generalPrompts.Evaluator
                         .Replace("{{RESULT_FILE_PATH}}", tempResultFile)
                         .Replace("{{EXPECTED}}", prompt.Expected);
 
 
                     Logger.Log($"Executing evaluation prompt", Logger.LogLevel.Verbose);
-                    var evalOutput = await evaluationAgent.Execute(evalPrompt, model, cliConfig.RepoPath);
+                    var evalOutput = await evaluationAgent.Execute(evalPrompt, model, tempRepoPath);
 
                     Logger.Log("Evaluation output", evalOutput, Logger.LogLevel.Verbose);
 
@@ -104,6 +111,17 @@ static class Program
                         Classification = classification,
                         Points = points
                     });
+
+                    // clean up temp repo copy
+                    try
+                    {
+                        Logger.Log("Deleting temporary repository copy", Logger.LogLevel.Verbose);
+                        Directory.Delete(tempRepoPath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log($"Failed to delete temp repo copy at {tempRepoPath}: {ex.Message}", Logger.LogLevel.Error);
+                    }
                 }
             }
         }
@@ -126,7 +144,7 @@ static class Program
             Logger.Log("Output mode is Detailed, emitting all results", Logger.LogLevel.Verbose);
             outObj = new { results = allRunResults, aggregates };
         }
-        
+
         Console.WriteLine(outObj.ToJsonString());
     }
 
