@@ -7,4 +7,8 @@
     <AssemblyName>Compass</AssemblyName>
     <RootNamespace>Compass</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Tests\**\*.cs" />
+  </ItemGroup>
 </Project>
