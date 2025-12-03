@@ -18,12 +18,13 @@ public class EndToEndTests
         Directory.SetCurrentDirectory(repoRoot);
 
         var stringBuilder = new StringBuilder();
-        Logger.Writer = new StringWriter(stringBuilder);
+        Logger.Writers.Add(new StringWriter(stringBuilder));
 
         string result;
         try
         {
-            result = await Program.Run(new[]
+            var runner = new Runner();
+            result = await runner.Run(new[]
             {
                 "--repo-path", repoRoot,
                 "--config", configPath,
@@ -33,17 +34,17 @@ public class EndToEndTests
         finally
         {
             Directory.SetCurrentDirectory(originalCwd);
-            Logger.Writer = Console.Out;
+            Logger.Writers = [Console.Out];
         }
 
         var output = stringBuilder.ToString();
         
-        System.Console.WriteLine("=== End-to-End Test Output ===");
-        System.Console.WriteLine(output);
-
         Assert.DoesNotContain("Error running process:", output, StringComparison.OrdinalIgnoreCase);
 
         var outputJson = JsonDocument.Parse(result);
+
+        Logger.Log("End-to-end test completed. Output JSON:");    
+        Logger.Log(result);
 
         //assert that there is a property called "aggregates" with 4 items (one per tested model and prompt)
         Assert.True(outputJson.RootElement.TryGetProperty("aggregates", out var aggregates));

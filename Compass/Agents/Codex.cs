@@ -1,5 +1,4 @@
-﻿
-namespace Compass.Agents;
+﻿namespace Compass.Agents;
 
 public class Codex : Agent
 {
