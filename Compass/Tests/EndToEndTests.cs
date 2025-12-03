@@ -1,6 +1,7 @@
 namespace Compass.Tests;
 
 using System.Text;
+using System.Text.Json;
 using Xunit;
 
 public class EndToEndTests
@@ -19,12 +20,14 @@ public class EndToEndTests
         var stringBuilder = new StringBuilder();
         Logger.Writer = new StringWriter(stringBuilder);
 
+        string result;
         try
         {
-            await Program.Main(new[]
+            result = await Program.Run(new[]
             {
                 "--repo-path", repoRoot,
-                "--config", configPath
+                "--config", configPath,
+                "--loglevel", "verbose"
             });
         }
         finally
@@ -34,13 +37,17 @@ public class EndToEndTests
         }
 
         var output = stringBuilder.ToString();
+        
         System.Console.WriteLine("=== End-to-End Test Output ===");
         System.Console.WriteLine(output);
 
         Assert.DoesNotContain("Error running process:", output, StringComparison.OrdinalIgnoreCase);
 
-        Assert.Contains("\"aggregates\"", output, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("gpt-5", output, StringComparison.OrdinalIgnoreCase);
+        var outputJson = JsonDocument.Parse(result);
+
+        //assert that there is a property called "aggregates" with 4 items (one per tested model and prompt)
+        Assert.True(outputJson.RootElement.TryGetProperty("aggregates", out var aggregates));
+        Assert.Equal(4, aggregates.GetArrayLength());
     }
 
     private sealed class ConsoleCapture : IDisposable

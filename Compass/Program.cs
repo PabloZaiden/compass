@@ -5,7 +5,13 @@ using Compass.Agents;
 
 public static class Program
 {
-    public static async Task Main(string[] args)
+    public static async Task Main(string[] args) {
+        var result = await Run(args);
+
+        Logger.Log(result, Logger.LogLevel.Info, false);
+    }
+
+    public static async Task<string> Run(string[] args)
     {
         var generalPrompts = new Prompts();
 
@@ -17,7 +23,7 @@ public static class Program
         catch (ArgumentException ex)
         {
             Logger.Log($"Error parsing arguments." + Environment.NewLine + ex.Message, Logger.LogLevel.Error);
-            return;
+            return string.Empty;
         }
         Logger.CurrentLogLevel = cliConfig.VerboseLogging ? Logger.LogLevel.Verbose : Logger.LogLevel.Info;
 
@@ -142,7 +148,7 @@ public static class Program
             outObj = new { results = allRunResults, aggregates };
         }
 
-        Logger.Log(outObj.ToJsonString(), Logger.LogLevel.Info, false);
+        return outObj.ToJsonString();
     }
 
     static Classification ParseClassification(ProcessOutput evalOutput)
