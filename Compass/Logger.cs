@@ -1,5 +1,3 @@
-using System.Xml;
-
 namespace Compass;
 
 public static class Logger
@@ -45,6 +43,4 @@ public static class Logger
             }
         }
     }
-
-
 }

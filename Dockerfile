@@ -17,6 +17,8 @@ COPY --from=build /src/Compass/config ./Compass/config
 COPY --from=build /app/publish ./app
 COPY docker/install-prerequisites.sh ./install-prerequisites.sh
 
+RUN apt-get update && apt-get install -y curl git
+
 RUN bash ./install-prerequisites.sh
 ENV NVM_DIR=/root/.nvm
 

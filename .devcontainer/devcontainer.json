@@ -7,8 +7,10 @@
 	"features": {
 		"ghcr.io/devcontainers/features/github-cli:1": {},
 		"ghcr.io/devcontainers/features/node:1": {}
-	}
-
+	},
+	
+	"postCreateCommand": "./docker/install-prerequisites.sh"
+	
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
@@ -20,8 +22,6 @@
 	//		}
 	// }
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "dotnet restore",
 
 	// Configure tool-specific properties.
 	// "customizations": {},
