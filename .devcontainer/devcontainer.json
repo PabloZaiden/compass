@@ -9,7 +9,15 @@
 		"ghcr.io/devcontainers/features/node:1": {}
 	},
 	
-	"postCreateCommand": "./docker/install-prerequisites.sh"
+	"postCreateCommand": "./docker/install-prerequisites.sh",
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit"
+			]
+		}
+	},
 	
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

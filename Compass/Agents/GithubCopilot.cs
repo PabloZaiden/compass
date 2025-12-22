@@ -9,7 +9,7 @@ public class GithubCopilot : Agent
         var processOutput = await ProcessUtils.Run(
             workingDirectory,
             "copilot",
-            $"--model {model.EscapeArg()} --allow-all-tools --allow-all-paths --add-dir {workingDirectory.EscapeArg()} -p {prompt.EscapeArg()}");
+            $"--silent --no-color --model {model.EscapeArg()} --allow-all-tools --allow-all-paths --add-dir {workingDirectory.EscapeArg()} -p {prompt.EscapeArg()}");
 
         Logger.Log($"Collecting git diff after agent execution", Logger.LogLevel.Verbose);
         
