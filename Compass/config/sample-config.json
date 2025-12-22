@@ -1,5 +1,4 @@
 {
-  "agent": "copilot",
   "models": ["gpt-5", "claude-sonnet-4.5"],
   "prompts": [
     {
