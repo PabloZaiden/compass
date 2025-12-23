@@ -28,6 +28,10 @@ public class EndToEndTests
             {
                 "--repo-path", repoRoot,
                 "--config", configPath,
+                "--agent-type", "githubcopilot",
+                "--model", "gpt-5.1-codex-mini",
+                "--eval-model", "gpt-4o",
+                "--runs", "1",
                 "--loglevel", "verbose"
             });
         }
@@ -48,7 +52,7 @@ public class EndToEndTests
 
         //assert that there is a property called "aggregates" with 4 items (one per tested model and prompt)
         Assert.True(outputJson.RootElement.TryGetProperty("aggregates", out var aggregates));
-        Assert.Equal(4, aggregates.GetArrayLength());
+        Assert.Equal(2, aggregates.GetArrayLength());
     }
 }
 
