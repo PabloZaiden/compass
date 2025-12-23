@@ -5,7 +5,7 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md
-            "name": ".NET Core Launch (copilot)",
+            "name": ".NET Core Launch (github copilot)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -26,9 +26,28 @@
             "stopAtEntry": false
         },
         {
-            "name": ".NET Core Attach",
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md
+            "name": ".NET Core Launch (codex)",
             "type": "coreclr",
-            "request": "attach"
-        }
+            "request": "launch",
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/Compass/bin/Debug/net9.0/Compass.dll",
+            "args": [
+                "--repo-path",".",
+                "--config", "./Compass/config/sample-config.json",
+                "--runs", "1",
+                "--agent-type", "codex",
+                "--model", "gpt-5.1-codex-mini",
+                "--eval-model", "gpt-5-mini",
+                "--output", "detailed"
+            ],
+            "cwd": "${workspaceFolder}",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
     ]
 }
