@@ -34,3 +34,9 @@ npm install -g @openai/codex
 
 # install claude code
 curl -fsSL https://claude.ai/install.sh | bash
+
+# install az cli
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# install opencode
+curl -fsSL https://opencode.ai/install | bash

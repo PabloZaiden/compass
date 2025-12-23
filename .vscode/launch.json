@@ -10,9 +10,16 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Compass/bin/Debug/net8.0/Compass.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/Compass",
+            "program": "${workspaceFolder}/Compass/bin/Debug/net9.0/Compass.dll",
+            "args": [
+                "--repo-path",".",
+                "--config", "./Compass/config/sample-config.json",
+                "--runs", "1",
+                "--agent-type", "opencode",
+                "--eval-model", "opencode/gpt-5-nano",
+                "--output", "detailed"
+            ],
+            "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false

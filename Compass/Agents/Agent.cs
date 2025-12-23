@@ -12,6 +12,7 @@ public abstract class Agent
         {
             Types.GithubCopilot => new GithubCopilot(),
             Types.Codex => new Codex(),
+            Types.OpenCode => new OpenCode(),
             _ => throw new ArgumentException("Unsupported agent type: " + agentType),
         };
     }
@@ -20,5 +21,6 @@ public abstract class Agent
     {
         GithubCopilot,
         Codex,
+        OpenCode,
     }
 }
