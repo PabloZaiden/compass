@@ -42,6 +42,10 @@ public class Runner
 
         var allRunResults = new List<RunResult>();
         Agent evaluationAgent = Agent.Create(cliConfig.AgentType);
+        Agent agent = Agent.Create(cliConfig.AgentType);
+                    
+        await agent.EnsureLogin();
+        await evaluationAgent.EnsureLogin();
 
         Logger.Log("Beginning evaluation runs", Logger.LogLevel.Info);
         foreach (var model in cfg.Models)
@@ -59,7 +63,6 @@ public class Runner
 
                     Logger.Log($"Starting run: model={model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Info);
                     
-                    Agent agent = Agent.Create(cliConfig.AgentType);
                     if (cliConfig.UseCache)
                     {
                         var cachedAgent = new CachedAgent(agent);

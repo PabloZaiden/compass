@@ -72,5 +72,10 @@ namespace Compass.Agents
 
             return output;
         }
+
+        public override Task EnsureLogin()
+        {
+            return _innerAgent.EnsureLogin();
+        }
     }
 }

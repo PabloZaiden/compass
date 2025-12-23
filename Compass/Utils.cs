@@ -74,7 +74,8 @@ public static class ProcessUtils
             return new ProcessOutput()
             {
                 StdOut = stdout,
-                StdErr = stderr
+                StdErr = stderr,
+                ExitCode = p.ExitCode
             };
         }
         catch (Exception ex)
@@ -83,7 +84,8 @@ public static class ProcessUtils
             return new ProcessOutput()
             {
                 StdOut = null,
-                StdErr = $"PROCESS_ERROR: {ex.Message}"
+                StdErr = $"PROCESS_ERROR: {ex.Message}",
+                ExitCode = -1
             };
         }
     }

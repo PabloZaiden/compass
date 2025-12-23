@@ -4,6 +4,12 @@ public class GithubCopilot : Agent
 {
     public override string Name => "GitHub Copilot";
 
+    public override Task EnsureLogin()
+    {
+        // do nothing for now, since there is no non-interactive way to check this.
+        return Task.CompletedTask;
+    }
+
     public override async Task<AgentOutput> Execute(string prompt, string model, string workingDirectory)
     {
         var processOutput = await ProcessUtils.Run(

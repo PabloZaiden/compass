@@ -1,5 +1,5 @@
 {
-  "models": ["gpt-5", "claude-sonnet-4.5"],
+  "models": ["gpt-5-codex-mini"],
   "prompts": [
     {
       "id": "explain_repo",

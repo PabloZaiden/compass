@@ -27,6 +27,7 @@ public class ProcessOutput
 {
     public string? StdOut { get; set; }
     public string? StdErr { get; set; }
+    public int ExitCode { get; set; }
 }
 
 public class AgentOutput : ProcessOutput

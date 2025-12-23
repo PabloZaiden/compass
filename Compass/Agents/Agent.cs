@@ -4,7 +4,8 @@ public abstract class Agent
 {
     public abstract string Name { get; }
     public abstract Task<AgentOutput> Execute(string prompt, string model, string workingDirectory);
-
+    public abstract Task EnsureLogin();
+    
     public static Agent Create(Types agentType)
     {
         return agentType switch
