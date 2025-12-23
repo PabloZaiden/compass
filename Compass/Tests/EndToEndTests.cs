@@ -2,17 +2,21 @@ namespace Compass.Tests;
 
 using System.Text;
 using System.Text.Json;
+using Compass.Agents;
 using Xunit;
 
 public class EndToEndTests
 {
-    [Fact]
-    public async Task SmokeTest()
+    private async Task SelfTest(Agent.Types agentType, string model, string evalModel)
     {
         var repoRoot = Utils.RepoRoot();
         var configPath = Path.Combine(repoRoot, "Compass", "config", "sample-config.json");
 
         Assert.True(File.Exists(configPath), $"Expected config file at {configPath}");
+
+        var promptCount = JsonDocument.Parse(File.ReadAllText(configPath))
+            .RootElement.GetProperty("prompts")
+            .GetArrayLength();
 
         var originalCwd = Directory.GetCurrentDirectory();
         Directory.SetCurrentDirectory(repoRoot);
@@ -28,9 +32,9 @@ public class EndToEndTests
             {
                 "--repo-path", repoRoot,
                 "--config", configPath,
-                "--agent-type", "githubcopilot",
-                "--model", "gpt-5.1-codex-mini",
-                "--eval-model", "gpt-4o",
+                "--agent-type", agentType.ToString(),
+                "--model", model,
+                "--eval-model", evalModel,
                 "--runs", "1",
                 "--loglevel", "verbose"
             });
@@ -50,9 +54,21 @@ public class EndToEndTests
         Logger.Log("End-to-end test completed. Output JSON:");    
         Logger.Log(result);
 
-        //assert that there is a property called "aggregates" with 4 items (one per tested model and prompt)
+        //assert that there is a property called "aggregates" with 2 items (one per prompt)
         Assert.True(outputJson.RootElement.TryGetProperty("aggregates", out var aggregates));
-        Assert.Equal(2, aggregates.GetArrayLength());
+        Assert.Equal(promptCount, aggregates.GetArrayLength());
+    }    
+
+    [Fact]
+    public Task SelfTestGithubCopilot()
+    {
+        return SelfTest(Agent.Types.GithubCopilot, "gpt-5.1-codex-mini", "gpt-5.1-codex-mini");
+    }
+
+    [Fact]
+    public Task SelfTestCodex()
+    {
+        return SelfTest(Agent.Types.Codex, "gpt-5.1-codex-mini", "gpt-5.1-codex-mini");
     }
 }
 

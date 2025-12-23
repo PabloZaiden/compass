@@ -6,7 +6,7 @@ using Xunit;
 public class AgentsTests
 {
     [Fact]
-    public async Task GithubCopilotBasicTest()
+    public async Task BasicTestGithubCopilot()
     {
         var agent = Agent.Create(Agent.Types.GithubCopilot);
 
@@ -20,7 +20,7 @@ public class AgentsTests
     }
 
     [Fact]
-    public async Task CodexBasicTest()
+    public async Task BasicTestCodex()
     {
         var agent = Agent.Create(Agent.Types.Codex);
 
