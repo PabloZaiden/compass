@@ -2,6 +2,13 @@
 
 Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes.
 
+## Supported Agents
+
+- GitHub Copilot
+- OpenAI Codex
+- Anthropic Claude (work-in-progress)
+- OpenCode (work-in-progress)
+
 ## Requirements
 
 - Git
@@ -9,6 +16,10 @@ Console tool to benchmark Coding agents using different agents and models across
 - `copilot` in path for GitHub Copilot CLI
 - `codex` in path for OpenAI Codex CLI
 - `opencode` in path for OpenCode CLI
+- `claude` in path for Anthropic Claude CLI
+
+## Optional Requirements
+- `az` authenticated for Azure AI Foundry models
 
 ## Usage
 
@@ -16,9 +27,11 @@ Console tool to benchmark Coding agents using different agents and models across
 dotnet run --project Compass -- \
   --repo-path ../path-to-target-repo \
   --config Compass/sample-config.json \
+  --agent-type githubcopilot \
+  --model gpt-5.1-codex-mini \
+  --eval-model gpt-4o \
   --runs 3 \
-  --output detailed \
-  --eval-model gpt-4o
+  --output detailed
 ```
 
 ## Docker
@@ -33,9 +46,11 @@ docker run --rm -ti \
   compass \
   --repo-path /target-repo \
   --config /config.json \
+  --agent-type githubcopilot \
+  --model gpt-5.1-codex-mini \
+  --eval-model gpt-4o \
   --runs 3 \
-  --output detailed \
-  --eval-model gpt-4o
+  --output detailed
 ```
 
 Mount your configuration as `/config.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands. The image already bundles `Compass/config`, but you can bind-mount your own config folder if desired.
@@ -50,9 +65,11 @@ docker run --rm -ti \
   compass \
   --repo-path /target-repo \
   --config /config.json \
+  --agent-type githubcopilot \
+  --model gpt-5.1-codex-mini \
+  --eval-model gpt-4o \
   --runs 3 \
-  --output detailed \
-  --eval-model gpt-4o
+  --output detailed
 ```
 
 
