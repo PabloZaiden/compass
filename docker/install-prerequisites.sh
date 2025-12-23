@@ -31,3 +31,6 @@ npm install -g @github/copilot
 
 # install openai codex cli
 npm install -g @openai/codex
+
+# install claude code
+curl -fsSL https://claude.ai/install.sh | bash
