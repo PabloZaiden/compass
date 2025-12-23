@@ -1,3 +1,5 @@
+using Compass.Agents;
+
 namespace Compass;
 
 record PromptSpec(string Id, string Prompt, string Expected);
@@ -5,7 +7,9 @@ record EvaluationConfig(List<string> Models, List<PromptSpec> Prompts);
 
 class RunResult
 {
+    public Agent.Types AgentType { get; set; }
     public string Model { get; set; } = "";
+    public string EvalModel { get; set; } = "";
     public string PromptId { get; set; } = "";
     public int Iteration { get; set; }
     public AgentOutput AgentOutput { get; set; } = new();

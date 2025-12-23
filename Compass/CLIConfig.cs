@@ -4,15 +4,14 @@ namespace Compass;
 
 class CLIConfig
 {
-    private const string DefaultEvaluationModel = "gpt-4o";
-
     public string RepoPath { get; set; } = "";
     public string ConfigFile { get; set; } = "";
     public int RunCount { get; set; } = 1;
     public OutputMode OutputMode { get; set; } = OutputMode.Aggregated;
     public bool VerboseLogging { get; set; } = false;
     public bool UseCache { get; set; } = true;
-    public string EvalModel { get; set; } = DefaultEvaluationModel;
+    public string Model { get; set; } = "";
+    public string EvalModel { get; set; } = "";
     public Agent.Types AgentType { get; set; }
     public CLIConfig()
     {
@@ -40,18 +39,19 @@ class CLIConfig
     {
         string? repoPath = GetArg(args, "--repo-path");
         string? configFile = GetArg(args, "--config");
+        string? model = GetArg(args, "--model");
+        string? evalModel = GetArg(args, "--eval-model");
 
         string runsCount = GetArg(args, "--runs") ?? "1";
         string outputMode = GetArg(args, "--output") ?? OutputMode.Aggregated.ToString();
-        string? evalModel = GetArg(args, "--eval-model");
         string agentTypeStr = GetArg(args, "--agent-type") ?? Agent.Types.GithubCopilot.ToString();
 
         bool useCache = GetArg(args, "--no-cache") == null;
         bool verboseLogging = GetArg(args, "--verbose") != null;
 
-        if (repoPath == null || configFile == null)
+        if (repoPath == null || configFile == null || model == null || evalModel == null)
         {
-            throw new ArgumentException("Required: --repo-path <path> --config <file>");
+            throw new ArgumentException("Required: --repo-path <path> --config <file> --model <model> --eval-model <model>");
         }
 
         if (!Directory.Exists(repoPath))
@@ -85,7 +85,8 @@ class CLIConfig
             ConfigFile = configFile,
             RunCount = runs,
             OutputMode = parsedOutputMode,
-            EvalModel = evalModel ?? DefaultEvaluationModel,
+            Model = model,
+            EvalModel = evalModel,
             UseCache = useCache,
             VerboseLogging = verboseLogging,
             AgentType = parsedAgentType

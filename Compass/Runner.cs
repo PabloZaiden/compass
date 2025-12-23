@@ -22,6 +22,9 @@ public class Runner
         Logger.CurrentLogLevel = cliConfig.VerboseLogging ? Logger.LogLevel.Verbose : Logger.LogLevel.Info;
 
         Logger.Log($"Compass evaluation started.", Logger.LogLevel.Info);
+        Logger.Log($"Agent type: {cliConfig.AgentType}", Logger.LogLevel.Info);
+        Logger.Log($"Model: {cliConfig.Model}", Logger.LogLevel.Info);
+        Logger.Log($"Evaluation Model: {cliConfig.EvalModel}", Logger.LogLevel.Verbose);
         Logger.Log($"Repository: {cliConfig.RepoPath}", Logger.LogLevel.Verbose);
         Logger.Log($"Config: {cliConfig.ConfigFile}", Logger.LogLevel.Verbose);
         Logger.Log($"Runs: {cliConfig.RunCount}", Logger.LogLevel.Verbose);
@@ -38,90 +41,91 @@ public class Runner
             throw new("Failed to parse config file: " + cliConfig.ConfigFile);
         }
 
-        Logger.Log($"Loaded evaluation config for {cfg.Models.Count} models and {cfg.Prompts.Count} prompts", Logger.LogLevel.Verbose);
+        Logger.Log($"Loaded evaluation config for {cfg.Prompts.Count} prompts", Logger.LogLevel.Verbose);
 
         var allRunResults = new List<RunResult>();
         Agent evaluationAgent = Agent.Create(cliConfig.AgentType);
         Agent agent = Agent.Create(cliConfig.AgentType);
-                    
+
         await agent.EnsureLogin();
         await evaluationAgent.EnsureLogin();
 
         Logger.Log("Beginning evaluation runs", Logger.LogLevel.Info);
-        foreach (var model in cfg.Models)
+
+        Logger.Log($"Starting evaluations", Logger.LogLevel.Info);
+        foreach (var prompt in cfg.Prompts)
         {
-            Logger.Log($"Starting evaluations for model: {model}", Logger.LogLevel.Info);
-            foreach (var prompt in cfg.Prompts)
+            Logger.Log($"Starting evaluations for prompt: {prompt.Id}", Logger.LogLevel.Info);
+            for (int i = 1; i <= cliConfig.RunCount; i++)
             {
-                Logger.Log($"Starting evaluations for prompt: {prompt.Id}", Logger.LogLevel.Info);
-                for (int i = 1; i <= cliConfig.RunCount; i++)
+                var tempRepoPath = Path.Combine(Path.GetTempPath(), $"compass-run-{Guid.NewGuid():N}");
+                Logger.Log($"Creating temporary repository copy at: {tempRepoPath}", Logger.LogLevel.Verbose);
+
+                FileSystemUtils.CopyDirectory(cliConfig.RepoPath, tempRepoPath);
+
+                Logger.Log($"Starting run: agent={agent.Name} model={cliConfig.Model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Info);
+
+                Agent iterationAgent = agent;
+                if (cliConfig.UseCache)
                 {
-                    var tempRepoPath = Path.Combine(Path.GetTempPath(), $"compass-run-{Guid.NewGuid():N}");
-                    Logger.Log($"Creating temporary repository copy at: {tempRepoPath}", Logger.LogLevel.Verbose);
+                    var cachedAgent = new CachedAgent(agent);
+                    cachedAgent.CacheKeyPrefix = i.ToString(); // separate cache per iteration
+                    iterationAgent = cachedAgent;
+                }
 
-                    FileSystemUtils.CopyDirectory(cliConfig.RepoPath, tempRepoPath);
+                Logger.Log($"Resetting repository to clean state", Logger.LogLevel.Verbose);
+                await ProcessUtils.Git(tempRepoPath, "reset --hard");
+                await ProcessUtils.Git(tempRepoPath, "clean -fd");
 
-                    Logger.Log($"Starting run: model={model} prompt={prompt.Id} iteration={i}", Logger.LogLevel.Info);
-                    
-                    if (cliConfig.UseCache)
-                    {
-                        var cachedAgent = new CachedAgent(agent);
-                        cachedAgent.CacheKeyPrefix = i.ToString(); // separate cache per iteration
-                        agent = cachedAgent;
-                    }
-                    
-                    Logger.Log($"Resetting repository to clean state", Logger.LogLevel.Verbose);
-                    await ProcessUtils.Git(tempRepoPath, "reset --hard");
-                    await ProcessUtils.Git(tempRepoPath, "clean -fd");
+                Logger.Log($"Executing agent for prompt", Logger.LogLevel.Verbose);
+                var agentOutput = await iterationAgent.Execute(prompt.Prompt, cliConfig.Model, tempRepoPath);
+                Logger.Log("Agent output", agentOutput, Logger.LogLevel.Verbose);
 
-                    Logger.Log($"Executing agent for prompt", Logger.LogLevel.Verbose);
-                    var agentOutput = await agent.Execute(prompt.Prompt, model, tempRepoPath);
-                    Logger.Log("Agent output", agentOutput, Logger.LogLevel.Verbose);
+                var tempResultFile = Path.GetTempFileName() + ".json";
+                File.WriteAllText(tempResultFile, JsonSerializer.Serialize(agentOutput));
 
-                    var tempResultFile = Path.GetTempFileName() + ".json";
-                    File.WriteAllText(tempResultFile, JsonSerializer.Serialize(agentOutput));
+                Logger.Log($"Temporary result file created at: {tempResultFile}", Logger.LogLevel.Verbose);
 
-                    Logger.Log($"Temporary result file created at: {tempResultFile}", Logger.LogLevel.Verbose);
-
-                    var evalPrompt = generalPrompts.Evaluator
-                        .Replace("{{RESULT_FILE_PATH}}", tempResultFile)
-                        .Replace("{{EXPECTED}}", prompt.Expected);
+                var evalPrompt = generalPrompts.Evaluator
+                    .Replace("{{RESULT_FILE_PATH}}", tempResultFile)
+                    .Replace("{{EXPECTED}}", prompt.Expected);
 
 
-                    Logger.Log($"Executing evaluation prompt", Logger.LogLevel.Verbose);
-                    var evalOutput = await evaluationAgent.Execute(evalPrompt, model, tempRepoPath);
+                Logger.Log($"Executing evaluation prompt with model={cliConfig.EvalModel}", Logger.LogLevel.Verbose);
+                var evalOutput = await evaluationAgent.Execute(evalPrompt, cliConfig.EvalModel, tempRepoPath);
 
-                    Logger.Log("Evaluation output", evalOutput, Logger.LogLevel.Verbose);
+                Logger.Log("Evaluation output", evalOutput, Logger.LogLevel.Verbose);
 
-                    Logger.Log($"Parsing classification from evaluation output", Logger.LogLevel.Verbose);
-                    var classification = ParseClassification(evalOutput);
+                Logger.Log($"Parsing classification from evaluation output", Logger.LogLevel.Verbose);
+                var classification = ParseClassification(evalOutput);
 
-                    Logger.Log($"Parsed classification: {classification}", Logger.LogLevel.Verbose);
-                    int points = (int)classification;
+                Logger.Log($"Parsed classification: {classification}", Logger.LogLevel.Verbose);
+                int points = (int)classification;
 
-                    Logger.Log($"Run completed: model={model} prompt={prompt.Id} iteration={i} classification={classification} points={points}", Logger.LogLevel.Info);
+                Logger.Log($"Run completed: agent={agent.Name} model={cliConfig.Model} prompt={prompt.Id} iteration={i} classification={classification} points={points}", Logger.LogLevel.Info);
 
-                    allRunResults.Add(new RunResult
-                    {
-                        Model = model,
-                        PromptId = prompt.Id,
-                        Iteration = i,
-                        AgentOutput = agentOutput,
-                        EvaluationOutput = evalOutput,
-                        Classification = classification,
-                        Points = points
-                    });
+                allRunResults.Add(new RunResult
+                {
+                    AgentType = cliConfig.AgentType,
+                    Model = cliConfig.Model,
+                    EvalModel = cliConfig.EvalModel,
+                    PromptId = prompt.Id,
+                    Iteration = i,
+                    AgentOutput = agentOutput,
+                    EvaluationOutput = evalOutput,
+                    Classification = classification,
+                    Points = points
+                });
 
-                    // clean up temp repo copy
-                    try
-                    {
-                        Logger.Log("Deleting temporary repository copy", Logger.LogLevel.Verbose);
-                        Directory.Delete(tempRepoPath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log($"Failed to delete temp repo copy at {tempRepoPath}: {ex.Message}", Logger.LogLevel.Error);
-                    }
+                // clean up temp repo copy
+                try
+                {
+                    Logger.Log("Deleting temporary repository copy", Logger.LogLevel.Verbose);
+                    Directory.Delete(tempRepoPath, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Failed to delete temp repo copy at {tempRepoPath}: {ex.Message}", Logger.LogLevel.Error);
                 }
             }
         }
@@ -129,9 +133,9 @@ public class Runner
         Logger.Log("Aggregating results", Logger.LogLevel.Info);
 
         var aggregates = allRunResults
-            .GroupBy(r => (r.Model, r.PromptId))
-            .Select(g => new AggregatedResult { Model = g.Key.Model, PromptId = g.Key.PromptId, Runs = g.Count(), AveragePoints = g.Average(r => r.Points) })
-            .OrderBy(a => a.Model).ThenBy(a => a.PromptId).ToList();
+            .GroupBy(r => r.PromptId)
+            .Select(g => new AggregatedResult { PromptId = g.Key, Runs = g.Count(), AveragePoints = g.Average(r => r.Points) })
+            .OrderBy(a => a.PromptId).ToList();
 
         object outObj;
         if (cliConfig.OutputMode == OutputMode.Aggregated)
