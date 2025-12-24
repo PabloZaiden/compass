@@ -5,32 +5,35 @@ using Xunit;
 
 public class AgentsTests
 {
-    [Fact]
-    public async Task BasicTestGithubCopilot()
+    private async Task BasicTest(Agent.Types agentType, string model)
     {
-        var agent = Agent.Create(Agent.Types.GithubCopilot);
+        var agent = Agent.Create(agentType);
 
-        var output = await agent.Execute("Explain what this project is about.", "gpt-5-mini", Utils.RepoRoot());
-
+        var output = await agent.Execute("Explain what this project is about.", model, Utils.RepoRoot());
         System.Console.WriteLine("StdOut:" + output.StdOut);
         System.Console.WriteLine("StdErr:" + output.StdErr);
 
+        Assert.Equal(0, output.ExitCode);
         Assert.NotNull(output);
         Assert.NotNull(output.StdOut);
     }
 
     [Fact]
-    public async Task BasicTestCodex()
+    public Task BasicTestGithubCopilot()
     {
-        var agent = Agent.Create(Agent.Types.Codex);
+        return BasicTest(Agent.Types.GithubCopilot, "gpt-5-mini");
+    }
 
-        var output = await agent.Execute("Explain what this project is about.", "gpt-5.1-codex-mini", Utils.RepoRoot());
+    [Fact]
+    public Task BasicTestCodex()
+    {
+        return BasicTest(Agent.Types.Codex, "gpt-5-mini");
+    }
 
-        System.Console.WriteLine("StdOut:" + output.StdOut);
-        System.Console.WriteLine("StdErr:" + output.StdErr);
-
-        Assert.NotNull(output);
-        Assert.NotNull(output.StdOut);
+    [Fact]
+    public Task BasicTestOpenCode()
+    {
+        return BasicTest(Agent.Types.OpenCode, "opencode/gpt-5-nano");
     }
 }
 

@@ -12,7 +12,7 @@ public abstract class Agent
         {
             Types.GithubCopilot => new GithubCopilot(),
             Types.Codex => new Codex(),
-            //Types.OpenCode => new OpenCode(), // Disable OpenCode agent for now. Problems reading results from CLI.
+            Types.OpenCode => new OpenCode(), // Disable OpenCode agent for now. Problems reading results from CLI.
             _ => throw new ArgumentException("Unsupported agent type: " + agentType),
         };
     }

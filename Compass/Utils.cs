@@ -67,14 +67,16 @@ public static class ProcessUtils
             };
             var p = Process.Start(psi)!;
 
-            string stdout = await p.StandardOutput.ReadToEndAsync();
-            string stderr = await p.StandardError.ReadToEndAsync();
-            await p.WaitForExitAsync();
+            var stdoutTask = p.StandardOutput.ReadToEndAsync();
+            var stderrTask = p.StandardError.ReadToEndAsync();
+            var waitForExitTask = p.WaitForExitAsync();
+
+            await Task.WhenAll(stdoutTask, stderrTask, waitForExitTask);
 
             return new ProcessOutput()
             {
-                StdOut = stdout,
-                StdErr = stderr,
+                StdOut = stdoutTask.Result,
+                StdErr = stderrTask.Result,
                 ExitCode = p.ExitCode
             };
         }
