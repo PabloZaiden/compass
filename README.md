@@ -12,7 +12,7 @@ Console tool to benchmark Coding agents using different agents and models across
 ## Requirements
 
 - Git
-- .NET 9 SDK
+- Bun runtime (https://bun.sh)
 - `copilot` in path for GitHub Copilot CLI
 - `codex` in path for OpenAI Codex CLI
 - `opencode` in path for OpenCode CLI
@@ -21,12 +21,44 @@ Console tool to benchmark Coding agents using different agents and models across
 ## Optional Requirements
 - `az` authenticated for Azure AI Foundry models
 
+## Installation
+
+Install Bun:
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Install dependencies:
+```bash
+bun install
+```
+
+Build the executable:
+```bash
+bun run build
+```
+
+This creates a single-file executable called `compass` that can be run standalone.
+
 ## Usage
 
+Using the executable:
 ```bash
-dotnet run --project Compass -- \
+./compass \
   --repo-path ../path-to-target-repo \
-  --config Compass/sample-config.json \
+  --config Compass/config/sample-config.json \
+  --agent-type githubcopilot \
+  --model gpt-5.1-codex-mini \
+  --eval-model gpt-4o \
+  --runs 3 \
+  --output detailed
+```
+
+Or run directly with Bun:
+```bash
+bun run dev -- \
+  --repo-path ../path-to-target-repo \
+  --config Compass/config/sample-config.json \
   --agent-type githubcopilot \
   --model gpt-5.1-codex-mini \
   --eval-model gpt-4o \
@@ -72,7 +104,18 @@ docker run --rm -ti \
   --output detailed
 ```
 
-
 ## Configuration File
 
 See `Compass/config/sample-config.json` for structure.
+
+## Development
+
+Run tests:
+```bash
+bun test
+```
+
+Run in development mode:
+```bash
+bun run dev -- [arguments]
+```

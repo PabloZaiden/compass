@@ -1,0 +1,17 @@
+{
+  "name": "compass",
+  "version": "1.0.0",
+  "description": "Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --compile --outfile compass",
+    "test": "bun test"
+  },
+  "bin": {
+    "compass": "./compass"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

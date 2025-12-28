@@ -1,23 +1,23 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
+FROM oven/bun:1 AS build
 WORKDIR /src
 
-COPY Compass/Compass.csproj Compass/
-RUN dotnet restore Compass/Compass.csproj
+COPY package.json bun.lockb* ./
+RUN bun install --frozen-lockfile
 
-COPY Compass/. ./Compass/
-RUN dotnet publish Compass/Compass.csproj -c ${BUILD_CONFIGURATION} -o /app/publish
+COPY src ./src
+COPY tsconfig.json ./
+RUN bun build src/index.ts --compile --outfile compass
 
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
+FROM debian:bookworm-slim AS final
 WORKDIR /workspace
 
-COPY --from=build /src/Compass/config ./Compass/config
-COPY --from=build /app/publish ./app
+COPY --from=build /src/compass ./compass
+COPY Compass/config ./Compass/config
 COPY docker/install-prerequisites.sh ./install-prerequisites.sh
 
-RUN apt-get update && apt-get install -y curl git sudo
+RUN apt-get update && apt-get install -y curl git sudo && rm -rf /var/lib/apt/lists/*
 
 RUN bash ./install-prerequisites.sh
 ENV NVM_DIR=/root/.nvm

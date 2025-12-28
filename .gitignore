@@ -3,3 +3,8 @@ obj
 ignore
 .cache
 .DS_Store
+node_modules
+dist
+compass
+*.lockb
+bun.lockb
