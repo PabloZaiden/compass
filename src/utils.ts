@@ -17,8 +17,14 @@ export class FileSystemUtils {
 
 export class StringExtensions {
   static escapeArg(arg: string): string {
-    // Escape shell arguments
-    return `"${arg.replace(/"/g, '\\"')}"`;
+    // Escape shell arguments - proper shell escaping for use in command strings
+    // Replace double quotes with escaped quotes and wrap in quotes
+    if (arg.includes("'")) {
+      // If arg contains single quotes, use double quotes and escape any double quotes
+      return `"${arg.replace(/"/g, '\\"')}"`;
+    }
+    // Otherwise use single quotes (safer for most cases)
+    return `'${arg}'`;
   }
 
   static toJsonString(obj: unknown): string {
@@ -42,7 +48,10 @@ export class ProcessUtils {
         let stdout = "";
         let stderr = "";
 
-        const child = spawn(command, [arguments_], {
+        // Construct the full command string for the shell
+        const fullCommand = `${command} ${arguments_}`;
+
+        const child = spawn(fullCommand, {
           cwd: workingDirectory,
           shell: true,
         });

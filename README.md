@@ -13,10 +13,11 @@ Console tool to benchmark Coding agents using different agents and models across
 
 - Git
 - Bun runtime (https://bun.sh)
-- `copilot` in path for GitHub Copilot CLI
-- `codex` in path for OpenAI Codex CLI
-- `opencode` in path for OpenCode CLI
-- `claude` in path for Anthropic Claude CLI
+- **At least one of the following agent CLIs must be installed and configured:**
+  - `copilot` in path for GitHub Copilot CLI (install via `gh extension install github/gh-copilot`)
+  - `codex` in path for OpenAI Codex CLI
+  - `opencode` in path for OpenCode CLI
+  - `claude` in path for Anthropic Claude CLI
 
 ## Optional Requirements
 - `az` authenticated for Azure AI Foundry models
@@ -39,6 +40,24 @@ bun run build
 ```
 
 This creates a single-file executable called `compass` that can be run standalone.
+
+## Setting Up Agents
+
+### GitHub Copilot
+```bash
+# Install GitHub CLI if not already installed
+# Install the Copilot extension
+gh extension install github/gh-copilot
+
+# Authenticate (if needed)
+gh auth login
+```
+
+### OpenCode
+Follow the instructions at the OpenCode project to install the CLI.
+
+### Codex
+Install the Codex CLI following the official documentation.
 
 ## Usage
 
@@ -119,3 +138,7 @@ Run in development mode:
 ```bash
 bun run dev -- [arguments]
 ```
+
+## Testing Without Real Agents
+
+**Note:** This project is designed to work with real AI coding agents. It does not use mocks or simulations. To properly test the functionality, you must have at least one of the supported agent CLIs installed and configured. The tests will fail if no agents are available, which is expected behavior.
