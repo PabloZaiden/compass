@@ -7,30 +7,33 @@ import { Logger, LogLevel } from "../logger.ts";
 import type { AgentOutput } from "../models.ts";
 
 export class OpenCode extends Agent {
-  private command: string;
+  private command: string = "opencode";
+  private initialized: boolean = false;
 
   constructor() {
     super();
-    this.command = "opencode";
+  }
+
+  private async initialize(): Promise<void> {
+    if (this.initialized) return;
 
     Logger.log("Checking for OpenCode binary in PATH", LogLevel.Verbose);
 
-    const checkPath = ProcessUtils.run(".", "which", "opencode");
-    checkPath.then((result) => {
-      if (result.exitCode !== 0) {
-        Logger.log("OpenCode binary not found in PATH, checking ~/.opencode/bin", LogLevel.Verbose);
+    const checkPath = await ProcessUtils.run(".", "which", "opencode");
+    if (checkPath.exitCode !== 0) {
+      Logger.log("OpenCode binary not found in PATH, checking ~/.opencode/bin", LogLevel.Verbose);
 
-        const potentialPath = join(homedir(), ".opencode", "bin", "opencode");
-        if (existsSync(potentialPath)) {
-          Logger.log("Found OpenCode binary in ~/.opencode/bin", LogLevel.Verbose);
-          this.command = potentialPath;
-        } else {
-          throw new Error("OpenCode binary not found in PATH or ~/.opencode/bin");
-        }
+      const potentialPath = join(homedir(), ".opencode", "bin", "opencode");
+      if (existsSync(potentialPath)) {
+        Logger.log("Found OpenCode binary in ~/.opencode/bin", LogLevel.Verbose);
+        this.command = potentialPath;
+      } else {
+        throw new Error("OpenCode binary not found in PATH or ~/.opencode/bin");
       }
+    }
 
-      Logger.log(`Found OpenCode binary at: ${this.command}`, LogLevel.Verbose);
-    });
+    Logger.log(`Found OpenCode binary at: ${this.command}`, LogLevel.Verbose);
+    this.initialized = true;
   }
 
   get name(): string {
@@ -38,10 +41,13 @@ export class OpenCode extends Agent {
   }
 
   async ensureLogin(): Promise<void> {
+    await this.initialize();
     // OpenCode doesn't require login
   }
 
   async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
+    await this.initialize();
+
     const processOutput = await ProcessUtils.run(
       workingDirectory,
       this.command,

@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
-import { mkdir, readFile, writeFile, existsSync, unlink } from "fs";
+import { mkdir, readFile, writeFile, unlink } from "fs/promises";
+import { existsSync } from "fs";
 import { join } from "path";
 import { Agent } from "./agent.ts";
 import { ProcessUtils, StringExtensions } from "../utils.ts";
@@ -19,11 +20,10 @@ export class CachedAgent extends Agent {
 
     Logger.log(`Initializing cache directory at: ${this.cacheDir}`, LogLevel.Verbose);
     
+    // Create cache directory synchronously during construction
     if (!existsSync(this.cacheDir)) {
-      mkdir(this.cacheDir, { recursive: true }, (err) => {
-        if (err) {
-          Logger.log(`Failed to create cache directory: ${err.message}`, LogLevel.Error);
-        }
+      mkdir(this.cacheDir, { recursive: true }).catch((err) => {
+        Logger.log(`Failed to create cache directory: ${err.message}`, LogLevel.Error);
       });
     }
   }
@@ -58,7 +58,7 @@ export class CachedAgent extends Agent {
           await writeFile(tempDiffFile, diffContent, "utf-8");
           await ProcessUtils.run(workingDirectory, "git", `apply ${StringExtensions.escapeArg(tempDiffFile)}`);
           // Clean up temp file
-          unlink(tempDiffFile, () => {});
+          await unlink(tempDiffFile).catch(() => {});
         }
 
         Logger.log(`Cache hit for key: ${cacheKey}`, LogLevel.Verbose);
