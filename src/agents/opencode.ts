@@ -51,15 +51,44 @@ export class OpenCode extends Agent {
     const processOutput = await ProcessUtils.run(
       workingDirectory,
       this.command,
-      `run --model ${StringExtensions.escapeArg(model)} ${StringExtensions.escapeArg(prompt)}`
+      `run --model ${StringExtensions.escapeArg(model)} --format json ${StringExtensions.escapeArg(prompt)}`
     );
 
     Logger.log("Collecting git diff after agent execution", LogLevel.Verbose);
 
     const diff = await ProcessUtils.git(workingDirectory, "--no-pager diff");
 
+    // Parse JSON output from opencode to extract text
+    let stdout = processOutput.stdout;
+    if (stdout) {
+      try {
+        // OpenCode outputs newline-delimited JSON events
+        // Extract text from all "text" type events
+        const lines = stdout.split('\n').filter(line => line.trim());
+        const textParts: string[] = [];
+        
+        for (const line of lines) {
+          try {
+            const event = JSON.parse(line);
+            if (event.type === 'text' && event.part?.text) {
+              textParts.push(event.part.text);
+            }
+          } catch {
+            // Skip malformed JSON lines
+          }
+        }
+        
+        if (textParts.length > 0) {
+          stdout = textParts.join('\n');
+        }
+      } catch (error) {
+        // If parsing fails, use the raw output
+        Logger.log(`Failed to parse OpenCode JSON output: ${error}`, LogLevel.Verbose);
+      }
+    }
+
     return {
-      stdout: processOutput.stdout,
+      stdout,
       stderr: processOutput.stderr,
       exitCode: processOutput.exitCode,
       gitDiff: diff.stdout,

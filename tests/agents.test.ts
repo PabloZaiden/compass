@@ -18,13 +18,13 @@ describe("Agent Tests", () => {
 
   test("BasicTestGithubCopilot", async () => {
     await basicTest("githubcopilot", "gpt-5-mini");
-  });
+  }, 180000); // 3 minute timeout
 
   test("BasicTestCodex", async () => {
     await basicTest("codex", "gpt-5-mini");
-  });
+  }, 180000); // 3 minute timeout
 
   test("BasicTestOpenCode", async () => {
     await basicTest("opencode", "opencode/gpt-5-nano");
-  });
+  }, 180000); // 3 minute timeout
 });

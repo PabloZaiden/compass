@@ -54,6 +54,7 @@ export class ProcessUtils {
         const child = spawn(fullCommand, {
           cwd: workingDirectory,
           shell: true,
+          stdio: ['ignore', 'pipe', 'pipe'], // Explicitly ignore stdin
         });
 
         child.stdout?.on("data", (data) => {
