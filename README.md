@@ -40,13 +40,11 @@ For a full list of options, check `src/config/config.ts`
 ## Docker
 
 ```bash
-docker build -f Dockerfile -t compass .
-
 docker run --rm -ti \
   -e GH_TOKEN=$(gh auth token) \
   -v /absolute/path/to/target-repo:/target-repo \
   -v /absolute/path/to/fixture.json:/fixture.json \
-  compass \
+  ghcr.io/pablozaiden/compass:latest \
   --repo /target-repo \
   --fixture /fixture.json \
   --agent-type GitHubCopilot \
