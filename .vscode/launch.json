@@ -4,7 +4,7 @@
         {
             "type": "bun",
             "request": "launch",
-            "name": "Debug Bun with Args",
+            "name": "Debug GitHub Copilot",
             "program": "${workspaceFolder}/src/index.ts",
             "args": [
                 "--repo",
@@ -12,11 +12,32 @@
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
                  "--model",
-                 "gpt-4.1",
+                 "gpt-5-mini",
                  "--eval-model",
-                 "gpt-4.1",
+                 "gpt-5-mini",
                  "--agent-type",
                  "GitHubCopilot"
+            ], // Arguments for your script
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": [], // Arguments for the 'bun' runtime itself
+            "stopOnEntry": false
+        },
+        {
+            "type": "bun",
+            "request": "launch",
+            "name": "Debug codex",
+            "program": "${workspaceFolder}/src/index.ts",
+            "args": [
+                "--repo",
+                ".",
+                 "--fixture",
+                 "${workspaceFolder}/src/sample-fixture.json",
+                 "--model",
+                 "gpt-5.1-codex-mini",
+                 "--eval-model",
+                 "gpt-5.1-codex-mini",
+                 "--agent-type",
+                 "Codex"
             ], // Arguments for your script
             "cwd": "${workspaceFolder}",
             "runtimeArgs": [], // Arguments for the 'bun' runtime itself
