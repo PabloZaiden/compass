@@ -6,8 +6,8 @@ Console tool to benchmark Coding agents using different agents and models across
 
 - GitHub Copilot
 - OpenAI Codex
-- Anthropic Claude (work-in-progress)
-- OpenCode (work-in-progress)
+- OpenCode
+- Anthropic Claude (coming soon)
 
 ## Requirements
 

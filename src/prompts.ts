@@ -1,5 +1,3 @@
-import type { json } from "stream/consumers"
-
 export const evaluator = `
 You are evaluating if the execution result of a coding agent satisfies an expected outcome. 
 To be successful, the information in the expected outcome should be inferred from the result.

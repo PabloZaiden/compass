@@ -1,6 +1,5 @@
 import { describe, test, expect } from "bun:test";
 import { AgentTypes, createAgent } from "../agents/factory";
-import { createWatchCompilerHost } from "typescript";
 
 async function basicTest(type: AgentTypes, model: string) {
   const agent = createAgent(type);

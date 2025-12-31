@@ -1,6 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { AgentTypes, createAgent } from "../agents/factory";
-import { createWatchCompilerHost } from "typescript";
+import { AgentTypes } from "../agents/factory";
 import { OutputMode, type Fixture } from "../models";
 import { Runner } from "../runner";
 import type { Config } from "../config/config";

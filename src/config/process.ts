@@ -37,7 +37,7 @@ export function fromProcess(args: string[]): Config {
     const model = getArgFromCliOrEnv(args, "model")!;
     const evalModel = getArgFromCliOrEnv(args, "eval-model")!;
     const agentTypeStr = getArgFromCliOrEnv(args, "agent-type")!;
-    const stopOnErrorStr = getArgFromCliOrEnv(args, "stop-on-error", false) || defaultConfig.stopOnError.toString();
+    const stopOnError = (getArgFromCliOrEnv(args, "stop-on-error", false) || defaultConfig.stopOnError.toString()) === "true";
     
     const agentType = parseEnum(AgentTypes, agentTypeStr);
     if (agentType === undefined) {
@@ -66,5 +66,6 @@ export function fromProcess(args: string[]): Config {
         model,
         evalModel,
         agentType,
+        stopOnError
     }};
 }

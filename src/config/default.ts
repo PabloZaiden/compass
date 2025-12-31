@@ -1,5 +1,4 @@
 import { OutputMode } from "../models";
-import type { Config } from "./config";
 
 export interface PartialConfig {
     iterationCount: number;

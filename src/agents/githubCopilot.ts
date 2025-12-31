@@ -1,5 +1,5 @@
 import type { AgentOutput } from "../models";
-import { escapeArg, logger, run } from "../utils";
+import { logger, run } from "../utils";
 import { Agent } from "./agent";
 
 export class GitHubCopilot extends Agent {
