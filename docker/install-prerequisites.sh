@@ -20,7 +20,8 @@ then
     bunBinary=$(which bun)
     echo "Bun binary located at: $bunBinary"
     echo "Creating symlink for node to bun..."
-    ln -s "$bunBinary" "/usr/local/bin/node"
+    mkdir -p $HOME/.local/bin
+    ln -s "$bunBinary" "$HOME/.local/bin/node"
 fi
 
 export BUN_INSTALL_BIN=$HOME/.bun/bin
