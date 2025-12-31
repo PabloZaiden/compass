@@ -1,28 +1,51 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
+FROM oven/bun:1 AS base
+WORKDIR /usr/src/app
 
-COPY Compass/Compass.csproj Compass/
-RUN dotnet restore Compass/Compass.csproj
+# install dependencies into temp directory
+# this will cache them and speed up future builds
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY compass/package.json compass/bun.lock /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-COPY Compass/. ./Compass/
-RUN dotnet publish Compass/Compass.csproj -c ${BUILD_CONFIGURATION} -o /app/publish
+# install with --production (exclude devDependencies)
+RUN mkdir -p /temp/prod
+COPY compass/package.json compass/bun.lock /temp/prod/
+RUN cd /temp/prod && bun install --frozen-lockfile --production
 
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
-WORKDIR /workspace
+# copy node_modules from temp directory
+# then copy all (non-ignored) project files into the image
+FROM base AS prerelease
+COPY --from=install /temp/dev/node_modules node_modules
+COPY compass .
 
-COPY --from=build /src/Compass/config ./Compass/config
-COPY --from=build /app/publish ./app
-COPY docker/install-prerequisites.sh ./install-prerequisites.sh
+# [optional] tests & build
+ENV NODE_ENV=production
+RUN bun build --compile --outfile=compass ./index.ts
+
+# copy production dependencies and source code into final image
+FROM base AS release
 
 RUN apt-get update && apt-get install -y curl git sudo
 
+# install az cli here, since it requires sudo permissions
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+COPY docker/install-prerequisites.sh ./install-prerequisites.sh
+
+USER bun
 RUN bash ./install-prerequisites.sh
-ENV NVM_DIR=/root/.nvm
 
-COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+USER root
+RUN rm ./install-prerequisites.sh
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+USER bun
+
+ENV PATH="/home/bun/.local/bin:/home/bun/.bun/bin:/home/bun/.bun/global/bin:${PATH}"
+
+COPY --from=prerelease /usr/src/app/compass .
+
+# run the app
+ENTRYPOINT ["./compass"]

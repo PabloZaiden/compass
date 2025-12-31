@@ -1,0 +1,1 @@
+export const evaluator = "You are evaluating if the execution result of a coding agent satisfies an expected outcome.\n\nResult file path: {{RESULT_FILE_PATH}}\n\n***\n\n Description of expected outcome: \n\n '{{EXPECTED}}'.\n\n***\n\n\nRespond with EXACTLY one of: SUCCESS, PARTIAL, FAILURE.";

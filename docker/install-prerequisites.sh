@@ -2,41 +2,58 @@
 
 set -e
 
-NODE_VERSION=${1:-24}
+# if bun is not installed, install it
+if ! command -v bun &> /dev/null
+then
+    echo "Bun not found, installing..."
+    
+    curl -fsSL https://bun.com/install | bash
 
-# install nvm and node
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-	# ensure nvm function is available in this shell
-	# shellcheck disable=SC1090
-	source "$NVM_DIR/nvm.sh"
+    # add bun to PATH
+    export PATH="$HOME/.bun/bin:$PATH"
 fi
 
-if ! command -v nvm >/dev/null 2>&1; then
-	echo "installing nvm"
-	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-	# shellcheck disable=SC1090
-	source "$NVM_DIR/nvm.sh"
-	if ! grep -q "source \$NVM_DIR/nvm.sh" "$HOME/.bashrc" 2>/dev/null; then
-		echo "source \$NVM_DIR/nvm.sh" >> "$HOME/.bashrc"
-	fi
-else
-	echo "nvm already installed"
+# if there is no symlink for node, create it
+if ! command -v node &> /dev/null
+then
+    # discover the bun binary location
+    bunBinary=$(which bun)
+    echo "Bun binary located at: $bunBinary"
+    echo "Creating symlink for node to bun..."
+    ln -s "$bunBinary" "/usr/local/bin/node"
 fi
 
-nvm install $NODE_VERSION
+export BUN_INSTALL_BIN=$HOME/.bun/bin
+export BUN_INSTALL_GLOBAL_DIR=$HOME/.bun/global
+
+# Ensure dirs exist and are owned by the current user
+mkdir -p "$BUN_INSTALL_BIN" "$BUN_INSTALL_GLOBAL_DIR"
+export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}"
+
+# add the paths to bashrc and zshrc
+echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" ' >> $HOME/.bashrc
+echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" '>> $HOME/.zshrc
 
 # install github copilot cli
-npm install -g @github/copilot
+bun install -g @github/copilot
 
 # install openai codex cli
-npm install -g @openai/codex
+bun install -g @openai/codex
 
 # install claude code
 curl -fsSL https://claude.ai/install.sh | bash
 
 # install az cli
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+if ! command -v az &> /dev/null
+then
+    echo "Azure CLI not found, installing..."
+    
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+fi
 
 # install opencode
 curl -fsSL https://opencode.ai/install | bash
+
+# add symlink for opencode in $HOME/.local/bin
+mkdir -p $HOME/.local/bin
+ln -s "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
