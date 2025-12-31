@@ -2,28 +2,24 @@ import type { AgentOutput } from "../models";
 import { escapeArg, logger, run } from "../utils";
 import { Agent } from "./agent";
 
-export class GitHubCopilot extends Agent {
+export class OpenCode extends Agent {
     constructor() {
-        super("GitHub Copilot");
+        super("OpenCode");
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.info(`Executing GitHub Copilot with model ${model} on prompt ${prompt}`);
+        logger.info(`Executing Codex with model ${model} on prompt ${prompt}`);
         
         const processOutput = await run(
             workingDirectory,
-            "copilot",
-            "--silent", 
-            "--no-color", 
+            "opencode",
+            "run",
             "--model", model, 
-            "--allow-all-tools", 
-            "--allow-all-paths", 
-            "--add-dir", workingDirectory, 
-            "-p", prompt);
+            prompt);
 
-        logger.trace("GitHub Copilot stdOut: " + processOutput.stdOut);
-        logger.trace("GitHub Copilot stdErr: " + processOutput.stdErr);
-        logger.trace("GitHub Copilot exitCode: " + processOutput.exitCode);
+        logger.trace("OpenCode stdOut: " + processOutput.stdOut);
+        logger.trace("OpenCode stdErr: " + processOutput.stdErr);
+        logger.trace("OpenCode exitCode: " + processOutput.exitCode);
 
         logger.trace("Collecting git diff after agent execution");
         

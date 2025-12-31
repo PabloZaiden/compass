@@ -42,6 +42,27 @@
             "cwd": "${workspaceFolder}",
             "runtimeArgs": [], // Arguments for the 'bun' runtime itself
             "stopOnEntry": false
+        },
+        {
+            "type": "bun",
+            "request": "launch",
+            "name": "Debug OpenCode",
+            "program": "${workspaceFolder}/src/index.ts",
+            "args": [
+                "--repo",
+                ".",
+                 "--fixture",
+                 "${workspaceFolder}/src/sample-fixture.json",
+                 "--model",
+                 "opencode/big-pickle",
+                 "--eval-model",
+                 "opencode/big-pickle",
+                 "--agent-type",
+                 "OpenCode"
+            ], // Arguments for your script
+            "cwd": "${workspaceFolder}",
+            "runtimeArgs": [], // Arguments for the 'bun' runtime itself
+            "stopOnEntry": false
         }
     ]
 }
