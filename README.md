@@ -24,7 +24,7 @@ Console tool to benchmark Coding agents using different agents and models across
 ## Usage
 
 ```bash
-bun index.ts --repo "/path/to/target/repo" \
+bun src/index.ts --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
   --model "gpt-5.1-codex-mini" \
   --eval-model "gpt-5.1-codex-mini" \
