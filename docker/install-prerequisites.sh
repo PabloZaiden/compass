@@ -21,7 +21,7 @@ then
     echo "Bun binary located at: $bunBinary"
     echo "Creating symlink for node to bun..."
     mkdir -p $HOME/.local/bin
-    ln -s "$bunBinary" "$HOME/.local/bin/node"
+    ln -sf "$bunBinary" "$HOME/.local/bin/node"
 fi
 
 export BUN_INSTALL_BIN=$HOME/.bun/bin
@@ -57,4 +57,4 @@ curl -fsSL https://opencode.ai/install | bash
 
 # add symlink for opencode in $HOME/.local/bin
 mkdir -p $HOME/.local/bin
-ln -s "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
+ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
