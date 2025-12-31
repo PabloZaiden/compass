@@ -59,7 +59,7 @@ export class Cache extends Agent {
                     await Bun.write(tempFileName, diffContent);
 
                     logger.trace(`Re-applying git diff from cache for key: ${cacheKey}`);
-                    await run(workingDirectory, "git", `apply ${tempFileName}`);
+                    await run(workingDirectory, "git", "apply", tempFileName);
                     await Bun.file(tempFileName).delete();
                 }
 
