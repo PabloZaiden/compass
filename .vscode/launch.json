@@ -5,12 +5,12 @@
             "type": "bun",
             "request": "launch",
             "name": "Debug Bun with Args",
-            "program": "${workspaceFolder}/compass/index.ts",
+            "program": "${workspaceFolder}/src/index.ts",
             "args": [
                 "--repo",
-                "/tmp/test/",
+                ".",
                  "--fixture",
-                 "../ignore/OLD/Compass/config/sample-config.json",
+                 "${workspaceFolder}/src/fixture.json",
                  "--model",
                  "gpt-4.1",
                  "--eval-model",
@@ -18,7 +18,7 @@
                  "--agent-type",
                  "GitHubCopilot"
             ], // Arguments for your script
-            "cwd": "${workspaceFolder}/compass/",
+            "cwd": "${workspaceFolder}",
             "runtimeArgs": [], // Arguments for the 'bun' runtime itself
             "stopOnEntry": false
         }

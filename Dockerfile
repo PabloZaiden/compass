@@ -7,12 +7,12 @@ WORKDIR /usr/src/app
 # this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/dev
-COPY compass/package.json compass/bun.lock /temp/dev/
+COPY src/package.json src/bun.lock /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
 # install with --production (exclude devDependencies)
 RUN mkdir -p /temp/prod
-COPY compass/package.json compass/bun.lock /temp/prod/
+COPY src/package.json src/bun.lock /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 # copy node_modules from temp directory

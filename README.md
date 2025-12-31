@@ -35,7 +35,7 @@ Every option can be specified via command-line arguments or environment variable
 
 Command-line arguments take precedence over environment variables.
 
-For a full list of options, check `compass/config/config.ts`
+For a full list of options, check `src/config/config.ts`
 
 ## Docker
 
@@ -45,7 +45,7 @@ docker build -f Dockerfile -t compass .
 docker run --rm -ti \
   -e GH_TOKEN=$(gh auth token) \
   -v /absolute/path/to/target-repo:/target-repo \
-  -v /absolute/path/to/Compass/fixture.json:/fixture.json \
+  -v /absolute/path/to/fixture.json:/fixture.json \
   compass \
   --repo /target-repo \
   --fixture /fixture.json \
@@ -62,7 +62,7 @@ For instance, to run the sample configuration against Compass itself:
 docker run --rm -ti \
   -e GH_TOKEN=$(gh auth token) \
   -v $(pwd):/target-repo \
-  -v $(pwd)/compass/sample-fixture.json:/fixture.json \
+  -v $(pwd)/src/sample-fixture.json:/fixture.json \
   compass \
   --repo /target-repo \
   --fixture /fixture.json \
@@ -74,4 +74,4 @@ docker run --rm -ti \
 
 ## Fixture File
 
-See `compass/sample-fixture.json` for structure.
+See `src/sample-fixture.json` for structure.
