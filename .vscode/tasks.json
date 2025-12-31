@@ -2,21 +2,17 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/compass.sln",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
             "label": "docker build",
             "type": "shell",
-            "command": "docker build -t compass -f ./Dockerfile .",
+            "command": "docker build -t compass .",
+        },
+        {
+            "label": "bun build",
+            "type": "shell",
+            "command": "bun build --compile --outfile=/tmp/compass ${workspaceFolder}/src/index.ts; mkdir -p ${workspaceFolder}/out; mv /tmp/compass ${workspaceFolder}/out/compass",
+            "options": {
+                "cwd": "/tmp"
+            }
         }
         
     ]

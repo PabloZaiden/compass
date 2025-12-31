@@ -1,0 +1,14 @@
+{
+  "prompts": [
+    {
+      "id": "explain_repo",
+      "prompt": "Describe this repo.",
+      "expected": "This repo is a console tool to benchmark coding agents across prompts against expected outcomes."
+    },
+    {
+      "id": "check_language",
+      "prompt": "Identify the primary programming language used in this repository.",
+      "expected": "The primary programming language used in this repository is TypeScript."
+    }
+  ]
+}

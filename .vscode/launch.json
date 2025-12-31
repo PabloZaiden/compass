@@ -2,64 +2,67 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (github copilot)",
-            "type": "coreclr",
+            "type": "bun",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Compass/bin/Debug/net9.0/Compass.dll",
+            "name": "Debug GitHub Copilot",
+            "program": "${workspaceFolder}/src/index.ts",
             "args": [
-                "--repo-path",".",
-                "--config", "./Compass/config/sample-config.json",
-                "--runs", "1",
-                "--agent-type", "githubcopilot",
-                "--model", "gpt-5.1-codex-mini",
-                "--eval-model", "gpt-5-mini",
-                "--output", "detailed",
-                "--verbose"
-            ],
+                "--repo",
+                ".",
+                 "--fixture",
+                 "${workspaceFolder}/src/sample-fixture.json",
+                 "--model",
+                 "gpt-5-mini",
+                 "--eval-model",
+                 "gpt-5-mini",
+                 "--agent-type",
+                 "GitHubCopilot"
+            ], // Arguments for your script
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "stopAtEntry": false
+            "runtimeArgs": [], // Arguments for the 'bun' runtime itself
+            "stopOnEntry": false
         },
         {
-            "name": ".NET Core Launch (codex)",
-            "type": "coreclr",
+            "type": "bun",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Compass/bin/Debug/net9.0/Compass.dll",
+            "name": "Debug codex",
+            "program": "${workspaceFolder}/src/index.ts",
             "args": [
-                "--repo-path",".",
-                "--config", "./Compass/config/sample-config.json",
-                "--runs", "1",
-                "--agent-type", "codex",
-                "--model", "gpt-5.1-codex-mini",
-                "--eval-model", "gpt-5-mini",
-                "--output", "detailed",
-                "--verbose"
-            ],
+                "--repo",
+                ".",
+                 "--fixture",
+                 "${workspaceFolder}/src/sample-fixture.json",
+                 "--model",
+                 "gpt-5.1-codex-mini",
+                 "--eval-model",
+                 "gpt-5.1-codex-mini",
+                 "--agent-type",
+                 "Codex"
+            ], // Arguments for your script
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "stopAtEntry": false
+            "runtimeArgs": [], // Arguments for the 'bun' runtime itself
+            "stopOnEntry": false
         },
         {
-            "name": ".NET Core Launch (opencode)",
-            "type": "coreclr",
+            "type": "bun",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Compass/bin/Debug/net9.0/Compass.dll",
+            "name": "Debug OpenCode",
+            "program": "${workspaceFolder}/src/index.ts",
             "args": [
-                "--repo-path",".",
-                "--config", "./Compass/config/sample-config.json",
-                "--runs", "1",
-                "--agent-type", "opencode",
-                "--model", "opencode/gpt-5-nano",
-                "--eval-model", "opencode/gpt-5-nano",
-                "--output", "detailed",
-                "--verbose"
-            ],
+                "--repo",
+                ".",
+                 "--fixture",
+                 "${workspaceFolder}/src/sample-fixture.json",
+                 "--model",
+                 "opencode/big-pickle",
+                 "--eval-model",
+                 "opencode/big-pickle",
+                 "--agent-type",
+                 "OpenCode"
+            ], // Arguments for your script
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
+            "runtimeArgs": [], // Arguments for the 'bun' runtime itself
+            "stopOnEntry": false
+        }
     ]
 }
