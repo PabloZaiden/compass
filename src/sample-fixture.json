@@ -2,8 +2,8 @@
   "prompts": [
     {
       "id": "explain_repo",
-      "prompt": "Summarize what this repository does in 2-3 sentences.",
-      "expected": "The repository is a TypeScript project that provides a framework for evaluating AI agents using various models and prompts. It includes functionality for running evaluations, logging results, and managing different agent types."
+      "prompt": "Describe this repo.",
+      "expected": "This repo is a console tool to benchmark coding agents across prompts against expected outcomes."
     },
     {
       "id": "check_language",

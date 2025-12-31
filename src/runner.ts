@@ -51,14 +51,13 @@ export class Runner {
 
                 throwIfStopOnError(config.stopOnError, agentOutput);
 
-                const tempResultFile = `${tempPath}/${iterationId}-result.json`;
-
-                logger.trace(`Writing iteration result to temporary file ${tempResultFile}`);
-                await Bun.write(tempResultFile, JSON.stringify(agentOutput, null, 2));
+                const agentOutputJson = JSON.stringify(agentOutput, null, 2);
+                logger.trace(`Agent output: ${agentOutputJson}`);
 
                 const evalPrompt = evaluator
-                    .replace("{{RESULT_FILE_PATH}}", tempResultFile)
-                    .replace("{{EXPECTED}}", prompt.expected);
+                    .replace("{{ORIGINAL_PROMPT}}", prompt.prompt)
+                    .replace("{{EXPECTED}}", prompt.expected)
+                    .replace("{{RESULT}}", agentOutputJson);
 
                 logger.trace(`Evaluating agent output for prompt ${prompt.id} with model ${config.evalModel}`);
                 const evalOutput = await evaluationAgent.execute(evalPrompt, config.evalModel, tempPath);

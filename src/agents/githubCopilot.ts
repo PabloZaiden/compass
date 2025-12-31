@@ -21,15 +21,19 @@ export class GitHubCopilot extends Agent {
             "--add-dir", workingDirectory, 
             "-p", prompt);
 
+        logger.trace("GitHub Copilot stdOut: " + processOutput.stdOut);
+        logger.trace("GitHub Copilot stdErr: " + processOutput.stdErr);
+        logger.trace("GitHub Copilot exitCode: " + processOutput.exitCode);
+
         logger.trace("Collecting git diff after agent execution");
         
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
 
         return {
-            stdOut: processOutput.stdOut,
-            stdErr: processOutput.stdErr,
+            stdOut: processOutput.stdOut.trim(),
+            stdErr: processOutput.stdErr.trim(),
             exitCode: processOutput.exitCode,
-            gitDiff: diff.stdOut
+            gitDiff: diff.stdOut.trim()
         };
     }
 

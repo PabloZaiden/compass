@@ -10,7 +10,7 @@
                 "--repo",
                 ".",
                  "--fixture",
-                 "${workspaceFolder}/src/fixture.json",
+                 "${workspaceFolder}/src/sample-fixture.json",
                  "--model",
                  "gpt-4.1",
                  "--eval-model",
