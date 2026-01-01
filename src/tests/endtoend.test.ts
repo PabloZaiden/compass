@@ -3,6 +3,7 @@ import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, type Fixture } from "../models";
 import { Runner } from "../runner";
 import type { Config } from "../config/config";
+import { anonymous } from "./helpers";
 
 async function endToEnd(type: AgentTypes) {
   const model = defaultModels[type];
@@ -31,7 +32,7 @@ async function endToEnd(type: AgentTypes) {
     repoPath: ".",
     stopOnError: true,
     useCache: false,
-    allowFullAccess: false,
+    allowFullAccess: true,
   };
 
   const runner = new Runner();
@@ -66,7 +67,7 @@ describe(AgentTypes[AgentTypes.Codex], () => {
   }, basicTestOptions);
 });
 
-describe(AgentTypes[AgentTypes.OpenCode], () => {
+describe(anonymous(AgentTypes[AgentTypes.OpenCode]), () => {
   test("Self end-to-end test", async () => {
     await endToEnd(AgentTypes.OpenCode);
   }, basicTestOptions);
