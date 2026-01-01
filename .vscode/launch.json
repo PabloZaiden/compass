@@ -11,10 +11,6 @@
                 ".",
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
-                 "--model",
-                 "gpt-5-mini",
-                 "--eval-model",
-                 "gpt-5-mini",
                  "--agent-type",
                  "GitHubCopilot"
             ], // Arguments for your script
@@ -32,10 +28,6 @@
                 ".",
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
-                 "--model",
-                 "gpt-5.1-codex-mini",
-                 "--eval-model",
-                 "gpt-5.1-codex-mini",
                  "--agent-type",
                  "Codex"
             ], // Arguments for your script
@@ -53,10 +45,6 @@
                 ".",
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
-                 "--model",
-                 "opencode/big-pickle",
-                 "--eval-model",
-                 "opencode/big-pickle",
                  "--agent-type",
                  "OpenCode"
             ], // Arguments for your script

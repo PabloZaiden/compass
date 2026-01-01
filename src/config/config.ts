@@ -6,13 +6,13 @@ export interface OptionalConfig {
     outputMode: OutputMode;
     useCache: boolean;
     stopOnError: boolean;
+    model: string;
+    evalModel: string;
 }
 
 export interface RequiredConfig {
     repoPath: string;
     fixture: string;
-    model: string;
-    evalModel: string;
     agentType: AgentTypes;
 }
 

@@ -7,7 +7,7 @@ Console tool to benchmark Coding agents using different agents and models across
 - GitHub Copilot
 - OpenAI Codex
 - OpenCode
-- Anthropic Claude (coming soon)
+- Claude Code (coming soon)
 
 ## Requirements
 
@@ -26,8 +26,6 @@ Console tool to benchmark Coding agents using different agents and models across
 ```bash
 bun src/index.ts --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
-  --model "gpt-5.1-codex-mini" \
-  --eval-model "gpt-5.1-codex-mini" \
   --agent-type "GitHubCopilot"
 ```
 
@@ -47,9 +45,7 @@ docker run --rm -ti \
   ghcr.io/pablozaiden/compass:latest \
   --repo /target-repo \
   --fixture /fixture.json \
-  --agent-type GitHubCopilot \
-  --model gpt-5.1-codex-mini \
-  --eval-model gpt-5.1-codex-mini
+  --agent-type GitHubCopilot
 ```
 
 Mount your fixture as `/fixture.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands.
@@ -64,9 +60,7 @@ docker run --rm -ti \
   compass \
   --repo /target-repo \
   --fixture /fixture.json \
-  --agent-type GitHubCopilot \
-  --model gpt-5.1-codex-mini \
-  --eval-model gpt-5.1-codex-mini
+  --agent-type GitHubCopilot
 ```
 
 

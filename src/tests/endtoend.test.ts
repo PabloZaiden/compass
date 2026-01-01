@@ -1,10 +1,12 @@
 import { describe, test, expect } from "bun:test";
-import { AgentTypes } from "../agents/factory";
+import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, type Fixture } from "../models";
 import { Runner } from "../runner";
 import type { Config } from "../config/config";
 
-async function endToEnd(type: AgentTypes, model: string) {
+async function endToEnd(type: AgentTypes) {
+  const model = defaultModels[type];
+
   const fixtureFileName = "./src/sample-fixture.json";
   const fixtureFile = Bun.file(fixtureFileName);
 
@@ -53,18 +55,24 @@ const basicTestOptions = {
 
 describe(AgentTypes[AgentTypes.GitHubCopilot], () => {
   test("Self end-to-end test", async () => {
-    await endToEnd(AgentTypes.GitHubCopilot, "gpt-5-mini");
+    await endToEnd(AgentTypes.GitHubCopilot);
   }, basicTestOptions);
 });
 
 describe(AgentTypes[AgentTypes.Codex], () => {
   test("Self end-to-end test", async () => {
-    await endToEnd(AgentTypes.Codex, "gpt-5.1-codex-mini");
+    await endToEnd(AgentTypes.Codex);
   }, basicTestOptions);
 });
 
 describe(AgentTypes[AgentTypes.OpenCode], () => {
   test("Self end-to-end test", async () => {
-    await endToEnd(AgentTypes.OpenCode, "opencode/big-pickle");
+    await endToEnd(AgentTypes.OpenCode);
+  }, basicTestOptions);
+});
+
+describe(AgentTypes[AgentTypes.ClaudeCode], () => {
+  test("Self end-to-end test", async () => {
+    await endToEnd(AgentTypes.ClaudeCode);
   }, basicTestOptions);
 });
