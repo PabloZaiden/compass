@@ -7,8 +7,17 @@
             "command": "docker build -t compass .",
         },
         {
+            "label": "bun install",
+            "type": "shell",
+            "command": "bun install",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            }
+        },
+        {
             "label": "bun build",
             "type": "shell",
+            "dependsOn": "bun install",
             "command": "bun build --compile --outfile=/tmp/compass ${workspaceFolder}/src/index.ts; mkdir -p ${workspaceFolder}/out; mv /tmp/compass ${workspaceFolder}/out/compass",
             "options": {
                 "cwd": "/tmp"
