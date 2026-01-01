@@ -8,6 +8,7 @@ export interface OptionalConfig {
     stopOnError: boolean;
     model: string;
     evalModel: string;
+    allowFullAccess: boolean;
 }
 
 export interface RequiredConfig {

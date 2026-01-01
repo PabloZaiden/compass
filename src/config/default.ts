@@ -5,6 +5,7 @@ export interface PartialConfig {
     outputMode: OutputMode;
     useCache: boolean;
     stopOnError: boolean;
+    allowFullAccess: boolean;
 }
 
 
@@ -14,5 +15,6 @@ export function defaultConfigValues(): PartialConfig{
         outputMode: OutputMode.Aggregated,
         useCache: false,
         stopOnError: true,
+        allowFullAccess: true,
     }
 }

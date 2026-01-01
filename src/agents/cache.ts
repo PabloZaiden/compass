@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import type { AgentOutput } from "../models";
 import { logger, run } from "../utils";
-import { Agent } from "./agent";
+import { Agent, type AgentOptions } from "./agent";
 import path from "path";
 import { tmpdir } from "os";
 import { mkdir } from "fs/promises";
@@ -14,8 +14,8 @@ export class Cache extends Agent {
 
     private cacheKeyPrefix: string;
 
-    constructor(agent: Agent, cacheKeyPrefix = "cache") {
-        super(`${agent.name} (Cached)`);
+    constructor(agent: Agent, options: AgentOptions, cacheKeyPrefix = "cache") {
+        super(`${agent.name} (Cached)`, options);
 
         this.innerAgent = agent;
         this.cacheKeyPrefix = cacheKeyPrefix;

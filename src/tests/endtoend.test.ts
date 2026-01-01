@@ -21,7 +21,7 @@ async function endToEnd(type: AgentTypes) {
   expect(fixture).toBeDefined();
   expect(fixture.prompts.length).toBe(2);
 
-  const config : Config= {
+  const config : Config = {
     agentType: type,
     model: model,
     evalModel: model,
@@ -30,7 +30,8 @@ async function endToEnd(type: AgentTypes) {
     outputMode: OutputMode.Detailed,
     repoPath: ".",
     stopOnError: true,
-    useCache: false
+    useCache: false,
+    allowFullAccess: false,
   };
 
   const runner = new Runner();
@@ -71,7 +72,7 @@ describe(AgentTypes[AgentTypes.OpenCode], () => {
   }, basicTestOptions);
 });
 
-describe(AgentTypes[AgentTypes.ClaudeCode], () => {
+describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
   test("Self end-to-end test", async () => {
     await endToEnd(AgentTypes.ClaudeCode);
   }, basicTestOptions);

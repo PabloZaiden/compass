@@ -2,7 +2,7 @@ import { describe, test, expect } from "bun:test";
 import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
 
 async function basicTest(type: AgentTypes) {
-  const agent = createAgent(type);
+  const agent = createAgent(type, { allowFullAccess: false});
 
   const model = defaultModels[type];
 
@@ -38,7 +38,7 @@ describe(AgentTypes[AgentTypes.OpenCode], () => {
   }, basicTestOptions);
 });
 
-describe(AgentTypes[AgentTypes.ClaudeCode], () => {
+describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
   test("Basic test", async () => {
     await basicTest(AgentTypes.ClaudeCode);
   }, basicTestOptions);

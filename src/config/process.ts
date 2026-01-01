@@ -36,6 +36,7 @@ export function fromProcess(args: string[]): Config {
     const useCache = (getArgFromCliOrEnv(args, "use-cache", false) || defaultConfig.useCache.toString()) === "true";
     const agentTypeStr = getArgFromCliOrEnv(args, "agent-type")!;
     const stopOnError = (getArgFromCliOrEnv(args, "stop-on-error", false) || defaultConfig.stopOnError.toString()) === "true";
+    const allowFullAccess = (getArgFromCliOrEnv(args, "allow-full-access", false) || defaultConfig.allowFullAccess.toString()) === "true";
     let model = getArgFromCliOrEnv(args, "model", false);
     let evalModel = getArgFromCliOrEnv(args, "eval-model", false);
     
@@ -74,6 +75,7 @@ export function fromProcess(args: string[]): Config {
         model,
         evalModel,
         agentType,
-        stopOnError
+        stopOnError,
+        allowFullAccess,
     }};
 }

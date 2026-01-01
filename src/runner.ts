@@ -7,6 +7,7 @@ import { Classification } from "./models";
 import { promises as fsPromises } from "fs";
 import { createAgent } from "./agents/factory";
 import type { Config } from "./config/config";
+import type { AgentOptions } from "./agents/agent";
 
 export class Runner {
     async run(config: Config): Promise<RunnerResult> {
@@ -19,10 +20,14 @@ export class Runner {
 
         const iterationResults: IterationResult[] = [];
 
-        const evaluationAgent = createAgent(config.agentType);
+        const agentOptions : AgentOptions = {
+            allowFullAccess: config.allowFullAccess,            
+        }
+
+        const evaluationAgent = createAgent(config.agentType, agentOptions);
         evaluationAgent.init();
 
-        const agent = createAgent(config.agentType);
+        const agent = createAgent(config.agentType, agentOptions);
         agent.init();
 
         logger.info(`Starting iterations for ${fixture.prompts.length} prompts, ${config.iterationCount} times each`);
@@ -40,7 +45,7 @@ export class Runner {
                 logger.trace(`Creating temporary working directory at ${tempPath}`);
                 await copyDirectory(config.repoPath, tempPath);
 
-                const iterationAgent = config.useCache ? new Cache(agent, iterationIndex.toString()) : agent;
+                const iterationAgent = config.useCache ? new Cache(agent, agentOptions, iterationIndex.toString()) : agent;
 
                 logger.trace(`Resetting repository to initial state`);
                 throwIfStopOnError(config.stopOnError, await run(tempPath, "git", "reset", "--hard"));

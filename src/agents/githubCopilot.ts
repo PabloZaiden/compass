@@ -1,23 +1,23 @@
 import type { AgentOutput } from "../models";
 import { logger, run } from "../utils";
-import { Agent } from "./agent";
+import { Agent, type AgentOptions } from "./agent";
 
 export class GitHubCopilot extends Agent {
-    constructor() {
-        super("GitHub Copilot");
+    constructor(options: AgentOptions) {
+        super("GitHub Copilot", options);
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
         logger.info(`Executing GitHub Copilot with model ${model} on prompt ${prompt}`);
         
+        const allowAllParameters = this.options.allowFullAccess ? ["--allow-all-tools", "--allow-all-paths"] : [];
         const processOutput = await run(
             workingDirectory,
             "copilot",
             "--silent", 
             "--no-color", 
             "--model", model, 
-            "--allow-all-tools", 
-            "--allow-all-paths", 
+            ...allowAllParameters,
             "--add-dir", workingDirectory, 
             "-p", prompt);
 

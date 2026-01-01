@@ -1,10 +1,10 @@
 import type { AgentOutput } from "../models";
 import { logger, run } from "../utils";
-import { Agent } from "./agent";
+import { Agent, type AgentOptions } from "./agent";
 
 export class ClaudeCode extends Agent {
-    constructor() {
-        super("ClaudeCode");
+    constructor(options: AgentOptions) {
+        super("ClaudeCode", options);
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {

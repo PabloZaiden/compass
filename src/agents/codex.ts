@@ -1,21 +1,22 @@
 import type { AgentOutput } from "../models";
 import { logger, run } from "../utils";
-import { Agent } from "./agent";
+import { Agent, type AgentOptions } from "./agent";
 
 export class Codex extends Agent {
-    constructor() {
-        super("Codex");
+    constructor(options: AgentOptions) {
+        super("Codex", options);
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
         logger.info(`Executing Codex with model ${model} on prompt ${prompt}`);
         
+        const sandboxParameters = this.options.allowFullAccess ? ["--sandbox", "danger-full-access"] : [];
         const processOutput = await run(
             workingDirectory,
             "codex",
             "exec",
             "--model", model, 
-            "--sandbox", "danger-full-access",
+            ...sandboxParameters,
             prompt);
 
         logger.trace("Codex stdOut: " + processOutput.stdOut);
