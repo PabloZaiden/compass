@@ -6,9 +6,6 @@
 		"ghcr.io/devcontainers/features/azure-cli:latest": {},
 		"ghcr.io/devcontainers/features/docker-outside-of-docker": {}
 	},
-	"containerEnv": {
-		//"PATH": "/home/vscode/.local/bin:/home/vscode/.bun/bin:/home/vscode/.bun/global/bin${containerEnv:PATH}"
-	},
 	"postCreateCommand": "./docker/install-prerequisites.sh",
 	"customizations": {
 		"vscode": {
