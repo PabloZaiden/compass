@@ -21,9 +21,7 @@ jobs:
           echo "$HOME/.bun/global/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        working-directory: src
         run: bun install
 
       - name: Run anonymous tests
-        working-directory: src
         run: bun test --test-name-pattern "anonymous"
