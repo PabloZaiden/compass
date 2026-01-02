@@ -11,7 +11,7 @@
                 ".",
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
-                 "--agent-type",
+                 "--agent",
                  "GitHubCopilot"
             ], // Arguments for your script
             "cwd": "${workspaceFolder}",
@@ -28,7 +28,7 @@
                 ".",
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
-                 "--agent-type",
+                 "--agent",
                  "Codex"
             ], // Arguments for your script
             "cwd": "${workspaceFolder}",
@@ -45,7 +45,7 @@
                 ".",
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
-                 "--agent-type",
+                 "--agent",
                  "OpenCode"
             ], // Arguments for your script
             "cwd": "${workspaceFolder}",
