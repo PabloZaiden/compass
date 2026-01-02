@@ -1,5 +1,5 @@
 import { AgentTypes, defaultModels } from "../agents/factory";
-import { OutputMode, parseEnum } from "../models";
+import { OutputMode, parseEnum, values } from "../models";
 import * as fs from "fs";
 import type { Config } from "./config";
 import { defaultConfigValues } from "./default";
@@ -54,7 +54,8 @@ export function fromProcess(args: string[]): Config {
 
     const logLevel = parseEnum(LogLevel, logLevelStr);
     if (logLevel === undefined) {
-        throw new Error(`Invalid log level: ${logLevelStr}`);
+        const validLevels = values(LogLevel).join(", ");
+        throw new Error(`Invalid log level: ${logLevelStr}. Valid levels are: ${validLevels}`);
     }
     
     if (model === undefined) {
