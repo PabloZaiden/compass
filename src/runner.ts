@@ -32,8 +32,11 @@ export class Runner {
 
         logger.info(`Starting iterations for ${fixture.prompts.length} prompts, ${config.iterationCount} times each`);
 
+        const promptCount = fixture.prompts.length;
+        let currentPromptIndex = 0;
         for (const prompt of fixture.prompts) {
-            logger.info(`Running prompt ${prompt.id}`);
+            currentPromptIndex++;
+            logger.info(`Running prompt ${prompt.id} - (${currentPromptIndex} of ${promptCount})`);
 
             for (let iterationIndex = 0; iterationIndex < config.iterationCount; iterationIndex++) {
                 const iterationId = crypto.randomUUID();
