@@ -36,7 +36,7 @@ export async function fromProcess(args: string[]): Promise<Config> {
     const outputModeStr = getArgFromCliOrEnv(args, "output-mode", false) || OutputMode[defaultConfig.outputMode];
     const logLevelStr = getArgFromCliOrEnv(args, "log-level", false) || LogLevel[defaultConfig.logLevel];
     const useCache = (getArgFromCliOrEnv(args, "use-cache", false) || defaultConfig.useCache.toString()) === "true";
-    const agentTypeStr = getArgFromCliOrEnv(args, "agent-type")!;
+    const agentTypeStr = getArgFromCliOrEnv(args, "agent")!;
     const stopOnError = (getArgFromCliOrEnv(args, "stop-on-error", false) || defaultConfig.stopOnError.toString()) === "true";
     const allowFullAccess = (getArgFromCliOrEnv(args, "allow-full-access", false) || defaultConfig.allowFullAccess.toString()) === "true";
     let model = getArgFromCliOrEnv(args, "model", false);

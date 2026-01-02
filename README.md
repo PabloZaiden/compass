@@ -26,7 +26,7 @@ Console tool to benchmark Coding agents using different agents and models across
 ```bash
 bun src/index.ts --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
-  --agent-type "GitHubCopilot"
+  --agent "GitHubCopilot"
 ```
 
 Every option can be specified via command-line arguments or environment variables. Command-line arguments should use `--` prefix and camel-case names, while environment variables should use `COMPASS_` prefix and uppercase with underscores.
@@ -45,7 +45,7 @@ docker run --rm -ti \
   ghcr.io/pablozaiden/compass:latest \
   --repo /target-repo \
   --fixture /fixture.json \
-  --agent-type GitHubCopilot
+  --agent GitHubCopilot
 ```
 
 Mount your fixture as `/fixture.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands.
@@ -60,7 +60,7 @@ docker run --rm -ti \
   compass \
   --repo /target-repo \
   --fixture /fixture.json \
-  --agent-type GitHubCopilot
+  --agent GitHubCopilot
 ```
 
 
