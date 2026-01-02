@@ -20,9 +20,9 @@ export class Runner {
 
         const iterationResults: IterationResult[] = [];
 
-        const agentOptions : AgentOptions = {
+        const agentOptions: AgentOptions = {
             allowFullAccess: config.allowFullAccess,            
-        }
+        };
 
         const evaluationAgent = createAgent(config.agentType, agentOptions);
         evaluationAgent.init();
