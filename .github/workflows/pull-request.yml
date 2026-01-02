@@ -25,4 +25,5 @@ jobs:
         run: bun install
 
       - name: Run anonymous tests
+        working-directory: src
         run: bun test --test-name-pattern "anonymous"
