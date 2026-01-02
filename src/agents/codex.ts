@@ -8,7 +8,7 @@ export class Codex extends Agent {
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.info(`Executing Codex with model ${model} on prompt ${prompt}`);
+        logger.trace(`Executing Codex with model ${model} on prompt ${prompt}`);
         
         const sandboxParameters = this.options.allowFullAccess ? ["--sandbox", "danger-full-access"] : [];
         const processOutput = await run(

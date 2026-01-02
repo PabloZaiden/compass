@@ -8,7 +8,7 @@ export class OpenCode extends Agent {
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.info(`Executing OpenCode with model ${model} on prompt ${prompt}`);
+        logger.trace(`Executing OpenCode with model ${model} on prompt ${prompt}`);
         
         const processOutput = await run(
             workingDirectory,

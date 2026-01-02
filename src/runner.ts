@@ -21,7 +21,7 @@ export class Runner {
         const iterationResults: IterationResult[] = [];
 
         const agentOptions: AgentOptions = {
-            allowFullAccess: config.allowFullAccess,            
+            allowFullAccess: config.allowFullAccess,
         };
 
         const evaluationAgent = createAgent(config.agentType, agentOptions);
@@ -32,8 +32,11 @@ export class Runner {
 
         logger.info(`Starting iterations for ${fixture.prompts.length} prompts, ${config.iterationCount} times each`);
 
+        const promptCount = fixture.prompts.length;
+        let currentPromptIndex = 0;
         for (const prompt of fixture.prompts) {
-            logger.info(`Running prompt ${prompt.id}`);
+            currentPromptIndex++;
+            logger.info(`[${currentPromptIndex} / ${promptCount}] Running prompt ${prompt.id}`);
 
             for (let iterationIndex = 0; iterationIndex < config.iterationCount; iterationIndex++) {
                 const iterationId = crypto.randomUUID();
@@ -113,6 +116,11 @@ export class Runner {
             };
         });
 
+        logger.info(`Completed all iterations.`);
+        for (const aggResult of aggregatedResults) {
+            logger.info(`Average Points for prompt "${aggResult.promptId}": ${aggResult.averagePoints.toFixed(2)}`);
+        }
+
         return {
             iterationResults,
             aggregatedResults
@@ -139,7 +147,7 @@ export class Runner {
                 return 0;
         }
     }
-} 
+}
 
 function throwIfStopOnError(stopOnError: boolean, processOutput: ProcessOutput) {
     if (stopOnError && processOutput.exitCode !== 0) {
