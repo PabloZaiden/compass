@@ -1,8 +1,6 @@
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
 
-export const anonymous = (name: string) => `[anonymous] ${name}`;
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const rootDir = dirname(__dirname);
