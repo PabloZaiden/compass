@@ -1,9 +1,9 @@
 import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, parseEnum, values } from "../models";
-import * as fs from "fs";
 import type { Config } from "./config";
 import { defaultConfigValues } from "./default";
 import { LogLevel } from "../utils";
+import { existsSync } from "node:fs";
 
 function getArgFromCliOrEnv(args: string[], name: string, required = true): string | undefined {
     
@@ -27,7 +27,7 @@ function getArgFromCliOrEnv(args: string[], name: string, required = true): stri
     return result;
 }
 
-export function fromProcess(args: string[]): Config {
+export async function fromProcess(args: string[]): Promise<Config> {
     const defaultConfig = defaultConfigValues();
 
     const repoPath = getArgFromCliOrEnv(args, "repo")!;
@@ -66,11 +66,11 @@ export function fromProcess(args: string[]): Config {
         evalModel = defaultModels[agentType];
     }
     
-    if (!fs.existsSync(repoPath)) {
+    if (!existsSync(repoPath)) {
         throw new Error(`Repository path does not exist: ${repoPath}`);
     }
 
-    if (!fs.existsSync(fixture)) {
+    if (!await Bun.file(fixture).exists()) {
         throw new Error(`Fixture file does not exist: ${fixture}`);
     }
 

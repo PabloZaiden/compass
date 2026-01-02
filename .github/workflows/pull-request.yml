@@ -24,4 +24,4 @@ jobs:
         run: bun install
 
       - name: Run anonymous tests
-        run: bun test --test-name-pattern "anonymous"
+        run: bun run test:anonymous
