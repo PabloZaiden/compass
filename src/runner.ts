@@ -21,7 +21,7 @@ export class Runner {
         const iterationResults: IterationResult[] = [];
 
         const agentOptions: AgentOptions = {
-            allowFullAccess: config.allowFullAccess,            
+            allowFullAccess: config.allowFullAccess,
         };
 
         const evaluationAgent = createAgent(config.agentType, agentOptions);
@@ -119,7 +119,7 @@ export class Runner {
         logger.info(`Completed all iterations.`);
         for (const aggResult of aggregatedResults) {
             logger.info(`Average Points for prompt "${aggResult.promptId}": ${aggResult.averagePoints.toFixed(2)}`);
-        }   
+        }
 
         return {
             iterationResults,
@@ -147,7 +147,7 @@ export class Runner {
                 return 0;
         }
     }
-} 
+}
 
 function throwIfStopOnError(stopOnError: boolean, processOutput: ProcessOutput) {
     if (stopOnError && processOutput.exitCode !== 0) {
