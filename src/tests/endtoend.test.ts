@@ -5,6 +5,7 @@ import { Runner } from "../runner";
 import type { Config } from "../config/config";
 import { anonymous, repoDir, rootDir } from "./helpers";
 import path from "path";
+import { LogLevel } from "../utils";
 
 async function endToEnd(type: AgentTypes) {
   const model = defaultModels[type];
@@ -34,6 +35,7 @@ async function endToEnd(type: AgentTypes) {
     stopOnError: true,
     useCache: false,
     allowFullAccess: true,
+    logLevel: LogLevel.Trace
   };
 
   const runner = new Runner();
