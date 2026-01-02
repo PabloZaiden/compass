@@ -11,7 +11,7 @@ export abstract class Agent {
     name: string = "Agent";
     options: AgentOptions;
 
-    constructor(name : string, options: AgentOptions) {
+    constructor(name: string, options: AgentOptions) {
         this.name = name;
         this.options = options;
     }
