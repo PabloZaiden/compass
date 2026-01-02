@@ -1,16 +1,20 @@
-import type { Agent } from "./agent";
+import type { Agent, AgentOptions } from "./agent";
 import { Codex } from "./codex";
 import { GitHubCopilot } from "./githubCopilot";
 import { OpenCode } from "./opencode";
+import { ClaudeCode } from "./claudeCode";
 
-export function createAgent(type: AgentTypes): Agent {
+export function createAgent(type: AgentTypes, options: AgentOptions): Agent {
     switch (type) {
         case AgentTypes.GitHubCopilot:
-            return new GitHubCopilot();
+            return new GitHubCopilot(options);
         case AgentTypes.Codex:
-            return new Codex();
+            return new Codex(options);
         case AgentTypes.OpenCode:
-            return new OpenCode();
+            return new OpenCode(options);
+        case AgentTypes.ClaudeCode:
+            throw new Error("ClaudeCode agent is not yet supported.");
+            return new ClaudeCode(options);
         default:
             throw new Error(`Unknown agent type: ${type}`);
     }
@@ -19,5 +23,13 @@ export function createAgent(type: AgentTypes): Agent {
 export enum AgentTypes {
     GitHubCopilot,
     Codex,
-    OpenCode
+    OpenCode,
+    ClaudeCode
 }
+
+export const defaultModels: { [key in AgentTypes]: string } = {
+    [AgentTypes.GitHubCopilot]: "gpt-5-mini",
+    [AgentTypes.Codex]: "gpt-5.1-codex-mini",
+    [AgentTypes.OpenCode]: "opencode/big-pickle",
+    [AgentTypes.ClaudeCode]: "sonnet"
+};

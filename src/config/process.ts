@@ -1,4 +1,4 @@
-import { AgentTypes } from "../agents/factory";
+import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, parseEnum } from "../models";
 import * as fs from "fs";
 import type { Config } from "./config";
@@ -34,10 +34,11 @@ export function fromProcess(args: string[]): Config {
     const iterationCount = parseInt(getArgFromCliOrEnv(args, "iterations", false) || defaultConfig.iterationCount.toString(), 10);
     const outputModeStr = getArgFromCliOrEnv(args, "output-mode", false) || OutputMode[defaultConfig.outputMode];
     const useCache = (getArgFromCliOrEnv(args, "use-cache", false) || defaultConfig.useCache.toString()) === "true";
-    const model = getArgFromCliOrEnv(args, "model")!;
-    const evalModel = getArgFromCliOrEnv(args, "eval-model")!;
     const agentTypeStr = getArgFromCliOrEnv(args, "agent-type")!;
     const stopOnError = (getArgFromCliOrEnv(args, "stop-on-error", false) || defaultConfig.stopOnError.toString()) === "true";
+    const allowFullAccess = (getArgFromCliOrEnv(args, "allow-full-access", false) || defaultConfig.allowFullAccess.toString()) === "true";
+    let model = getArgFromCliOrEnv(args, "model", false);
+    let evalModel = getArgFromCliOrEnv(args, "eval-model", false);
     
     const agentType = parseEnum(AgentTypes, agentTypeStr);
     if (agentType === undefined) {
@@ -47,6 +48,14 @@ export function fromProcess(args: string[]): Config {
     const outputMode = parseEnum(OutputMode, outputModeStr);
     if (outputMode === undefined) {
         throw new Error(`Invalid output mode: ${outputModeStr}`);
+    }
+
+    if (model === undefined) {
+        model = defaultModels[agentType];
+    }
+
+    if (evalModel === undefined) {
+        evalModel = defaultModels[agentType];
     }
     
     if (!fs.existsSync(repoPath)) {
@@ -66,6 +75,7 @@ export function fromProcess(args: string[]): Config {
         model,
         evalModel,
         agentType,
-        stopOnError
+        stopOnError,
+        allowFullAccess,
     }};
 }

@@ -1,8 +1,11 @@
 import { describe, test, expect } from "bun:test";
-import { AgentTypes, createAgent } from "../agents/factory";
+import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
+import { anonymous } from "./helpers";
 
-async function basicTest(type: AgentTypes, model: string) {
-  const agent = createAgent(type);
+async function basicTest(type: AgentTypes) {
+  const agent = createAgent(type, { allowFullAccess: false});
+
+  const model = defaultModels[type];
 
   const output = await agent.execute(`Explain what this project is about`, model, ".");
 
@@ -20,18 +23,24 @@ const basicTestOptions = {
 
 describe(AgentTypes[AgentTypes.GitHubCopilot], () => {
   test("Basic test", async () => {
-    await basicTest(AgentTypes.GitHubCopilot, "gpt-5-mini");
+    await basicTest(AgentTypes.GitHubCopilot);
   }, basicTestOptions);
 });
 
 describe(AgentTypes[AgentTypes.Codex], () => {
   test("Basic test", async () => {
-    await basicTest(AgentTypes.Codex, "gpt-5.1-codex-mini");
+    await basicTest(AgentTypes.Codex);
   }, basicTestOptions);
 });
 
-describe(AgentTypes[AgentTypes.OpenCode], () => {
+describe(anonymous(AgentTypes[AgentTypes.OpenCode]), () => {
   test("Basic test", async () => {
-    await basicTest(AgentTypes.OpenCode, "opencode/big-pickle");
+    await basicTest(AgentTypes.OpenCode);
+  }, basicTestOptions);
+});
+
+describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
+  test("Basic test", async () => {
+    await basicTest(AgentTypes.ClaudeCode);
   }, basicTestOptions);
 });
