@@ -65,10 +65,13 @@ export function values<T>(type: T): string[] {
 
 export function parseEnum<T>(type: T, value: string): T[keyof T] | undefined {
     let keys : string[] = values(type);
+    const lowerValue = value.toLowerCase();
 
-    if (!keys.includes(value)) {
+    const matchedKey = keys.find(k => k.toLowerCase() === lowerValue);
+    
+    if (!matchedKey) {
         return undefined;
     }
 
-    return (type as any)[value];
+    return (type as any)[matchedKey];
 }

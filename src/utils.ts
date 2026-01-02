@@ -2,10 +2,10 @@ import { Logger } from "tslog";
 import type { ProcessOutput } from "./models";
 
 /// Executes a command in a given working directory and returns the process output.
-export async function run(workingDirectory : string, ...commandWithArgs: string[]) : Promise<ProcessOutput> {
+export async function run(workingDirectory: string, ...commandWithArgs: string[]): Promise<ProcessOutput> {
     const commandForLogging = commandWithArgs[0] + " " + commandWithArgs.slice(1).map(arg => escapeArg(arg)).join(" ");
     logger.trace(`Running command: ${commandForLogging} in directory: ${workingDirectory}`);
-    
+
     const process = Bun.spawn({
         cmd: commandWithArgs,
         cwd: workingDirectory,
@@ -42,4 +42,23 @@ export function escapeArg(arg: string): string {
 }
 
 
-export const logger = new Logger();
+export const logger = new Logger({
+    type: "pretty",
+    overwrite: {
+        transportFormatted: (logMetaMarkup, logArgs, logErrors) => {
+            // Everything pretty goes to stderr, never stdout
+            const line = `${logMetaMarkup}${logArgs.join(" ")}${logErrors.join("")}\n`;
+            process.stderr.write(line);
+        },
+    },
+});
+
+export enum LogLevel {
+    Silly = 0,
+    Trace = 1,
+    Debug = 2,
+    Info = 3,
+    Warn = 4,
+    Error = 5,
+    Fatal = 6
+}

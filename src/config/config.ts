@@ -1,5 +1,6 @@
 import { AgentTypes } from "../agents/factory";
 import { OutputMode } from "../models";
+import type { LogLevel } from "../utils";
 
 export interface OptionalConfig {
     iterationCount: number;
@@ -9,6 +10,7 @@ export interface OptionalConfig {
     model: string;
     evalModel: string;
     allowFullAccess: boolean;
+    logLevel: LogLevel;
 }
 
 export interface RequiredConfig {

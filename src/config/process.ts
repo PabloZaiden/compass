@@ -1,8 +1,9 @@
 import { AgentTypes, defaultModels } from "../agents/factory";
-import { OutputMode, parseEnum } from "../models";
+import { OutputMode, parseEnum, values } from "../models";
 import * as fs from "fs";
 import type { Config } from "./config";
 import { defaultConfigValues } from "./default";
+import { LogLevel } from "../utils";
 
 function getArgFromCliOrEnv(args: string[], name: string, required = true): string | undefined {
     
@@ -33,6 +34,7 @@ export function fromProcess(args: string[]): Config {
     const fixture = getArgFromCliOrEnv(args, "fixture")!;
     const iterationCount = parseInt(getArgFromCliOrEnv(args, "iterations", false) || defaultConfig.iterationCount.toString(), 10);
     const outputModeStr = getArgFromCliOrEnv(args, "output-mode", false) || OutputMode[defaultConfig.outputMode];
+    const logLevelStr = getArgFromCliOrEnv(args, "log-level", false) || LogLevel[defaultConfig.logLevel];
     const useCache = (getArgFromCliOrEnv(args, "use-cache", false) || defaultConfig.useCache.toString()) === "true";
     const agentTypeStr = getArgFromCliOrEnv(args, "agent-type")!;
     const stopOnError = (getArgFromCliOrEnv(args, "stop-on-error", false) || defaultConfig.stopOnError.toString()) === "true";
@@ -50,6 +52,12 @@ export function fromProcess(args: string[]): Config {
         throw new Error(`Invalid output mode: ${outputModeStr}`);
     }
 
+    const logLevel = parseEnum(LogLevel, logLevelStr);
+    if (logLevel === undefined) {
+        const validLevels = values(LogLevel).join(", ");
+        throw new Error(`Invalid log level: ${logLevelStr}. Valid levels are: ${validLevels}`);
+    }
+    
     if (model === undefined) {
         model = defaultModels[agentType];
     }
@@ -77,5 +85,6 @@ export function fromProcess(args: string[]): Config {
         agentType,
         stopOnError,
         allowFullAccess,
+        logLevel,
     }};
 }

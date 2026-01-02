@@ -1,4 +1,5 @@
 import { OutputMode } from "../models";
+import { LogLevel } from "../utils";
 
 export interface PartialConfig {
     iterationCount: number;
@@ -6,6 +7,7 @@ export interface PartialConfig {
     useCache: boolean;
     stopOnError: boolean;
     allowFullAccess: boolean;
+    logLevel: LogLevel;
 }
 
 
@@ -16,5 +18,6 @@ export function defaultConfigValues(): PartialConfig{
         useCache: false,
         stopOnError: true,
         allowFullAccess: true,
+        logLevel: LogLevel.Info,
     }
 }
