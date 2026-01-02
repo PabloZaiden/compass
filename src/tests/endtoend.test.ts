@@ -3,12 +3,13 @@ import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, type Fixture } from "../models";
 import { Runner } from "../runner";
 import type { Config } from "../config/config";
-import { anonymous } from "./helpers";
+import { anonymous, repoDir, rootDir } from "./helpers";
+import path from "path";
 
 async function endToEnd(type: AgentTypes) {
   const model = defaultModels[type];
 
-  const fixtureFileName = "./src/sample-fixture.json";
+  const fixtureFileName = path.join(rootDir, "sample-fixture.json");
   const fixtureFile = Bun.file(fixtureFileName);
 
   expect(await fixtureFile.exists()).toBe(true);
@@ -29,7 +30,7 @@ async function endToEnd(type: AgentTypes) {
     fixture: fixtureFileName,
     iterationCount: 1,
     outputMode: OutputMode.Detailed,
-    repoPath: ".",
+    repoPath: repoDir,
     stopOnError: true,
     useCache: false,
     allowFullAccess: true,

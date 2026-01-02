@@ -1,17 +1,15 @@
 import { describe, test, expect } from "bun:test";
 import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
-import { anonymous } from "./helpers";
+import { anonymous, repoDir } from "./helpers";
 
 async function basicTest(type: AgentTypes) {
   const agent = createAgent(type, { allowFullAccess: false});
 
   const model = defaultModels[type];
 
-  const output = await agent.execute(`Explain what this project is about`, model, ".");
+  const output = await agent.execute(`Explain what this project is about`, model, repoDir);
 
   expect(output).toBeDefined();
-  console.log(output);
-
   expect(output.exitCode).toBe(0);
   expect(output.stdOut).toBeDefined();
   expect(output.stdOut.length).toBeGreaterThan(0);
