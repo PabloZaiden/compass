@@ -1,1 +1,1 @@
-export const anonymous = (name : string) => `[anonymous] ${name}`;
+export const anonymous = (name: string) => `[anonymous] ${name}`;
