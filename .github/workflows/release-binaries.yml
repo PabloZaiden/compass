@@ -10,14 +10,14 @@ on:
         description: 'Release tag (e.g., v1.2.3)'
         required: true
         
-jobs: 
-  build:
-    name: Build ${{ matrix.target_os }}-${{ matrix.target_arch }}
+jobs:
+  determine-tag:
+    name: Determine Release Tag
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target_os: [linux, darwin]
-        target_arch: [x64, arm64]
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.set_tag.outputs.tag }}
     steps:
       - name: Set release tag
         id: set_tag
@@ -28,12 +28,21 @@ jobs:
             echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
+  build:
+    name: Build ${{ matrix.target_os }}-${{ matrix.target_arch }}
+    runs-on: ubuntu-latest
+    needs: determine-tag
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        target_os: [linux, darwin]
+        target_arch: [x64, arm64]
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # For workflow_dispatch, we must explicitly checkout the user-specified tag.
-          # For tag-push triggers this is redundant, but harmless, since GitHub already checks out GITHUB_REF.
-          ref: ${{ steps.set_tag.outputs.tag }}
+          ref: ${{ needs.determine-tag.outputs.tag }}
 
       - name: Set up GitHub CLI
         run: |
@@ -44,7 +53,7 @@ jobs:
         id: check_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ steps.set_tag.outputs.tag }}
+          RELEASE_TAG: ${{ needs.determine-tag.outputs.tag }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release with tag $RELEASE_TAG found!"
@@ -68,41 +77,34 @@ jobs:
           TARGET_ARCH: ${{ matrix.target_arch }}
         run: |
           mkdir -p out
-          bun build --compile --outfile=out/compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }} src/index.ts --target bun-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          bun build --compile --outfile=out/compass-${{ needs.determine-tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }} src/index.ts --target bun-${{ matrix.target_os }}-${{ matrix.target_arch }}
 
-          echo "Built binary at out/compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}"
+          echo "Built binary at out/compass-${{ needs.determine-tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}"
           echo "Listing out/ directory:"
           ls -lh out
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
-          path: out/compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          name: compass-${{ needs.determine-tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          path: out/compass-${{ needs.determine-tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
 
   release:
     name: Publish Release
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - determine-tag
+      - build
     permissions:
       contents: write
     steps:
-      - name: Set release tag
-        id: set_tag
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Download all binaries
         uses: actions/download-artifact@v4
         with:
-          pattern: compass-${{ steps.set_tag.outputs.tag }}-*
+          pattern: compass-${{ needs.determine-tag.outputs.tag }}-*
           merge-multiple: true
           path: out
 
@@ -112,7 +114,7 @@ jobs:
       - name: Publish GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ steps.set_tag.outputs.tag }}
+          RELEASE_TAG: ${{ needs.determine-tag.outputs.tag }}
         run: |
           set -euo pipefail
           gh release upload "$RELEASE_TAG" out/* --clobber
