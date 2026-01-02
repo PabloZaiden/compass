@@ -10,8 +10,6 @@ async function basicTest(type: AgentTypes) {
   const output = await agent.execute(`Explain what this project is about`, model, repoDir);
 
   expect(output).toBeDefined();
-  console.log(output);
-
   expect(output.exitCode).toBe(0);
   expect(output.stdOut).toBeDefined();
   expect(output.stdOut.length).toBeGreaterThan(0);
