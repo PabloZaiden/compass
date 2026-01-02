@@ -31,6 +31,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          # For workflow_dispatch, we must explicitly checkout the user-specified tag.
+          # For tag-push triggers this is redundant, but harmless, since GitHub already checks out GITHUB_REF.
           ref: ${{ steps.set_tag.outputs.tag }}
 
       - name: Set up GitHub CLI
