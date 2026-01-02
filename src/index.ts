@@ -3,14 +3,15 @@ import { fromProcess } from "./config/process";
 import { Runner } from "./runner";
 import { logger } from "./utils";
 
-const config = fromProcess(Bun.argv.slice(2));
+const config = await fromProcess(Bun.argv.slice(2));
 logger.settings.minLevel = config.logLevel;
 
 const runner = new Runner();
 
-runner.run(config).then(result => {
+try {
+    const result = await runner.run(config);
     logger.info("Run completed successfully");
     stdout.write(JSON.stringify(result, null, 2) + "\n");
-}).catch(error => {
+} catch (error) {
     logger.error("Run failed:", error);
-});
+}

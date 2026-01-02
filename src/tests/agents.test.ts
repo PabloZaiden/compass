@@ -1,11 +1,13 @@
 import { describe, test, expect } from "bun:test";
 import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
-import { repoDir, rootDir } from "./helpers";
-import path from "path";
+import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
 import { LogLevel } from "../utils";
 import { Runner } from "../runner";
 import type { Config } from "../config/config";
+
+const srcDir = dirname(import.meta.dir);
+const repoDir = path.resolve(srcDir, "..");
 
 const basicTestOptions = {
   timeout: 90 * 1000, // 90 seconds
@@ -31,7 +33,7 @@ const endToEndTestOptions = {
 async function endToEnd(type: AgentTypes) {
   const model = defaultModels[type];
 
-  const fixtureFileName = path.join(rootDir, "sample-fixture.json");
+  const fixtureFileName = path.join(srcDir, "sample-fixture.json");
   const fixtureFile = Bun.file(fixtureFileName);
 
   expect(await fixtureFile.exists()).toBe(true);
