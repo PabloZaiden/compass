@@ -22,7 +22,7 @@ async function endToEnd(type: AgentTypes) {
   expect(fixture).toBeDefined();
   expect(fixture.prompts.length).toBe(2);
 
-  const config : Config = {
+  const config: Config = {
     agentType: type,
     model: model,
     evalModel: model,
