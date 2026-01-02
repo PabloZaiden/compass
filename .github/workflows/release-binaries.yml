@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target_os: [linux] #, darwin]
-        target_arch: [x64] #, arm64]
+        target_os: [linux, darwin]
+        target_arch: [x64, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        # with:
-        #   ref: ${{ github.event.inputs.tag }}
+        with:
+          ref: ${{ github.event.inputs.tag }}
 
       - name: Set up GitHub CLI
         run: |
@@ -46,7 +46,6 @@ jobs:
           echo "$HOME/.bun/global/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        working-directory: src
         run: bun install
 
       - name: Build binary
