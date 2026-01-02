@@ -1,6 +1,9 @@
 name: Release Binaries
 
 on:
+  push:
+    tags:
+      - 'v*'  # Triggers on tags like v1.2.3, v2.0.0, etc.
   workflow_dispatch:
     inputs:
       tag:
@@ -16,10 +19,19 @@ jobs:
         target_os: [linux, darwin]
         target_arch: [x64, arm64]
     steps:
+      - name: Set release tag
+        id: set_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag }}
+          ref: ${{ steps.set_tag.outputs.tag }}
 
       - name: Set up GitHub CLI
         run: |
@@ -30,7 +42,7 @@ jobs:
         id: check_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.inputs.tag }}
+          RELEASE_TAG: ${{ steps.set_tag.outputs.tag }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release with tag $RELEASE_TAG found!"
@@ -54,17 +66,17 @@ jobs:
           TARGET_ARCH: ${{ matrix.target_arch }}
         run: |
           mkdir -p out
-          bun build --compile --outfile=out/compass-${{ github.event.inputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }} src/index.ts --target bun-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          bun build --compile --outfile=out/compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }} src/index.ts --target bun-${{ matrix.target_os }}-${{ matrix.target_arch }}
 
-          echo "Built binary at out/compass-${{ github.event.inputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}"
+          echo "Built binary at out/compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}"
           echo "Listing out/ directory:"
           ls -lh out
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: compass-${{ github.event.inputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
-          path: out/compass-${{ github.event.inputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          name: compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
+          path: out/compass-${{ steps.set_tag.outputs.tag }}-${{ matrix.target_os }}-${{ matrix.target_arch }}
 
   release:
     name: Publish Release
@@ -73,13 +85,22 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Set release tag
+        id: set_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Download all binaries
         uses: actions/download-artifact@v4
         with:
-          pattern: compass-${{ github.event.inputs.tag }}-*
+          pattern: compass-${{ steps.set_tag.outputs.tag }}-*
           merge-multiple: true
           path: out
 
@@ -89,7 +110,7 @@ jobs:
       - name: Publish GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.inputs.tag }}
+          RELEASE_TAG: ${{ steps.set_tag.outputs.tag }}
         run: |
           set -euo pipefail
           gh release upload "$RELEASE_TAG" out/* --clobber
