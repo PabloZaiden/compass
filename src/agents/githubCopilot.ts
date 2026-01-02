@@ -8,7 +8,7 @@ export class GitHubCopilot extends Agent {
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.info(`Executing GitHub Copilot with model ${model} on prompt ${prompt}`);
+        logger.trace(`Executing GitHub Copilot with model ${model} on prompt ${prompt}`);
         
         const allowAllParameters = this.options.allowFullAccess ? ["--allow-all-tools", "--allow-all-paths"] : [];
         const processOutput = await run(

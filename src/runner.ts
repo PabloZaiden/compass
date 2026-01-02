@@ -113,6 +113,11 @@ export class Runner {
             };
         });
 
+        logger.info(`Completed all iterations.`);
+        for (const aggResult of aggregatedResults) {
+            logger.info(`Average Points for prompt "${aggResult.promptId}": ${aggResult.averagePoints.toFixed(2)}`);
+        }   
+
         return {
             iterationResults,
             aggregatedResults

@@ -8,7 +8,7 @@ export class ClaudeCode extends Agent {
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.info(`Executing ClaudeCode with model ${model} on prompt ${prompt}`);
+        logger.trace(`Executing ClaudeCode with model ${model} on prompt ${prompt}`);
 
         const allowAllParameters = this.options.allowFullAccess ? ["--dangerously-skip-permissions"] : [];
         const processOutput = await run(
