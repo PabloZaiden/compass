@@ -7,24 +7,23 @@ WORKDIR /usr/src/app
 # this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/dev
-COPY src/package.json src/bun.lock /temp/dev/
+COPY package.json bun.lock /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
 # install with --production (exclude devDependencies)
 RUN mkdir -p /temp/prod
-COPY src/package.json src/bun.lock /temp/prod/
+COPY package.json bun.lock /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 # copy node_modules from temp directory
 # then copy all (non-ignored) project files into the image
 FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
-COPY src .
+COPY . .
 
 # [optional] tests & build
 ENV NODE_ENV=production
-RUN bun build --compile --outfile=compass ./index.ts
-
+RUN bun build --compile --outfile=compass ./src/index.ts
 # copy production dependencies and source code into final image
 FROM base AS release
 
