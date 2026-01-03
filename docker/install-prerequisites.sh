@@ -35,6 +35,14 @@ export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}"
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" ' >> $HOME/.bashrc
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" '>> $HOME/.zshrc
 
+# install brew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $HOME/.bashrc
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# install zig
+brew install zig
+
 # install github copilot cli
 bun install -g @github/copilot
 
@@ -43,7 +51,6 @@ bun install -g @openai/codex
 
 # install claude code
 curl -fsSL https://claude.ai/install.sh | bash
-
 
 # install google gemini cli
 bun install -g @google/gemini-cli
