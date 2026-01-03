@@ -7,14 +7,16 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "5.9.3"
   },
   "dependencies": {
+    "@opentui/core": "0.1.68",
     "tslog": "^4.10.2"
   },
   "scripts": {
-    "start": "bun run src/index.ts --repo . --fixture ./src/sample-fixture.json --agent opencode --log-level trace",
-    "build": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
+    "start": "COMPASS_TUI=true bun run src/index.ts",
+    "build": "bunx tsc --noEmit",
+    "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:anonymous": "bun test --test-name-pattern \"anonymous\"",
     "test:all": "bun test",
     "test:gemini": "bun test --test-name-pattern \"Gemini\"",

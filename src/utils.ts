@@ -1,3 +1,4 @@
+import { EventEmitter } from "events";
 import { Logger } from "tslog";
 import type { ProcessOutput } from "./models";
 
@@ -42,13 +43,41 @@ export function escapeArg(arg: string): string {
 }
 
 
+export type TuiLogEvent = {
+    message: string;
+    level: LogLevel;
+    timestamp: Date;
+};
+
+const logEventEmitter = new EventEmitter();
+let tuiLoggingEnabled = false;
+
+export function setTuiLoggingEnabled(enabled: boolean): void {
+    tuiLoggingEnabled = enabled;
+}
+
+export function onLogEvent(listener: (event: TuiLogEvent) => void): () => void {
+    logEventEmitter.on("log", listener);
+    return () => logEventEmitter.off("log", listener);
+}
+
 export const logger = new Logger({
     type: "pretty",
     overwrite: {
-        transportFormatted: (logMetaMarkup, logArgs, logErrors) => {
-            // Everything pretty goes to stderr, never stdout
-            const line = `${logMetaMarkup}${logArgs.join(" ")}${logErrors.join("")}\n`;
-            process.stderr.write(line);
+        transportFormatted: (logMetaMarkup, logArgs, logErrors, logMeta) => {
+            const baseLine = `${logMetaMarkup}${logArgs.join(" ")}${logErrors.join("")}`;
+            const levelFromMeta = typeof (logMeta as any)?.logLevelId === "number" ? (logMeta as any).logLevelId as LogLevel : LogLevel.Info;
+
+            if (tuiLoggingEnabled) {
+                logEventEmitter.emit("log", {
+                    message: baseLine,
+                    level: levelFromMeta,
+                    timestamp: new Date(),
+                } satisfies TuiLogEvent);
+            } else {
+                // Everything pretty goes to stderr, never stdout
+                process.stderr.write(baseLine + "\n");
+            }
         },
     },
 });

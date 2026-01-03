@@ -48,7 +48,7 @@ export class Runner {
                 logger.trace(`Creating temporary working directory at ${tempPath}`);
                 await copyDirectory(config.repoPath, tempPath);
 
-                const iterationAgent = config.useCache ? new Cache(agent, agentOptions, iterationIndex.toString()) : agent;
+                const iterationAgent = config.useCache ? new Cache(agent, agentOptions, config.repoPath, iterationIndex.toString()) : agent;
 
                 logger.trace(`Resetting repository to initial state`);
                 throwIfStopOnError(config.stopOnError, await run(tempPath, "git", "reset", "--hard"));

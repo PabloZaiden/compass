@@ -39,6 +39,24 @@ Command-line arguments take precedence over environment variables.
 
 For a full list of options, check `src/config/config.ts`
 
+## Terminal UI
+
+Enable an interactive Terminal UI with live logs, activity indicator, and rerun/change-config controls by setting `COMPASS_TUI=true`:
+
+```bash
+COMPASS_TUI=true bun src/index.ts
+```
+
+Features:
+- Interactive form for all CLI options (repo, fixture, agent, iterations, output mode, log level, cache, stop on error, allow full access, model, eval model)
+- Live `tslog` stream in the right panel and spinner-based activity indicator while running
+- Pretty-printed JSON results inside the TUI (no JSON is written to stdout when TUI is enabled)
+- "Show as CLI flags" overlay to copy the equivalent command
+- Keyboard shortcuts: `Ctrl+R` run, `Ctrl+E` change config, `Ctrl+F` CLI flags overlay, `Ctrl+L` focus logs, `q`/`Esc` quit
+- Rerun with previous values or return to config without losing state
+
+Prereqs: the provided `docker/install-prerequisites.sh` installs Bun and Zig for OpenTUI.
+
 ## Docker
 
 ```bash

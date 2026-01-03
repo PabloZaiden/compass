@@ -14,18 +14,21 @@ export class Cache extends Agent {
 
     private cacheKeyPrefix: string;
 
-    constructor(agent: Agent, options: AgentOptions, cacheKeyPrefix = "cache") {
+    private repoToCache: string;
+
+    constructor(agent: Agent, options: AgentOptions, repoToCache: string, cacheKeyPrefix = "cache") {
         super(`${agent.name} (Cached)`, options);
 
         this.innerAgent = agent;
         this.cacheKeyPrefix = cacheKeyPrefix;
+        this.repoToCache = repoToCache;
         this.cacheDirectory = path.join(".cache", agent.name.replaceAll(" ", "_"));
 
         logger.trace(`Initializing cache for agent ${agent.name} at directory ${this.cacheDirectory}`);
     }
 
-    private getCacheKey(prompt: string, model: string, workingDirectory: string): string {
-        const id = `${this.cacheKeyPrefix}-${this.innerAgent.name}-${prompt}-${model}-${workingDirectory}`;
+    private getCacheKey(prompt: string, model: string): string {
+        const id = `${this.cacheKeyPrefix}-${this.innerAgent.name}-${prompt}-${model}-${this.repoToCache}`;
         const hash = createHash("sha256")
             .update(id, "utf8")
             .digest("base64")
@@ -33,11 +36,13 @@ export class Cache extends Agent {
             .replaceAll("+", "-")
             .replaceAll("=", "");
 
+        logger.trace(`Generated cache key: ${hash} for id: ${id}`);
+
         return hash;
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        const cacheKey = this.getCacheKey(prompt, model, workingDirectory);
+        const cacheKey = this.getCacheKey(prompt, model);
 
         const cacheFile = path.join(this.cacheDirectory, `${cacheKey}.json`);
         logger.trace(`Looking for cache file: ${cacheFile}`);
