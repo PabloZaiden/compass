@@ -2,13 +2,13 @@ import type { AgentOutput } from "../models";
 import { logger, run } from "../utils";
 import { Agent, type AgentOptions } from "./agent";
 
-export class GitHubCopilot extends Agent {
+export class Copilot extends Agent {
     constructor(options: AgentOptions) {
-        super("GitHub Copilot", options);
+        super("Copilot", options);
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.trace(`Executing GitHub Copilot with model ${model} on prompt ${prompt}`);
+        logger.trace(`Executing Copilot with model ${model} on prompt ${prompt}`);
         
         const allowAllParameters = this.options.allowFullAccess ? ["--allow-all-tools", "--allow-all-paths"] : [];
         const processOutput = await run(
@@ -21,9 +21,9 @@ export class GitHubCopilot extends Agent {
             "--add-dir", workingDirectory, 
             "-p", prompt);
 
-        logger.trace("GitHub Copilot stdOut: " + processOutput.stdOut);
-        logger.trace("GitHub Copilot stdErr: " + processOutput.stdErr);
-        logger.trace("GitHub Copilot exitCode: " + processOutput.exitCode);
+        logger.trace("Copilot stdOut: " + processOutput.stdOut);
+        logger.trace("Copilot stdErr: " + processOutput.stdErr);
+        logger.trace("Copilot exitCode: " + processOutput.exitCode);
 
         logger.trace("Collecting git diff after agent execution");
         

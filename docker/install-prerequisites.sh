@@ -44,6 +44,10 @@ bun install -g @openai/codex
 # install claude code
 curl -fsSL https://claude.ai/install.sh | bash
 
+
+# install google gemini cli
+bun install -g @google/gemini-cli
+
 # install az cli
 if ! command -v az &> /dev/null
 then
@@ -58,6 +62,3 @@ curl -fsSL https://opencode.ai/install | bash
 # add symlink for opencode in $HOME/.local/bin
 mkdir -p $HOME/.local/bin
 ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
-
-# install google gemini cli
-bun install -g @google/gemini-cli

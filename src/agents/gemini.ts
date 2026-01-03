@@ -2,7 +2,7 @@ import type { AgentOutput } from "../models";
 import { logger, run } from "../utils";
 import { Agent, type AgentOptions } from "./agent";
 
-export class GeminiCli extends Agent {
+export class Gemini extends Agent {
     constructor(options: AgentOptions) {
         super("Gemini CLI", options);
     }
@@ -14,7 +14,7 @@ export class GeminiCli extends Agent {
         const processOutput = await run(
             workingDirectory,
             "gemini",
-            "--prompt", prompt,
+            prompt,
             "--model", model,
             "--output-format", "text",
             ...yoloParameters);
