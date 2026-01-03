@@ -122,14 +122,7 @@ describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
   }, endToEndTestOptions);
 });
 
-// Check if Gemini CLI authentication is available
-const hasGeminiAuth = !!(
-  process.env.GEMINI_API_KEY || 
-  process.env.GOOGLE_GENAI_USE_VERTEXAI || 
-  process.env.GOOGLE_GENAI_USE_GCA
-);
-
-(hasGeminiAuth ? describe : describe.skip)(anonymous(AgentTypes[AgentTypes.GeminiCli]), () => {
+describe(AgentTypes[AgentTypes.GeminiCli], () => {
   test(basicTestName, async () => {
     await basicTest(AgentTypes.GeminiCli);
   }, basicTestOptions);
