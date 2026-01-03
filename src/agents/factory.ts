@@ -3,6 +3,7 @@ import { Codex } from "./codex";
 import { GitHubCopilot } from "./githubCopilot";
 import { OpenCode } from "./opencode";
 import { ClaudeCode } from "./claudeCode";
+import { GeminiCli } from "./geminiCli";
 
 export function createAgent(type: AgentTypes, options: AgentOptions): Agent {
     switch (type) {
@@ -15,6 +16,8 @@ export function createAgent(type: AgentTypes, options: AgentOptions): Agent {
         case AgentTypes.ClaudeCode:
             throw new Error("ClaudeCode agent is not yet supported.");
             return new ClaudeCode(options);
+        case AgentTypes.GeminiCli:
+            return new GeminiCli(options);
         default:
             throw new Error(`Unknown agent type: ${type}`);
     }
@@ -24,12 +27,14 @@ export enum AgentTypes {
     GitHubCopilot,
     Codex,
     OpenCode,
-    ClaudeCode
+    ClaudeCode,
+    GeminiCli
 }
 
 export const defaultModels: { [key in AgentTypes]: string } = {
     [AgentTypes.GitHubCopilot]: "gpt-5-mini",
     [AgentTypes.Codex]: "gpt-5.1-codex-mini",
     [AgentTypes.OpenCode]: "opencode/big-pickle",
-    [AgentTypes.ClaudeCode]: "sonnet"
+    [AgentTypes.ClaudeCode]: "sonnet",
+    [AgentTypes.GeminiCli]: "gemini-2.5-flash"
 };

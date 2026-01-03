@@ -7,6 +7,7 @@ Console tool to benchmark Coding agents using different agents and models across
 - GitHub Copilot
 - OpenAI Codex
 - OpenCode
+- Google Gemini CLI
 - Claude Code (coming soon)
 
 ## Requirements
@@ -16,6 +17,7 @@ Console tool to benchmark Coding agents using different agents and models across
 - `copilot` in path for GitHub Copilot CLI
 - `codex` in path for OpenAI Codex CLI
 - `opencode` in path for OpenCode CLI
+- `gemini` in path for Google Gemini CLI
 - `claude` in path for Anthropic Claude CLI
 
 ## Optional Requirements

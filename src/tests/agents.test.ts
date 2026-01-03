@@ -121,3 +121,13 @@ describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
     await endToEnd(AgentTypes.ClaudeCode);
   }, endToEndTestOptions);
 });
+
+describe(anonymous(AgentTypes[AgentTypes.GeminiCli]), () => {
+  test(basicTestName, async () => {
+    await basicTest(AgentTypes.GeminiCli);
+  }, basicTestOptions);
+
+  test(endToEndTestName, async () => {
+    await endToEnd(AgentTypes.GeminiCli);
+  }, endToEndTestOptions);
+});
