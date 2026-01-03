@@ -82,13 +82,13 @@ const anonymous = (name: string) => `[anonymous] ${name}`;
 const basicTestName = "Basic test";
 const endToEndTestName = "Self end-to-end test";
 
-describe(AgentTypes[AgentTypes.GitHubCopilot], () => {
+describe(AgentTypes[AgentTypes.Copilot], () => {
   test(basicTestName, async () => {
-    await basicTest(AgentTypes.GitHubCopilot);
+    await basicTest(AgentTypes.Copilot);
   }, basicTestOptions);
   
   test(endToEndTestName, async () => {
-    await endToEnd(AgentTypes.GitHubCopilot);
+    await endToEnd(AgentTypes.Copilot);
   }, endToEndTestOptions);
 });
 
@@ -119,5 +119,15 @@ describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
 
   test(endToEndTestName, async () => {
     await endToEnd(AgentTypes.ClaudeCode);
+  }, endToEndTestOptions);
+});
+
+describe(AgentTypes[AgentTypes.Gemini], () => {
+  test(basicTestName, async () => {
+    await basicTest(AgentTypes.Gemini);
+  }, basicTestOptions);
+
+  test(endToEndTestName, async () => {
+    await endToEnd(AgentTypes.Gemini);
   }, endToEndTestOptions);
 });

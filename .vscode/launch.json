@@ -4,7 +4,7 @@
         {
             "type": "bun",
             "request": "launch",
-            "name": "Debug GitHub Copilot",
+            "name": "Debug Copilot",
             "program": "${workspaceFolder}/src/index.ts",
             "args": [
                 "--repo",
@@ -12,7 +12,7 @@
                  "--fixture",
                  "${workspaceFolder}/src/sample-fixture.json",
                  "--agent",
-                 "GitHubCopilot"
+                 "Copilot"
             ], // Arguments for your script
             "cwd": "${workspaceFolder}",
             "runtimeArgs": [], // Arguments for the 'bun' runtime itself

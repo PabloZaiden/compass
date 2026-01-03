@@ -17,6 +17,11 @@
     "build": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:anonymous": "bun test --test-name-pattern \"anonymous\"",
     "test:all": "bun test",
+    "test:gemini": "bun test --test-name-pattern \"Gemini\"",
+    "test:opencode": "bun test --test-name-pattern \"OpenCode\"",
+    "test:copilot": "bun test --test-name-pattern \"Copilot\"",
+    "test:claude": "bun test --test-name-pattern \"ClaudeCode\"",
+    "test:codex": "bun test --test-name-pattern \"Codex\"",
     "docker:build": "docker build -t compass ."
   }
 }
