@@ -13,7 +13,7 @@ Console tool to benchmark Coding agents using different agents and models across
 ## Requirements
 
 - Git
-- Bun runtime (https://bun.sh/)
+- [Bun runtime](https://bun.sh/)
 - `copilot` in path for GitHub Copilot CLI
 - `codex` in path for OpenAI Codex CLI
 - `opencode` in path for OpenCode CLI
