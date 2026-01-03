@@ -111,6 +111,9 @@ jobs:
       - name: Show downloaded files
         run: ls -lh out
 
+      - name: Make binaries executable
+        run: chmod +x out/*
+
       - name: Publish GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
