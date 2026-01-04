@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "../../logging";
 
 export interface UseSpinnerResult {
     frameIndex: number;
@@ -16,14 +17,16 @@ export function useSpinner(active: boolean): UseSpinnerResult {
         }
 
         const interval = setInterval(() => {
-            // to avoid overflow
-            // reset to 0 after reaching a high number
-            if (frameIndex >= Number.MAX_SAFE_INTEGER) {
-                setFrameIndex(0);
-                return;
-            }
+            setFrameIndex((prev) => {
+                // to avoid overflow
+                // reset to 0 after reaching a high number
             
-            setFrameIndex((prev) => (prev + 1));
+                if (prev >= Number.MAX_SAFE_INTEGER / 2) {
+                    return 0;
+                } else {
+                    return prev + 1;
+                }
+            });
         }, SPINNER_INTERVAL);
 
         return () => clearInterval(interval);
