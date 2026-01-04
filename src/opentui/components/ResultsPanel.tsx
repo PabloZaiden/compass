@@ -1,7 +1,7 @@
-import type React from "react";
 import type { RunnerResult } from "../../models";
 import { Theme } from "../types";
 import { Classification } from "../../models";
+import { JsonHighlight } from "./JsonHighlight";
 
 const ClassificationTheme = {
     [Classification.SUCCESS]: {
@@ -35,64 +35,6 @@ export function ResultsPanel({
 }: ResultsPanelProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
 
-    // Simple JSON syntax highlighting
-    const highlightJsonLine = (line: string): React.ReactNode[] => {
-        const elements: React.ReactNode[] = [];
-        let remaining = line;
-        let keyIdx = 0;
-        
-        // Match patterns: keys, strings, numbers, booleans, null
-        const patterns = [
-            { regex: /^(\s*)("[\w]+")(:\s*)/, type: "key" },        // "key":
-            { regex: /^("(?:[^"\\]|\\.)*")/, type: "string" },       // "string value"
-            { regex: /^(-?\d+\.?\d*)/, type: "number" },             // numbers
-            { regex: /^(true|false)/, type: "boolean" },             // booleans
-            { regex: /^(null)/, type: "null" },                      // null
-            { regex: /^([{}\[\],])/, type: "punctuation" },          // brackets, commas
-            { regex: /^(\s+)/, type: "whitespace" },                 // whitespace
-        ];
-        
-        const colors: Record<string, string> = {
-            key: "#61afef",      // blue
-            string: "#98c379",   // green
-            number: "#d19a66",   // orange
-            boolean: "#c678dd",  // purple
-            null: "#c678dd",     // purple
-            punctuation: Theme.label,
-            whitespace: Theme.label,
-        };
-        
-        while (remaining.length > 0) {
-            let matched = false;
-            
-            for (const { regex, type } of patterns) {
-                const match = remaining.match(regex);
-                if (match) {
-                    if (type === "key") {
-                        // Handle key specially: whitespace + key + colon
-                        elements.push(<span key={keyIdx++} fg={Theme.label}>{match[1]}</span>);
-                        elements.push(<span key={keyIdx++} fg={colors["key"]}>{match[2]}</span>);
-                        elements.push(<span key={keyIdx++} fg={Theme.label}>{match[3]}</span>);
-                        remaining = remaining.slice(match[0].length);
-                    } else {
-                        elements.push(<span key={keyIdx++} fg={colors[type]}>{match[0]}</span>);
-                        remaining = remaining.slice(match[0].length);
-                    }
-                    matched = true;
-                    break;
-                }
-            }
-            
-            if (!matched) {
-                // No pattern matched, take one character
-                elements.push(<span key={keyIdx++} fg={Theme.label}>{remaining[0]}</span>);
-                remaining = remaining.slice(1);
-            }
-        }
-        
-        return elements;
-    };
-
     const renderContent = () => {
         if (isLoading) {
             return <text fg="#f5c542">Running iterations...</text>;
@@ -114,8 +56,6 @@ export function ResultsPanel({
         if (!result) {
             return <text fg={Theme.label}>No results yet. Run iterations to see results.</text>;
         }
-
-        const jsonString = JSON.stringify(result, null, 2);
 
         return (
             <scrollbox scrollY={true} flexGrow={1} focused={focused}>
@@ -166,11 +106,7 @@ export function ResultsPanel({
                     <text fg={Theme.statusText}> </text>
                     
                     {/* JSON Content with syntax highlighting */}
-                    {jsonString.split("\n").map((line, idx) => (
-                        <text key={`json-${idx}`}>
-                            {highlightJsonLine(line)}
-                        </text>
-                    ))}
+                    <JsonHighlight value={result} />
                 </box>
             </scrollbox>
         );
@@ -185,6 +121,7 @@ export function ResultsPanel({
             title="Results"
             height={height}
             flexGrow={1}
+            flexBasis={0}
             padding={1}
         >
             {renderContent()}
