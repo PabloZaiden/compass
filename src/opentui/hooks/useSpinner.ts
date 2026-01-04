@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 
 export interface UseSpinnerResult {
-    frame: string;
     frameIndex: number;
 }
 
-const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 const SPINNER_INTERVAL = 80;
 
 export function useSpinner(active: boolean): UseSpinnerResult {
@@ -18,14 +16,18 @@ export function useSpinner(active: boolean): UseSpinnerResult {
         }
 
         const interval = setInterval(() => {
-            setFrameIndex((prev) => (prev + 1) % SPINNER_FRAMES.length);
+            // to avoid overflow
+            // reset to 0 after reaching a high number
+            if (frameIndex >= Number.MAX_SAFE_INTEGER) {
+                setFrameIndex(0);
+                return;
+            }
+            
+            setFrameIndex((prev) => (prev + 1));
         }, SPINNER_INTERVAL);
 
         return () => clearInterval(interval);
     }, [active]);
 
-    return {
-        frame: SPINNER_FRAMES[frameIndex] ?? "⠋",
-        frameIndex,
-    };
+    return { frameIndex };
 }

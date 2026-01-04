@@ -43,6 +43,7 @@ export function LogsPanel({
             borderColor={borderColor}
             title={title}
             height={height}
+            padding={1}
         >
             <scrollbox
                 scrollY={true}

@@ -331,7 +331,6 @@ export function App({ onExit }: AppProps) {
                 currentValue={editingField ? values[editingField] : null}
                 visible={editingField !== null}
                 onSubmit={handleEditSubmit}
-                onCancel={handleEditCancel}
             />
 
             {/* CLI overlay */}

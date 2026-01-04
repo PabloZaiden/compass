@@ -28,6 +28,7 @@ export function ConfigForm({
             title="Configuration"
             height={height}
             flexGrow={1}
+            padding={1}
         >
             <scrollbox
                 scrollY={true}

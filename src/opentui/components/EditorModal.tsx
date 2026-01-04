@@ -9,7 +9,6 @@ interface EditorModalProps {
     currentValue: unknown;
     visible: boolean;
     onSubmit: (value: unknown) => void;
-    onCancel: () => void;
 }
 
 export function EditorModal({
@@ -17,7 +16,6 @@ export function EditorModal({
     currentValue,
     visible,
     onSubmit,
-    onCancel: _onCancel,
 }: EditorModalProps) {
     const [inputValue, setInputValue] = useState("");
     const [selectIndex, setSelectIndex] = useState(0);

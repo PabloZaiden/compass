@@ -10,7 +10,7 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = true }: StatusBarProps) {
-    const spinner = isRunning ? `${SpinnerFrames[spinnerFrame] ?? SpinnerFrames[0]} ` : "";
+    const spinner = isRunning ? `${SpinnerFrames[spinnerFrame % SpinnerFrames.length] ?? SpinnerFrames[0]} ` : "";
     
     const shortcuts = "Ctrl+F CLI flags • Ctrl+L logs • Ctrl+Y copy • Tab switch panels • q/Esc quit";
     

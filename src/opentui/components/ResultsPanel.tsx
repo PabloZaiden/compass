@@ -43,6 +43,7 @@ export function ResultsPanel({
                 title="Results"
                 height={height}
                 flexGrow={1}
+                padding={1}
             >
                 <text fg="#f5c542">Running iterations...</text>
             </box>
@@ -59,6 +60,7 @@ export function ResultsPanel({
                 title="Error"
                 height={height}
                 flexGrow={1}
+                padding={1}
             >
                 <scrollbox scrollY={true} flexGrow={1}>
                     <box flexDirection="column" gap={1} padding={1}>
@@ -82,6 +84,7 @@ export function ResultsPanel({
                 title="Results"
                 height={height}
                 flexGrow={1}
+                padding={1}
             >
                 <text fg={Theme.label}>No results yet. Run iterations to see results.</text>
             </box>
@@ -157,6 +160,7 @@ export function ResultsPanel({
             title="Results"
             height={height}
             flexGrow={1}
+            padding={1}
         >
             <scrollbox scrollY={true} flexGrow={1} focused={focused}>
                 <box flexDirection="column" gap={0} padding={1}>
