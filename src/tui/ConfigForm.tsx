@@ -7,6 +7,7 @@ interface ConfigFormProps {
     values: FormValues;
     selectedFieldIndex: number;
     maxHeight?: number;
+    isFocused?: boolean;
 }
 
 interface FieldInfo {
@@ -33,6 +34,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
     values,
     selectedFieldIndex,
     maxHeight = 15,
+    isFocused = false,
 }) => {
     const { agentOptions, outputModeOptions, logLevelOptions } = useFormOptions();
 
@@ -67,9 +69,9 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({
 
     return (
         <Box flexDirection="column" paddingX={1} height={maxHeight}>
-            <Box borderStyle="round" borderColor="cyan" paddingX={1} flexDirection="column">
+            <Box borderStyle="round" borderColor={isFocused ? "yellow" : "cyan"} paddingX={1} flexDirection="column">
                 <Text bold color="cyan">
-                    Configuration (Use ↑↓ to navigate, Enter to edit)
+                    Configuration {isFocused && "(↑↓ to navigate, Enter to edit)"}
                 </Text>
                 
                 <Box flexDirection="column">

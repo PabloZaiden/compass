@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Text } from "ink";
+import { Box, Text, useStdout } from "ink";
 import type { LogLevel } from "../utils";
 import { LogLevel as LogLevelEnum } from "../utils";
 
@@ -14,6 +14,8 @@ interface LogsPanelProps {
     messages: LogMessage[];
     maxLines?: number;
     height?: number;
+    scrollOffset?: number;
+    isFocused?: boolean;
 }
 
 const logColors: Record<LogLevel, string> = {
@@ -26,26 +28,67 @@ const logColors: Record<LogLevel, string> = {
     [LogLevelEnum.Fatal]: "#ff5c8d",
 };
 
-export const LogsPanel: React.FC<LogsPanelProps> = ({ visible, messages, maxLines = 15, height = 10 }) => {
+export const LogsPanel: React.FC<LogsPanelProps> = ({ visible, messages, height = 10, scrollOffset = 0, isFocused = false }) => {
+    const { stdout } = useStdout();
+    const terminalWidth = stdout?.columns || 80;
+    // Account for border (2) and padding (2)
+    const maxLineWidth = terminalWidth - 4;
+    
     if (!visible) {
         return null;
     }
 
-    // Show only the last maxLines messages
-    const displayMessages = messages.slice(-maxLines);
+    // Calculate visual lines for each message (accounting for wrapping)
+    const messagesWithHeight = messages.map(log => {
+        const sanitized = sanitizeLogMessage(log.message.replace(/\n/g, " "));
+        const visualLines = Math.ceil(sanitized.length / maxLineWidth) || 1;
+        return { log, sanitized, visualLines };
+    });
+    
+    // Calculate total visual lines
+    const totalVisualLines = messagesWithHeight.reduce((sum, m) => sum + m.visualLines, 0);
+    
+    // Find which messages to display based on scroll offset (in visual lines)
+    const contentHeight = height - 2; // -2 for header
+    let visualLineCount = 0;
+    let startIdx = 0;
+    
+    // Skip messages until we reach the scroll offset
+    for (let i = messagesWithHeight.length - 1; i >= 0; i--) {
+        const msg = messagesWithHeight[i];
+        if (!msg) continue;
+        if (visualLineCount >= scrollOffset) {
+            startIdx = i;
+            break;
+        }
+        visualLineCount += msg.visualLines;
+    }
+    
+    // Collect messages until we fill the content height
+    const displayMessages: typeof messagesWithHeight = [];
+    visualLineCount = 0;
+    for (let i = startIdx; i < messagesWithHeight.length && visualLineCount < contentHeight; i++) {
+        const msg = messagesWithHeight[i];
+        if (!msg) continue;
+        displayMessages.push(msg);
+        visualLineCount += msg.visualLines;
+    }
+    
+    const canScrollUp = scrollOffset < totalVisualLines - contentHeight && totalVisualLines > contentHeight;
+    const canScrollDown = scrollOffset > 0;
 
     return (
-        <Box flexDirection="column" marginTop={1} borderStyle="round" borderColor="gray" paddingX={1} height={height}>
+        <Box flexDirection="column" marginTop={1} borderStyle="round" borderColor={isFocused ? "yellow" : "gray"} paddingX={1} height={height}>
             <Text bold color="yellow">
-                Logs (Ctrl+L toggle, y copy, x clear) - {displayMessages.length}/{messages.length}
+                Logs {isFocused && "(↑↓ to scroll, "}y copy, x clear{isFocused && ")"}
+                {canScrollUp && " ▲"}
+                {canScrollDown && " ▼"} - {displayMessages.length}/{messages.length}
             </Text>
             <Box flexDirection="column" overflowY="hidden">
-                {displayMessages.map((log) => {
+                {displayMessages.map(({ log, sanitized }) => {
                     const levelColor = logColors[log.level];
-                    // Remove newlines only
-                    let sanitized = sanitizeLogMessage(log.message.replace(/\n/g, " "));
                     return (
-                        <Text key={`${log.timestamp.getTime()}-${log.message}`} color={levelColor} wrap="wrap">
+                        <Text key={`${log.timestamp.getTime()}-${log.message}`} color={levelColor}>
                             {sanitized}
                         </Text>
                     );

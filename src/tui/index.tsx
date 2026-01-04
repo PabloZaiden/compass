@@ -27,9 +27,11 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
     const [result, setResult] = useState<RunnerResult>();
     const [isRunning, setIsRunning] = useState(false);
     const [terminalHeight, setTerminalHeight] = useState(process.stdout.rows || 24);
-    const [showJsonResults, setShowJsonResults] = useState(false);
     const [spinnerFrame, setSpinnerFrame] = useState(0);
     const [lastCopyAction, setLastCopyAction] = useState<string>("");
+    const [focusedPanel, setFocusedPanel] = useState<"config" | "logs" | "results">("config");
+    const [logsScrollOffset, setLogsScrollOffset] = useState(0);
+    const [resultsScrollOffset, setResultsScrollOffset] = useState(0);
 
     const spinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -178,9 +180,22 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
             return;
         }
 
-        // Toggle JSON view in results (Tab key when in results mode)
-        if (key.tab && (mode === "results" || mode === "error") && result) {
-            setShowJsonResults((prev) => !prev);
+        // Toggle JSON view in results (Tab key when in results mode) - removed, now using Tab for panel switching
+        // Tab to cycle through panels
+        if (key.tab && !key.shift) {
+            const panels: Array<"config" | "logs" | "results"> = [];
+            if (mode === "config") panels.push("config");
+            if (logsVisible) panels.push("logs");
+            if (mode === "results" || mode === "error") panels.push("results");
+            
+            if (panels.length > 0) {
+                const currentIndex = panels.indexOf(focusedPanel);
+                const nextIndex = (currentIndex + 1) % panels.length;
+                const nextPanel = panels[nextIndex];
+                if (nextPanel) {
+                    setFocusedPanel(nextPanel);
+                }
+            }
             return;
         }
 
@@ -195,7 +210,8 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
         if (key.return && (mode === "results" || mode === "error")) {
             setMode("config");
             setSelectedFieldIndex(0);
-            setShowJsonResults(false);
+            setResultsScrollOffset(0);
+            setFocusedPanel("config");
             return;
         }
 
@@ -216,16 +232,40 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
             return;
         }
 
-        // Navigation in config mode (only when not running)
-        if (mode === "config" && !isRunning) {
-            if (key.downArrow || (key.tab && !key.shift)) {
+        // Arrow key navigation - depends on focused panel
+        if (focusedPanel === "config" && mode === "config" && !isRunning) {
+            if (key.downArrow) {
                 setSelectedFieldIndex((prev) => (prev + 1) % 12); // 11 fields + run button
                 return;
             }
-            if (key.upArrow || (key.tab && key.shift)) {
+            if (key.upArrow) {
                 setSelectedFieldIndex((prev) => (prev - 1 + 12) % 12);
                 return;
             }
+        } else if (focusedPanel === "logs" && logsVisible) {
+            // Scroll by 1 visual line at a time
+            if (key.downArrow) {
+                setLogsScrollOffset((prev) => prev + 1);
+                return;
+            }
+            if (key.upArrow) {
+                setLogsScrollOffset((prev) => Math.max(prev - 1, 0));
+                return;
+            }
+        } else if (focusedPanel === "results" && (mode === "results" || mode === "error") && result) {
+            // Scroll by 1 visual line at a time
+            if (key.downArrow) {
+                setResultsScrollOffset((prev) => prev + 1);
+                return;
+            }
+            if (key.upArrow) {
+                setResultsScrollOffset((prev) => Math.max(prev - 1, 0));
+                return;
+            }
+        }
+
+        // Navigation in config mode (only when not running and focused on config)
+        if (mode === "config" && !isRunning && focusedPanel === "config") {
 
             // Enter to edit field or run
             if (key.return) {
@@ -298,7 +338,7 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
             {/* Header */}
             <Box paddingX={1} flexDirection="column">
                 <Text color="blue" bold>
-                    Compass TUI (Ink) – ↑↓ navigate • Enter edit/run • Ctrl+R run • Ctrl+L logs • q quit
+                    Compass TUI (Ink) – Tab switch panel • ↑↓ navigate/scroll • Enter edit/run • Ctrl+R run • q quit
                 </Text>
             </Box>
 
@@ -309,6 +349,7 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
                         values={values}
                         selectedFieldIndex={selectedFieldIndex}
                         maxHeight={configHeight}
+                        isFocused={focusedPanel === "config"}
                     />
                 </Box>
             )}
@@ -327,10 +368,11 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
                         result={result} 
                         isLoading={isRunning} 
                         maxHeight={panelHeight}
-                        showJson={showJsonResults}
+                        scrollOffset={resultsScrollOffset}
+                        isFocused={focusedPanel === "results"}
                     />
                     <Box paddingX={1} marginTop={1}>
-                        <Text color="cyan">Press Enter to return to config • Tab to toggle JSON • c to copy</Text>
+                        <Text color="cyan">Press Enter to return to config • Tab to switch panel • c to copy</Text>
                     </Box>
                 </Box>
             )}
@@ -363,6 +405,8 @@ export const App: React.FC<AppProps> = ({ onExit }) => {
                     messages={logs} 
                     maxLines={logMaxLines}
                     height={panelHeight}
+                    scrollOffset={logsScrollOffset}
+                    isFocused={focusedPanel === "logs"}
                 />
             )}
 
