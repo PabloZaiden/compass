@@ -101,15 +101,15 @@ export function App({ onExit }: AppProps) {
         setMode(Mode.Running);
         clearLogs();
         
-        await run(values);
+        const outcome = await run(values);
         
-        if (error) {
-            setMode(Mode.Error);
-        } else {
+        if (outcome.success) {
             setMode(Mode.Results);
             setFocusedSection(FocusedSection.Results);
+        } else {
+            setMode(Mode.Error);
         }
-    }, [isRunning, values, run, clearLogs, error]);
+    }, [isRunning, values, run, clearLogs]);
 
     // Handle field editing
     const handleEditField = useCallback((fieldKey: keyof Config) => {
