@@ -2,11 +2,11 @@ import { stdout } from "bun";
 import { fromProcess } from "./config/process";
 import { Runner } from "./runner";
 import { logger } from "./utils";
+import { launchOpenTui } from "./opentui/launcher";
 
-const useTui = process.env["COMPASS_TUI"] === "1" || process.env["COMPASS_TUI"] === "true";
+const useTui = Bun.argv.slice(2).length === 0;
 
 if (useTui) {
-    const { launchOpenTui } = await import("./opentui/launcher");
     await launchOpenTui();
 } else {
     const config = await fromProcess(Bun.argv.slice(2));
