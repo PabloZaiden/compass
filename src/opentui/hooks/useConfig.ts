@@ -34,7 +34,7 @@ function loadConfigFromDisk(): Config {
         if (existsSync(CONFIG_FILE)) {
             const content = readFileSync(CONFIG_FILE, "utf-8");
             const saved = JSON.parse(content) as Partial<Config>;
-            logger.debug(`Loaded config from ${CONFIG_FILE}`);
+            logger.info(`Loaded config from ${CONFIG_FILE}`);
             return { ...defaults, ...saved };
         }
     } catch (e) {
@@ -49,7 +49,7 @@ function saveConfigToDisk(values: Config): void {
             mkdirSync(CONFIG_DIR, { recursive: true });
         }
         writeFileSync(CONFIG_FILE, JSON.stringify(values, null, 2), "utf-8");
-        logger.debug(`Saved config to ${CONFIG_FILE}`);
+        logger.info(`Saved config to ${CONFIG_FILE}`);
     } catch (e) {
         logger.warn(`Failed to save config: ${e}`);
     }
@@ -62,7 +62,12 @@ export interface UseConfigResult {
 }
 
 export function useConfig(): UseConfigResult {
-    const [values, setValues] = useState<Config>(loadConfigFromDisk);
+    const [values, setValues] = useState<Config>(() => {
+        const config = loadConfigFromDisk();
+        // Apply initial log level
+        logger.settings.minLevel = config.logLevel;
+        return config;
+    });
 
     const updateValue = useCallback((key: keyof Config, value: unknown) => {
         setValues((prev) => {
@@ -73,6 +78,11 @@ export function useConfig(): UseConfigResult {
                 const newAgent = value as AgentTypes;
                 updated.model = defaultModels[newAgent] ?? "";
                 updated.evalModel = defaultModels[newAgent] ?? "";
+            }
+
+            // Update log level when changed
+            if (key === "logLevel") {
+                logger.settings.minLevel = value as number;
             }
 
             // Save to disk

@@ -12,7 +12,7 @@ interface StatusBarProps {
 export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = true }: StatusBarProps) {
     const spinner = isRunning ? `${SpinnerFrames[spinnerFrame % SpinnerFrames.length] ?? SpinnerFrames[0]} ` : "";
     
-    const shortcuts = "Ctrl+F CLI flags • Ctrl+L logs • Ctrl+Y copy • Tab switch panels • q/Esc quit";
+    const shortcuts = "Ctrl+L logs • Ctrl+F CLI flags • Tab switch panels • Ctrl+Y copy panel content • q/Esc quit";
     
     return (
         <box
@@ -21,7 +21,6 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
             border={true}
             borderStyle="rounded"
             borderColor={isRunning ? "#4ade80" : Theme.border}
-            height={showShortcuts ? 4 : 3}
             flexShrink={0}
         >
             {/* Main status with spinner */}
@@ -29,7 +28,8 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
                 flexDirection="row"
                 justifyContent="space-between"
                 backgroundColor={isRunning ? "#1a1a2e" : undefined}
-                padding={1}
+                paddingLeft={1}
+                paddingRight={1}
             >
                 <text fg={isRunning ? "#4ade80" : Theme.statusText}>
                     {isRunning ? <strong>{spinner}{status}</strong> : <>{spinner}{status}</>}
@@ -38,7 +38,7 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
             
             {/* Keyboard shortcuts */}
             {showShortcuts && (
-                <box padding={1}>
+                <box paddingLeft={1} paddingRight={1}>
                     <text fg={Theme.label}>
                         {shortcuts}
                     </text>
