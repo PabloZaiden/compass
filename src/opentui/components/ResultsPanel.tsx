@@ -1,20 +1,22 @@
 import type React from "react";
 import type { RunnerResult } from "../../models";
 import { Theme } from "../types";
+import { Classification } from "../../models";
 
-// Classification colors
-const CLASSIFICATION_COLORS: Record<string, string> = {
-    SUCCESS: "#4ade80",  // green
-    PARTIAL: "#fbbf24",  // yellow/amber
-    FAILURE: "#f87171",  // red
-};
-
-// Classification icons
-const CLASSIFICATION_ICONS: Record<string, string> = {
-    SUCCESS: "✓",
-    PARTIAL: "◐",
-    FAILURE: "✗",
-};
+const ClassificationTheme = {
+    [Classification.SUCCESS]: {
+        color: "#4ade80",
+        icon: "✓",
+    },
+    [Classification.PARTIAL]: {
+        color: "#fbbf24",
+        icon: "◐",
+    },
+    [Classification.FAILURE]: {
+        color: "#f87171",
+        icon: "✗",
+    },
+} as const
 
 interface ResultsPanelProps {
     result: RunnerResult | null;
@@ -32,67 +34,7 @@ export function ResultsPanel({
     height = 20,
 }: ResultsPanelProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
-    
-    if (isLoading) {
-        return (
-            <box
-                flexDirection="column"
-                border={true}
-                borderStyle="rounded"
-                borderColor="green"
-                title="Results"
-                height={height}
-                flexGrow={1}
-                padding={1}
-            >
-                <text fg="#f5c542">Running iterations...</text>
-            </box>
-        );
-    }
 
-    if (error) {
-        return (
-            <box
-                flexDirection="column"
-                border={true}
-                borderStyle="rounded"
-                borderColor="#f78888"
-                title="Error"
-                height={height}
-                flexGrow={1}
-                padding={1}
-            >
-                <scrollbox scrollY={true} flexGrow={1}>
-                    <box flexDirection="column" gap={1} padding={1}>
-                        <text fg="#f78888">
-                            <strong>Error occurred:</strong>
-                        </text>
-                        <text fg={Theme.statusText}>{error}</text>
-                    </box>
-                </scrollbox>
-            </box>
-        );
-    }
-
-    if (!result) {
-        return (
-            <box
-                flexDirection="column"
-                border={true}
-                borderStyle="rounded"
-                borderColor={borderColor}
-                title="Results"
-                height={height}
-                flexGrow={1}
-                padding={1}
-            >
-                <text fg={Theme.label}>No results yet. Run iterations to see results.</text>
-            </box>
-        );
-    }
-
-    const jsonString = JSON.stringify(result, null, 2);
-    
     // Simple JSON syntax highlighting
     const highlightJsonLine = (line: string): React.ReactNode[] => {
         const elements: React.ReactNode[] = [];
@@ -151,19 +93,33 @@ export function ResultsPanel({
         return elements;
     };
 
-    return (
-        <box
-            flexDirection="column"
-            border={true}
-            borderStyle="rounded"
-            borderColor={borderColor}
-            title="Results"
-            height={height}
-            flexGrow={1}
-            padding={1}
-        >
+    const renderContent = () => {
+        if (isLoading) {
+            return <text fg="#f5c542">Running iterations...</text>;
+        }
+
+        if (error) {
+            return (
+                <scrollbox scrollY={true} flexGrow={1}>
+                    <box flexDirection="column" gap={1} padding={1}>
+                        <text fg="#f78888">
+                            <strong>Error occurred:</strong>
+                        </text>
+                        <text fg={Theme.statusText}>{error}</text>
+                    </box>
+                </scrollbox>
+            );
+        }
+
+        if (!result) {
+            return <text fg={Theme.label}>No results yet. Run iterations to see results.</text>;
+        }
+
+        const jsonString = JSON.stringify(result, null, 2);
+
+        return (
             <scrollbox scrollY={true} flexGrow={1} focused={focused}>
-                <box flexDirection="column" gap={0} padding={1}>
+                <box flexDirection="column" gap={0} padding={0}>
                     {/* Summary Header */}
                     <text fg="#61afef">
                         <strong>── Summary ──────────────────────────────────────</strong>
@@ -175,8 +131,8 @@ export function ResultsPanel({
                         <strong>📊 Iteration Results ({result.iterationResults.length})</strong>
                     </text>
                     {result.iterationResults.map((iter, idx) => {
-                        const color = CLASSIFICATION_COLORS[iter.classification] ?? Theme.statusText;
-                        const icon = CLASSIFICATION_ICONS[iter.classification] ?? "•";
+                        const color = ClassificationTheme[Classification[iter.classification]]?.color ?? Theme.statusText;
+                        const icon = ClassificationTheme[Classification[iter.classification]]?.icon ?? "•";
                         return (
                             <text key={`iter-${idx}`} fg={color}>
                                 {"   "}{icon} {iter.promptId} #{iter.iteration + 1}: {iter.classification} ({iter.points} pts)
@@ -217,6 +173,21 @@ export function ResultsPanel({
                     ))}
                 </box>
             </scrollbox>
+        );
+    };
+
+    return (
+        <box
+            flexDirection="column"
+            border={true}
+            borderStyle="rounded"
+            borderColor={borderColor}
+            title="Results"
+            height={height}
+            flexGrow={1}
+            padding={1}
+        >
+            {renderContent()}
         </box>
     );
 }
