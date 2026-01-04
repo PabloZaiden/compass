@@ -1,6 +1,6 @@
 import type { Config } from "../../config/config";
 import { Theme } from "../types";
-import { FIELD_CONFIGS, getDisplayValue } from "../utils";
+import { FieldConfigs, getDisplayValue } from "../utils";
 import { FieldRow } from "./FieldRow";
 import { RunButton } from "./RunButton";
 
@@ -34,7 +34,7 @@ export function ConfigForm({
                 flexGrow={1}
             >
                 <box flexDirection="column" gap={0}>
-                    {FIELD_CONFIGS.map((field, idx) => {
+                    {FieldConfigs.map((field, idx) => {
                         const isSelected = idx === selectedIndex;
                         const displayValue = getDisplayValue(
                             field.key,
@@ -52,7 +52,7 @@ export function ConfigForm({
                         );
                     })}
                     
-                    <RunButton isSelected={selectedIndex === FIELD_CONFIGS.length} />
+                    <RunButton isSelected={selectedIndex === FieldConfigs.length} />
                 </box>
             </scrollbox>
         </box>

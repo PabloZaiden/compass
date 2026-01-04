@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { SelectOption } from "@opentui/core";
 import type { Config } from "../../config/config";
 import { Theme } from "../types";
-import { FIELD_CONFIGS, getFieldOptions } from "../utils";
+import { FieldConfigs, getFieldOptions } from "../utils";
 
 interface EditorModalProps {
     fieldKey: keyof Config | null;
@@ -40,7 +40,7 @@ export function EditorModal({
         return null;
     }
 
-    const fieldConfig = FIELD_CONFIGS.find((f) => f.key === fieldKey);
+    const fieldConfig = FieldConfigs.find((f) => f.key === fieldKey);
     if (!fieldConfig) {
         return null;
     }

@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import type { Config } from "../config/config";
 import { Theme } from "./types";
-import { FIELD_CONFIGS, buildCliCommand } from "./utils";
+import { FieldConfigs, buildCliCommand } from "./utils";
 import {
     useConfig,
     useRunner,
@@ -57,7 +57,7 @@ export function App({ onExit }: AppProps) {
     const [configStatus, setConfigStatus] = useState<string | null>(null);
 
     // Computed values
-    const totalFields = FIELD_CONFIGS.length + 1; // +1 for run button
+    const totalFields = FieldConfigs.length + 1; // +1 for run button
     const cliCommand = useMemo(() => buildCliCommand(values), [values]);
     
     // Status message
@@ -251,10 +251,10 @@ export function App({ onExit }: AppProps) {
             
             if (mode === Mode.Config && focusedSection === FocusedSection.Config) {
                 // Check if run button is selected
-                if (selectedFieldIndex === FIELD_CONFIGS.length) {
+                if (selectedFieldIndex === FieldConfigs.length) {
                     void handleRun();
                 } else {
-                    const fieldConfig = FIELD_CONFIGS[selectedFieldIndex];
+                    const fieldConfig = FieldConfigs[selectedFieldIndex];
                     if (fieldConfig) {
                         handleEditField(fieldConfig.key);
                     }

@@ -1,4 +1,4 @@
-import { AgentTypes, defaultModels } from "../agents/factory";
+import { AgentTypes } from "../agents/factory";
 import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
@@ -18,7 +18,7 @@ interface FieldConfig {
 }
 
 // Field definitions with labels and types
-export const FIELD_CONFIGS: FieldConfig[] = [
+export const FieldConfigs: FieldConfig[] = [
     { key: "agentType", label: "Agent", type: "enum" },
     { key: "repoPath", label: "Repository path", type: "text" },
     { key: "fixture", label: "Fixture file", type: "text" },
@@ -69,10 +69,6 @@ export function getDisplayValue(
     }
     const strValue = String(value ?? "");
     return strValue.length > 60 ? strValue.substring(0, 57) + "..." : strValue;
-}
-
-export function getModelForAgent(agentType: AgentTypes): string {
-    return defaultModels[agentType] ?? "";
 }
 
 export function buildCliCommand(values: Config): string {
