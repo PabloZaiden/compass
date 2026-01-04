@@ -42,6 +42,21 @@ export function escapeArg(arg: string): string {
     return `"${arg.replaceAll('"', '\\"')}"`;
 }
 
+export function stripAnsiCodes(text: string): string {
+    // Remove all ANSI escape sequences comprehensively:
+    // - CSI sequences: ESC [ ... letter (e.g., \x1b[96m, \x1b[1m, \x1b[0m)
+    // - OSC sequences: ESC ] ... BEL or ESC ] ... ST
+    // - Simple escapes: ESC followed by single char
+    // eslint-disable-next-line no-control-regex
+    return text
+        .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "")      // CSI sequences
+        .replace(/\x1b\][^\x07]*\x07/g, "")          // OSC sequences (BEL terminated)
+        .replace(/\x1b\][^\x1b]*\x1b\\/g, "")        // OSC sequences (ST terminated)
+        .replace(/\x1b[PX^_][^\x1b]*\x1b\\/g, "")    // DCS, SOS, PM, APC sequences
+        .replace(/\x1b[@-Z\\-_]/g, "")               // Fe escape sequences
+        .replace(/\x1b[ -/][@-~]/g, "");             // 2-byte sequences
+}
+
 
 export type TuiLogEvent = {
     message: string;

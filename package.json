@@ -5,17 +5,18 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/react": "^18.2.0"
+    "@types/react": "^19"
   },
   "peerDependencies": {
     "typescript": "5.9.3"
   },
   "dependencies": {
     "@opentui/core": "0.1.68",
-    "ink": "^5.0.1",
-    "ink-select-input": "^5.0.0",
-    "ink-text-input": "^5.0.0",
-    "react": "^18.2.0",
+    "@opentui/react": "^0.1.68",
+    "ink": "^6.6.0",
+    "ink-select-input": "^6.2.0",
+    "ink-text-input": "^6.0.0",
+    "react": "19",
     "tslog": "^4.10.2"
   },
   "scripts": {

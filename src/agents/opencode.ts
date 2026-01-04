@@ -1,5 +1,5 @@
 import type { AgentOutput } from "../models";
-import { logger, run } from "../utils";
+import { logger, run, stripAnsiCodes } from "../utils";
 import { Agent, type AgentOptions } from "./agent";
 
 export class OpenCode extends Agent {
@@ -26,8 +26,8 @@ export class OpenCode extends Agent {
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
 
         return {
-            stdOut: processOutput.stdOut.trim(),
-            stdErr: processOutput.stdErr.trim(),
+            stdOut: stripAnsiCodes(processOutput.stdOut.trim()),
+            stdErr: stripAnsiCodes(processOutput.stdErr.trim()),
             exitCode: processOutput.exitCode,
             gitDiff: diff.stdOut.trim()
         };
