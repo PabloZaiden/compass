@@ -3,6 +3,7 @@ import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
 import type { Config } from "../config/config";
+import { isCompiledBinary } from "./launcher";
 
 type FieldType = "text" | "number" | "enum" | "boolean";
 
@@ -94,7 +95,7 @@ export function getDisplayValue(
 }
 
 export function buildCliCommand(values: Config): string {
-    const parts = ["bun", "src/index.ts"];
+    const parts = isCompiledBinary ? ["./compass"] : ["bun", "src/index.ts"];
     
     parts.push("--agent", escapeArg(AgentTypes[values.agentType] ?? ""));
     parts.push("--repo", escapeArg(values.repoPath));
