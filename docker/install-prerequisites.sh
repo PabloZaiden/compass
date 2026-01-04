@@ -50,8 +50,11 @@ fi
 
 ZIG_URL="https://ziglang.org/download/$ZIG_VERSION/zig-$ZIG_ARCH-$ZIG_OS-0.15.2.tar.xz"
 
+echo "Zig download URL: $ZIG_URL"
 echo "Download and extract zig..."
 curl -fsSL $ZIG_URL -o /tmp/zig.tar.xz
+
+echo "Zig downloaded to /tmp/zig.tar.xz, extracting..."
 tar -xf /tmp/zig.tar.xz -C /tmp
 
 echo "Move zig to $HOME/.local/zig..."

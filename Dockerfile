@@ -27,7 +27,7 @@ RUN bun build --compile --outfile=compass ./src/index.ts
 # copy production dependencies and source code into final image
 FROM base AS release
 
-RUN apt-get update && apt-get install -y curl git sudo
+RUN apt-get update && apt-get install -y curl git sudo xz-utils
 
 # install az cli here, since it requires sudo permissions
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
