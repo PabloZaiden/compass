@@ -48,7 +48,7 @@ if [ "$ZIG_ARCH" = "aarch64" ] || [ "$ZIG_ARCH" = "arm64" ]; then
     ZIG_ARCH="aarch64"
 fi
 
-ZIG_URL="https://ziglang.org/download/$ZIG_VERSION/zig-$ZIG_ARCH-$ZIG_OS-0.15.2.tar.xz"
+ZIG_URL="https://ziglang.org/download/$ZIG_VERSION/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION.tar.xz"
 
 echo "Zig download URL: $ZIG_URL"
 echo "Download and extract zig..."
