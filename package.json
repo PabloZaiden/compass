@@ -13,9 +13,6 @@
   "dependencies": {
     "@opentui/core": "0.1.68",
     "@opentui/react": "^0.1.68",
-    "ink": "^6.6.0",
-    "ink-select-input": "^6.2.0",
-    "ink-text-input": "^6.0.0",
     "react": "19",
     "tslog": "^4.10.2"
   },

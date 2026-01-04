@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import type { LogEntry } from "../types";
 import { THEME, LOG_COLORS } from "../types";
 

@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import type { FormValues, Mode, FocusedSection } from "./types";

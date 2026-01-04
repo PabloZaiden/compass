@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import type { FormValues } from "../types";
 import { THEME } from "../types";
 import { FIELD_CONFIGS, getDisplayValue } from "../utils";

@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import { THEME } from "../types";
 
 export function Header() {

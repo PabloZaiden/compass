@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import type React from "react";
 import type { RunnerResult } from "../../models";
 import { THEME } from "../types";

@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import { useState, useEffect } from "react";
 import type { SelectOption } from "@opentui/core";
 import type { FormValues } from "../types";

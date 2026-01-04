@@ -1,4 +1,3 @@
-/** @jsxImportSource @opentui/react */
 import { THEME, SPINNER_FRAMES } from "../types";
 
 interface StatusBarProps {
