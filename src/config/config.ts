@@ -1,6 +1,6 @@
 import { AgentTypes } from "../agents/factory";
 import { OutputMode } from "../models";
-import type { LogLevel } from "../utils";
+import type { LogLevel } from "../logging";
 
 export interface OptionalConfig {
     iterationCount: number;

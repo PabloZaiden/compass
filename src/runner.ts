@@ -1,4 +1,5 @@
-import { copyDirectory, logger, run } from "./utils";
+import { copyDirectory, run } from "./utils";
+import { logger } from "./logging";
 import type { Fixture, IterationResult, ProcessOutput, RunnerResult } from "./models";
 import { tmpdir } from "os";
 import { Cache } from "./agents/cache";

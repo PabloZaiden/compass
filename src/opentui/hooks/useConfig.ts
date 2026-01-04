@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { AgentTypes, defaultModels } from "../../agents/factory";
 import { defaultConfigValues } from "../../config/default";
-import { logger } from "../../utils";
+import { logger } from "../../logging";
 import type { FormValues } from "../types";
 
 const CONFIG_DIR = join(homedir(), ".compass");

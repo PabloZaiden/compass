@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { onLogEvent, type TuiLogEvent } from "../../utils";
+import { onLogEvent, type TuiLogEvent } from "../../logging";
 import type { LogEntry } from "../types";
 
 const MAX_LOGS = 100;

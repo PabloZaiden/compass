@@ -1,6 +1,7 @@
 import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode } from "../models";
-import { LogLevel, escapeArg } from "../utils";
+import { escapeArg } from "../utils";
+import { LogLevel } from "../logging";
 import type { FieldConfig, FieldOption, FormValues } from "./types";
 
 // Field definitions with labels and types

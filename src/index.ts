@@ -1,7 +1,7 @@
 import { stdout } from "bun";
 import { fromProcess } from "./config/process";
 import { Runner } from "./runner";
-import { logger } from "./utils";
+import { logger } from "./logging";
 import { launchOpenTui } from "./opentui/launcher";
 
 const useTui = Bun.argv.slice(2).length === 0;

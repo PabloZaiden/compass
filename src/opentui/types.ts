@@ -1,6 +1,6 @@
 import type { AgentTypes } from "../agents/factory";
 import type { OutputMode, RunnerResult } from "../models";
-import type { LogLevel } from "../utils";
+import { LogLevel } from "../logging";
 
 export type FormValues = {
     repoPath: string;
@@ -56,13 +56,13 @@ export interface AppState {
 
 // Colors matching the imperative TUI
 export const LOG_COLORS: Record<LogLevel, string> = {
-    0: "#8c8c8c", // Silly
-    1: "#6dd6ff", // Trace
-    2: "#7bdcb5", // Debug
-    3: "#d6dde6", // Info
-    4: "#f5c542", // Warn
-    5: "#f78888", // Error
-    6: "#ff5c8d", // Fatal
+    [LogLevel.Silly]: "#8c8c8c", // Silly
+    [LogLevel.Trace]: "#6dd6ff", // Trace
+    [LogLevel.Debug]: "#7bdcb5", // Debug
+    [LogLevel.Info]: "#d6dde6", // Info
+    [LogLevel.Warn]: "#f5c542", // Warn
+    [LogLevel.Error]: "#f78888", // Error
+    [LogLevel.Fatal]: "#ff5c8d", // Fatal
 };
 
 export const THEME = {

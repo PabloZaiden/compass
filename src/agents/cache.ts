@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import type { AgentOutput } from "../models";
-import { logger, run } from "../utils";
+import { run } from "../utils";
+import { logger } from "../logging";
 import { Agent, type AgentOptions } from "./agent";
 import path from "path";
 import { tmpdir } from "os";

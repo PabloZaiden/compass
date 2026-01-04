@@ -36,7 +36,7 @@ echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" ' >> $HOME/.bas
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" '>> $HOME/.zshrc
 
 # install brew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $HOME/.bashrc
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 

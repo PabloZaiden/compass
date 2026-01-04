@@ -1,6 +1,7 @@
 import { stripANSI } from "bun";
 import type { AgentOutput } from "../models";
-import { logger, run } from "../utils";
+import { run } from "../utils";
+import { logger } from "../logging";
 import { Agent, type AgentOptions } from "./agent";
 
 export class Gemini extends Agent {

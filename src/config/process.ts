@@ -2,7 +2,7 @@ import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, parseEnum, values } from "../models";
 import type { Config } from "./config";
 import { defaultConfigValues } from "./default";
-import { LogLevel } from "../utils";
+import { LogLevel } from "../logging";
 import { existsSync } from "node:fs";
 
 function getArgFromCliOrEnv(args: string[], name: string, required = true): string | undefined {
