@@ -1,4 +1,6 @@
-import { Theme, SpinnerFrames } from "../types";
+import { Theme } from "../types";
+
+const SpinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 interface StatusBarProps {
     status: string;
@@ -8,7 +10,7 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = true }: StatusBarProps) {
-    const spinner = isRunning ? `${SpinnerFrames[spinnerFrame] ?? "⠋"} ` : "";
+    const spinner = isRunning ? `${SpinnerFrames[spinnerFrame] ?? SpinnerFrames[0]} ` : "";
     
     const shortcuts = "Ctrl+F CLI flags • Ctrl+L logs • Ctrl+Y copy • Tab switch panels • q/Esc quit";
     

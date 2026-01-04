@@ -3,7 +3,19 @@ import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
 import type { Config } from "../config/config";
-import type { FieldConfig, FieldOption } from "./types";
+import type {FieldType } from "./types";
+
+interface FieldOption {
+    name: string;
+    value: unknown;
+}
+
+interface FieldConfig {
+    key: keyof Config;
+    label: string;
+    type: FieldType;
+    options?: FieldOption[];
+}
 
 // Field definitions with labels and types
 export const FIELD_CONFIGS: FieldConfig[] = [
@@ -20,29 +32,11 @@ export const FIELD_CONFIGS: FieldConfig[] = [
     { key: "evalModel", label: "Eval model", type: "text" },
 ];
 
-export function getAgentOptions(): FieldOption[] {
-    return Object.values(AgentTypes)
-        .filter((value): value is AgentTypes => typeof value === "number")
+function getEnumOptions<T extends Record<string, string | number>>(enumObj: T): FieldOption[] {
+    return Object.values(enumObj)
+        .filter((value): value is T[keyof T] & number => typeof value === "number")
         .map((value) => ({
-            name: AgentTypes[value] ?? String(value),
-            value,
-        }));
-}
-
-export function getOutputModeOptions(): FieldOption[] {
-    return Object.values(OutputMode)
-        .filter((value): value is OutputMode => typeof value === "number")
-        .map((value) => ({
-            name: OutputMode[value] ?? String(value),
-            value,
-        }));
-}
-
-export function getLogLevelOptions(): FieldOption[] {
-    return Object.values(LogLevel)
-        .filter((value): value is LogLevel => typeof value === "number")
-        .map((value) => ({
-            name: LogLevel[value] ?? String(value),
+            name: enumObj[value as keyof T] as string,
             value,
         }));
 }
@@ -50,11 +44,11 @@ export function getLogLevelOptions(): FieldOption[] {
 export function getFieldOptions(key: keyof Config): FieldOption[] | undefined {
     switch (key) {
         case "agentType":
-            return getAgentOptions();
+            return getEnumOptions(AgentTypes);
         case "outputMode":
-            return getOutputModeOptions();
+            return getEnumOptions(OutputMode);
         case "logLevel":
-            return getLogLevelOptions();
+            return getEnumOptions(LogLevel);
         default:
             return undefined;
     }
@@ -88,12 +82,11 @@ export function buildCliCommand(values: Config): string {
     parts.push("--repo", escapeArg(values.repoPath));
     parts.push("--fixture", escapeArg(values.fixture));
     parts.push("--iterations", String(values.iterationCount));
-    parts.push("--output", escapeArg(OutputMode[values.outputMode] ?? ""));
+    parts.push("--output-mode", escapeArg(OutputMode[values.outputMode] ?? ""));
     parts.push("--log-level", escapeArg(LogLevel[values.logLevel] ?? ""));
-    
-    if (values.useCache) parts.push("--cache");
-    if (!values.stopOnError) parts.push("--no-stop-on-error");
-    if (!values.allowFullAccess) parts.push("--no-full-access");
+    parts.push("--use-cache", String(values.useCache));
+    parts.push("--stop-on-error", String(values.stopOnError));
+    parts.push("--allow-full-access", String(values.allowFullAccess));
     if (values.model) parts.push("--model", escapeArg(values.model));
     if (values.evalModel) parts.push("--eval-model", escapeArg(values.evalModel));
     

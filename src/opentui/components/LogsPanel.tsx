@@ -1,6 +1,18 @@
 import { stripANSI } from "bun";
 import type { LogEntry } from "../types";
-import { Theme, LogColors } from "../types";
+import { Theme } from "../types";
+import { LogLevel } from "../../logging";
+
+// Colors matching the imperative TUI
+const LogColors: Record<LogLevel, string> = {
+    [LogLevel.Silly]: "#8c8c8c",
+    [LogLevel.Trace]: "#6dd6ff",
+    [LogLevel.Debug]: "#7bdcb5",
+    [LogLevel.Info]: "#d6dde6",
+    [LogLevel.Warn]: "#f5c542",
+    [LogLevel.Error]: "#f78888",
+    [LogLevel.Fatal]: "#ff5c8d",
+};
 
 interface LogsPanelProps {
     logs: LogEntry[];
@@ -8,7 +20,6 @@ interface LogsPanelProps {
     focused: boolean;
     height?: number;
 }
-
 
 export function LogsPanel({
     logs,

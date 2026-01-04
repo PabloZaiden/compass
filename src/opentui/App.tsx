@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import type { Config } from "../config/config";
-import type { Mode, FocusedSection } from "./types";
 import { Theme } from "./types";
 import { FIELD_CONFIGS, buildCliCommand } from "./utils";
 import {
@@ -21,6 +20,19 @@ import {
     CliOverlay,
 } from "./components";
 
+enum Mode {
+    Config,
+    Running,
+    Results,
+    Error,
+}
+
+enum FocusedSection {
+    Config,
+    Logs,
+    Results,
+}
+
 interface AppProps {
     onExit: () => void;
 }
@@ -36,10 +48,10 @@ export function App({ onExit }: AppProps) {
     const { frameIndex } = useSpinner(isRunning);
 
     // UI state
-    const [mode, setMode] = useState<Mode>("config");
+    const [mode, setMode] = useState<Mode>(Mode.Config);
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
     const [editingField, setEditingField] = useState<keyof Config | null>(null);
-    const [focusedSection, setFocusedSection] = useState<FocusedSection>("config");
+    const [focusedSection, setFocusedSection] = useState<FocusedSection>(FocusedSection.Config);
     const [logsVisible, setLogsVisible] = useState(true);
     const [cliOverlayVisible, setCliOverlayVisible] = useState(false);
     const [configStatus, setConfigStatus] = useState<string | null>(null);
@@ -52,8 +64,8 @@ export function App({ onExit }: AppProps) {
     const status = useMemo(() => {
         if (copyStatus) return copyStatus;
         if (isRunning) return "Running benchmark...";
-        if (mode === "error") return "Error occurred. Press Enter to return to config.";
-        if (mode === "results") return "Run completed. Press Enter to return to config.";
+        if (mode === Mode.Error) return "Error occurred. Press Enter to return to config.";
+        if (mode === Mode.Results) return "Run completed. Press Enter to return to config.";
         if (editingField) return `Editing: ${editingField}. Enter to save, Esc to cancel.`;
         if (configStatus) return configStatus;
         return "Ready. Select [Run] and press Enter to start.";
@@ -66,9 +78,9 @@ export function App({ onExit }: AppProps) {
         }
         
         switch (focusedSection) {
-            case "config":
+            case FocusedSection.Config:
                 return { content: JSON.stringify(values, null, 2), label: "Config JSON" };
-            case "logs":
+            case FocusedSection.Logs:
                 if (logs.length === 0) return null;
                 return {
                     content: logs
@@ -76,7 +88,7 @@ export function App({ onExit }: AppProps) {
                         .join("\n"),
                     label: "Logs"
                 };
-            case "results":
+            case FocusedSection.Results:
                 if (result) return { content: JSON.stringify(result, null, 2), label: "Results JSON" };
                 if (error) return { content: error, label: "Error" };
                 return null;
@@ -89,16 +101,16 @@ export function App({ onExit }: AppProps) {
     const handleRun = useCallback(async () => {
         if (isRunning) return;
         
-        setMode("running");
+        setMode(Mode.Running);
         clearLogs();
         
         await run(values);
         
         if (error) {
-            setMode("error");
+            setMode(Mode.Error);
         } else {
-            setMode("results");
-            setFocusedSection("results");
+            setMode(Mode.Results);
+            setFocusedSection(FocusedSection.Results);
         }
     }, [isRunning, values, run, clearLogs, error]);
 
@@ -122,8 +134,8 @@ export function App({ onExit }: AppProps) {
 
     // Return to config mode
     const handleReturnToConfig = useCallback(() => {
-        setMode("config");
-        setFocusedSection("config");
+        setMode(Mode.Config);
+        setFocusedSection(FocusedSection.Config);
         reset();
     }, [reset]);
 
@@ -141,15 +153,15 @@ export function App({ onExit }: AppProps) {
     const cycleFocusedSection = useCallback(() => {
         const availableSections: FocusedSection[] = [];
         
-        if (mode === "config") availableSections.push("config");
-        if (mode === "results" || mode === "error") availableSections.push("results");
-        if (logsVisible) availableSections.push("logs");
+        if (mode === Mode.Config) availableSections.push(FocusedSection.Config);
+        if (mode === Mode.Results || mode === Mode.Error) availableSections.push(FocusedSection.Results);
+        if (logsVisible) availableSections.push(FocusedSection.Logs);
         
         if (availableSections.length === 0) return;
         
         const currentIdx = availableSections.indexOf(focusedSection);
         const nextIdx = (currentIdx + 1) % availableSections.length;
-        setFocusedSection(availableSections[nextIdx] ?? "config");
+        setFocusedSection(availableSections[nextIdx] ?? FocusedSection.Config);
     }, [mode, logsVisible, focusedSection]);
 
     // Keyboard handling
@@ -203,7 +215,7 @@ export function App({ onExit }: AppProps) {
 
         // Quit with q or Escape (when not running or in overlay)
         if (!cliOverlayVisible && !isRunning && (key.name === "q" || key.name === "escape")) {
-            if (mode === "config") {
+            if (mode === Mode.Config) {
                 onExit();
             } else {
                 handleReturnToConfig();
@@ -218,13 +230,13 @@ export function App({ onExit }: AppProps) {
         }
 
         // Arrow key navigation for config form only
-        if (mode === "config" && focusedSection === "config") {
-            if (key.name === "down" || key.name === "j") {
+        if (mode === Mode.Config && focusedSection === FocusedSection.Config) {
+            if (key.name === "down") {
                 moveSelection(1);
                 return;
             }
 
-            if (key.name === "up" || key.name === "k") {
+            if (key.name === "up") {
                 moveSelection(-1);
                 return;
             }
@@ -232,12 +244,12 @@ export function App({ onExit }: AppProps) {
 
         // Enter to activate field or return to config
         if (key.name === "return" || key.name === "enter") {
-            if (mode === "results" || mode === "error") {
+            if (mode === Mode.Results || mode === Mode.Error) {
                 handleReturnToConfig();
                 return;
             }
             
-            if (mode === "config" && focusedSection === "config") {
+            if (mode === Mode.Config && focusedSection === FocusedSection.Config) {
                 // Check if run button is selected
                 if (selectedFieldIndex === FIELD_CONFIGS.length) {
                     void handleRun();
@@ -261,8 +273,8 @@ export function App({ onExit }: AppProps) {
         : height - headerHeight - statusBarHeight - 3;
 
     // Determine what to show in the main area
-    const showConfig = mode === "config";
-    const showResults = mode === "results" || mode === "error" || mode === "running";
+    const showConfig = mode === Mode.Config;
+    const showResults = mode === Mode.Results || mode === Mode.Error || mode === Mode.Running;
 
     return (
         <box
@@ -282,7 +294,7 @@ export function App({ onExit }: AppProps) {
                     <ConfigForm
                         values={values}
                         selectedIndex={selectedFieldIndex}
-                        focused={focusedSection === "config"}
+                        focused={focusedSection === FocusedSection.Config}
                         height={mainHeight}
                     />
                 )}
@@ -291,7 +303,7 @@ export function App({ onExit }: AppProps) {
                     <ResultsPanel
                         result={result}
                         error={error}
-                        focused={focusedSection === "results"}
+                        focused={focusedSection === FocusedSection.Results}
                         isLoading={isRunning}
                         height={mainHeight}
                     />
@@ -302,7 +314,7 @@ export function App({ onExit }: AppProps) {
             <LogsPanel
                 logs={logs}
                 visible={logsVisible}
-                focused={focusedSection === "logs"}
+                focused={focusedSection === FocusedSection.Logs}
                 height={logsHeight}
             />
 
