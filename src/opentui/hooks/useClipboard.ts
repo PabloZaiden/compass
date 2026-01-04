@@ -1,14 +1,6 @@
 import { useCallback, useState } from "react";
 import * as fs from "fs";
-
-/**
- * Strip ANSI escape sequences from text
- */
-function stripAnsiCodes(text: string): string {
-    return text
-        .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')
-        .replace(/\x1b\][^\x07]*\x07/g, '');
-}
+import { stripANSI } from "bun";
 
 /**
  * Copy text to clipboard using OSC 52 escape sequence.
@@ -16,7 +8,7 @@ function stripAnsiCodes(text: string): string {
  */
 function copyWithOsc52(text: string): boolean {
     try {
-        const cleanText = stripAnsiCodes(text);
+        const cleanText = stripANSI(text);
         const base64 = Buffer.from(cleanText).toString("base64");
         // OSC 52 sequence: ESC ] 52 ; c ; <base64> BEL
         const osc52 = `\x1b]52;c;${base64}\x07`;

@@ -1,3 +1,4 @@
+import { stripANSI } from "bun";
 import type { LogEntry } from "../types";
 import { THEME, LOG_COLORS } from "../types";
 
@@ -8,9 +9,6 @@ interface LogsPanelProps {
     height?: number;
 }
 
-function stripAnsiEscapes(text: string): string {
-    return text.replace(/\x1b\[[0-9;]*m/g, "");
-}
 
 export function LogsPanel({
     logs,
@@ -45,7 +43,7 @@ export function LogsPanel({
                 <box flexDirection="column" gap={0}>
                     {logs.map((log, idx) => {
                         const color = LOG_COLORS[log.level] ?? THEME.statusText;
-                        const sanitized = stripAnsiEscapes(log.message).replaceAll("\n", " ").trim();
+                        const sanitized = stripANSI(log.message).replaceAll("\n", " ").trim();
                         
                         return (
                             <text key={`${log.timestamp.getTime()}-${idx}`} fg={color}>
