@@ -3,7 +3,6 @@ import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
 import type { Config } from "../config/config";
-import { isCompiledBinary } from "./launcher";
 
 type FieldType = "text" | "number" | "enum" | "boolean";
 
@@ -95,6 +94,9 @@ export function getDisplayValue(
 }
 
 export function buildCliCommand(values: Config): string {
+    // Detect if running as compiled binary (not a .ts/.js file)
+    const isCompiledBinary = !Bun.main.endsWith(".ts") && !Bun.main.endsWith(".js");
+    
     const parts = isCompiledBinary ? ["./compass"] : ["bun", "src/index.ts"];
     
     parts.push("--agent", escapeArg(AgentTypes[values.agentType] ?? ""));

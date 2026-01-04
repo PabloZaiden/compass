@@ -4,13 +4,10 @@ import { Runner } from "./runner";
 import { logger } from "./logging";
 import { launchOpenTui } from "./opentui/launcher";
 
-// Detect if running as compiled binary (not a .ts/.js file)
-const isCompiledBinary = !Bun.main.endsWith(".ts") && !Bun.main.endsWith(".js");
-
 const useTui = Bun.argv.slice(2).length === 0;
 
 if (useTui) {
-    await launchOpenTui(isCompiledBinary);
+    await launchOpenTui();
 } else {
     const config = await fromProcess(Bun.argv.slice(2));
     logger.settings.minLevel = config.logLevel;

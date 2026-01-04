@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { logger } from "../../logging";
 
 export interface UseSpinnerResult {
     frameIndex: number;

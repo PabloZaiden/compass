@@ -1,8 +1,4 @@
-// Global flag for binary mode detection
-export let isCompiledBinary = false;
-
-export async function launchOpenTui(isBinary = false): Promise<void> {
-    isCompiledBinary = isBinary;
+export async function launchOpenTui(): Promise<void> {
     const { render } = await import("./index");
     await render();
 }
