@@ -1,4 +1,4 @@
-import { Theme } from "../types";
+import { Theme } from "../utils";
 
 const SpinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -28,7 +28,7 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
             <box
                 flexDirection="row"
                 justifyContent="space-between"
-                backgroundColor={isRunning ? "#1a3a1a" : undefined}
+                backgroundColor={isRunning ? "#1a1a2e" : undefined}
                 padding={1}
             >
                 <text fg={isRunning ? "#4ade80" : Theme.statusText}>

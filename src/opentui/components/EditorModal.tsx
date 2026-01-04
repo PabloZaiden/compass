@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { SelectOption } from "@opentui/core";
 import type { Config } from "../../config/config";
-import { Theme } from "../types";
+import { Theme } from "../utils";
 import { FieldConfigs, getFieldOptions } from "../utils";
 
 interface EditorModalProps {

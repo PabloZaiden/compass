@@ -1,8 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
-import { useKeyboard, useTerminalDimensions } from "@opentui/react";
+import { useKeyboard } from "@opentui/react";
 import type { Config } from "../config/config";
-import { Theme } from "./types";
-import { FieldConfigs, buildCliCommand } from "./utils";
+import { FieldConfigs, Theme, buildCliCommand } from "./utils";
 import {
     useConfig,
     useRunner,
@@ -38,8 +37,6 @@ interface AppProps {
 }
 
 export function App({ onExit }: AppProps) {
-    const { height } = useTerminalDimensions();
-    
     // State management via hooks
     const { values, updateValue } = useConfig();
     const { isRunning, result, error, run, reset } = useRunner();
@@ -264,14 +261,6 @@ export function App({ onExit }: AppProps) {
         }
     });
 
-    // Layout calculations
-    const statusBarHeight = 4;
-    const headerHeight = 3;
-    const logsHeight = 10;
-    const mainHeight = logsVisible 
-        ? height - headerHeight - logsHeight - statusBarHeight - 4  // padding/gaps
-        : height - headerHeight - statusBarHeight - 3;
-
     // Determine what to show in the main area
     const showConfig = mode === Mode.Config;
     const showResults = mode === Mode.Results || mode === Mode.Error || mode === Mode.Running;
@@ -283,19 +272,18 @@ export function App({ onExit }: AppProps) {
             height="100%"
             backgroundColor={Theme.background}
             padding={1}
-            gap={1}
+            gap={0}
         >
             {/* Header */}
             <Header />
 
             {/* Main content area */}
-            <box flexDirection="row" flexGrow={1} gap={1} height={mainHeight}>
+            <box flexDirection="row" flexGrow={1} gap={0}>
                 {showConfig && (
                     <ConfigForm
                         values={values}
                         selectedIndex={selectedFieldIndex}
                         focused={focusedSection === FocusedSection.Config}
-                        height={mainHeight}
                     />
                 )}
 
@@ -305,7 +293,6 @@ export function App({ onExit }: AppProps) {
                         error={error}
                         focused={focusedSection === FocusedSection.Results}
                         isLoading={isRunning}
-                        height={mainHeight}
                     />
                 )}
             </box>
@@ -315,7 +302,6 @@ export function App({ onExit }: AppProps) {
                 logs={logs}
                 visible={logsVisible}
                 focused={focusedSection === FocusedSection.Logs}
-                height={logsHeight}
             />
 
             {/* Status bar */}

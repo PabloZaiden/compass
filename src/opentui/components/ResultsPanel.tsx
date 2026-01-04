@@ -1,5 +1,5 @@
 import type { RunnerResult } from "../../models";
-import { Theme } from "../types";
+import { Theme } from "../utils";
 import { Classification } from "../../models";
 import { JsonHighlight } from "./JsonHighlight";
 
@@ -23,7 +23,6 @@ interface ResultsPanelProps {
     error: string | null;
     focused: boolean;
     isLoading: boolean;
-    height?: number;
 }
 
 export function ResultsPanel({
@@ -31,7 +30,6 @@ export function ResultsPanel({
     error,
     focused,
     isLoading,
-    height = 20,
 }: ResultsPanelProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
 
@@ -119,7 +117,6 @@ export function ResultsPanel({
             borderStyle="rounded"
             borderColor={borderColor}
             title="Results"
-            height={height}
             flexGrow={1}
             flexBasis={0}
             padding={1}

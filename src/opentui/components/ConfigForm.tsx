@@ -1,5 +1,5 @@
 import type { Config } from "../../config/config";
-import { Theme } from "../types";
+import { Theme } from "../utils";
 import { FieldConfigs, getDisplayValue } from "../utils";
 import { FieldRow } from "./FieldRow";
 import { RunButton } from "./RunButton";
@@ -8,14 +8,12 @@ interface ConfigFormProps {
     values: Config;
     selectedIndex: number;
     focused: boolean;
-    height?: number;
 }
 
 export function ConfigForm({
     values,
     selectedIndex,
     focused,
-    height = 20,
 }: ConfigFormProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
 
@@ -26,7 +24,6 @@ export function ConfigForm({
             borderStyle="rounded"
             borderColor={borderColor}
             title="Configuration"
-            height={height}
             flexGrow={1}
             flexBasis={0}
             padding={1}

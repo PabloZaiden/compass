@@ -1,6 +1,6 @@
 import { stripANSI } from "bun";
-import type { LogEntry } from "../types";
-import { Theme } from "../types";
+import type { LogEntry } from "../utils";
+import { Theme } from "../utils";
 import { LogLevel } from "../../logging";
 
 // Colors matching the imperative TUI
@@ -18,14 +18,12 @@ interface LogsPanelProps {
     logs: LogEntry[];
     visible: boolean;
     focused: boolean;
-    height?: number;
 }
 
 export function LogsPanel({
     logs,
     visible,
     focused,
-    height = 10,
 }: LogsPanelProps) {
     if (!visible) {
         return null;
@@ -42,7 +40,8 @@ export function LogsPanel({
             borderStyle="rounded"
             borderColor={borderColor}
             title={title}
-            height={height}
+            height={10}
+            flexShrink={0}
             padding={1}
         >
             <scrollbox

@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { onLogEvent, type TuiLogEvent } from "../../logging";
-import type { LogEntry } from "../types";
-
-const MAX_LOGS = 100;
+import type { LogEntry } from "../utils";
 
 export interface UseLogStreamResult {
     logs: LogEntry[];
@@ -20,9 +18,7 @@ export function useLogStream(): UseLogStreamResult {
                     level: event.level,
                     message: event.message,
                 };
-                const newLogs = [...prev, newEntry];
-                // Keep only last MAX_LOGS to prevent memory issues
-                return newLogs.slice(-MAX_LOGS);
+                return [...prev, newEntry];
             });
         });
 

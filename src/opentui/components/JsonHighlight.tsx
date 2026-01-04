@@ -1,4 +1,4 @@
-import { Theme } from "../types";
+import { Theme } from "../utils";
 
 type JsonTokenType = "key" | "string" | "number" | "boolean" | "null" | "punctuation";
 type JsonToken = { type: JsonTokenType; value: string };

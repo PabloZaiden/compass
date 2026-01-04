@@ -2,7 +2,7 @@ import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { App } from "./App";
 import { setTuiLoggingEnabled, logger } from "../logging";
-import { Theme } from "./types";
+import { Theme } from "./utils";
 
 export async function render(): Promise<void> {
     setTuiLoggingEnabled(true);

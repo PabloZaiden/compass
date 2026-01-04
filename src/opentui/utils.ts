@@ -3,7 +3,8 @@ import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
 import type { Config } from "../config/config";
-import type {FieldType } from "./types";
+
+type FieldType = "text" | "number" | "enum" | "boolean";
 
 interface FieldOption {
     name: string;
@@ -16,6 +17,27 @@ interface FieldConfig {
     type: FieldType;
     options?: FieldOption[];
 }
+
+export interface LogEntry {
+    timestamp: Date;
+    level: LogLevel;
+    message: string;
+}
+
+export enum Theme {
+    background = "#0b0c10",
+    border = "#2c2f36",
+    borderFocused = "#5da9e9",
+    borderSelected = "#61afef",
+    label = "#c0cad6",
+    value = "#98c379",
+    runButton = "#a0e8af",
+    header = "#a8b3c1",
+    statusText = "#d6dde6",
+    overlay = "#0e1117",
+    overlayTitle = "#e5c07b",
+};
+
 
 // Field definitions with labels and types
 export const FieldConfigs: FieldConfig[] = [

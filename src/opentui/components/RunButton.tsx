@@ -1,4 +1,4 @@
-import { Theme } from "../types";
+import { Theme } from "../utils";
 
 interface RunButtonProps {
     isSelected: boolean;
