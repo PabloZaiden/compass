@@ -65,6 +65,9 @@ echo "Add symlink for zig in $HOME/.local/bin..."
 mkdir -p $HOME/.local/bin
 ln -sf "$HOME/.local/zig/zig" "$HOME/.local/bin/zig"
 
+echo "Clean up temporary Zig files"
+rm -f /tmp/zig.tar.xz
+rm -rf "/tmp/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION"
 
 # install github copilot cli
 bun install -g @github/copilot
