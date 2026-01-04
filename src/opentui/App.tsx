@@ -262,8 +262,14 @@ export function App({ onExit }: AppProps) {
     });
 
     // Determine what to show in the main area
-    const showConfig = mode === Mode.Config;
-    const showResults = mode === Mode.Results || mode === Mode.Error || mode === Mode.Running;
+    const showConfig = mode === Mode.Config && !isRunning;
+    const showResults = (mode === Mode.Results || mode === Mode.Error) && !isRunning;
+    
+    // Show logs automatically when running, otherwise respect user toggle
+    const showLogs = isRunning || logsVisible;
+    
+    // Main content only shown when not running
+    const showMainContent = showConfig || showResults;
 
     return (
         <box
@@ -274,37 +280,40 @@ export function App({ onExit }: AppProps) {
             padding={1}
             gap={0}
         >
-            {/* Header */}
+            {/* Header - fixed */}
             <Header />
 
             {/* Main content area */}
-            <box flexDirection="row" flexGrow={1} gap={0}>
-                {showConfig && (
-                    <ConfigForm
-                        values={values}
-                        selectedIndex={selectedFieldIndex}
-                        focused={focusedSection === FocusedSection.Config}
-                    />
-                )}
+            {showMainContent && (
+                <box flexDirection="row" flexGrow={1} gap={0}>
+                    {showConfig && (
+                        <ConfigForm
+                            values={values}
+                            selectedIndex={selectedFieldIndex}
+                            focused={focusedSection === FocusedSection.Config}
+                        />
+                    )}
 
-                {showResults && (
-                    <ResultsPanel
-                        result={result}
-                        error={error}
-                        focused={focusedSection === FocusedSection.Results}
-                        isLoading={isRunning}
-                    />
-                )}
-            </box>
+                    {showResults && (
+                        <ResultsPanel
+                            result={result}
+                            error={error}
+                            focused={focusedSection === FocusedSection.Results}
+                            isLoading={isRunning}
+                        />
+                    )}
+                </box>
+            )}
 
-            {/* Logs panel */}
+            {/* Logs - fixed when sharing, expands when alone */}
             <LogsPanel
                 logs={logs}
-                visible={logsVisible}
+                visible={showLogs}
                 focused={focusedSection === FocusedSection.Logs}
+                expanded={!showMainContent}
             />
 
-            {/* Status bar */}
+            {/* Status bar - fixed */}
             <StatusBar
                 status={status}
                 isRunning={isRunning}

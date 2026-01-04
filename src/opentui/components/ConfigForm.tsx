@@ -25,7 +25,6 @@ export function ConfigForm({
             borderColor={borderColor}
             title="Configuration"
             flexGrow={1}
-            flexBasis={0}
             padding={1}
         >
             <scrollbox

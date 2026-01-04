@@ -2,8 +2,10 @@ import { Theme } from "../utils";
 
 export function Header() {
     return (
-        <text fg={Theme.header}>
-            <strong>🧭 Compass</strong>
-        </text>
+        <box flexShrink={0}>
+            <text fg={Theme.header}>
+                <strong>🧭 Compass</strong>
+            </text>
+        </box>
     );
 }

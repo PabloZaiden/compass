@@ -18,12 +18,14 @@ interface LogsPanelProps {
     logs: LogEntry[];
     visible: boolean;
     focused: boolean;
+    expanded?: boolean;
 }
 
 export function LogsPanel({
     logs,
     visible,
     focused,
+    expanded = false,
 }: LogsPanelProps) {
     if (!visible) {
         return null;
@@ -33,6 +35,11 @@ export function LogsPanel({
     
     const title = `Logs - ${logs.length}`;
 
+    // When expanded, grow to fill. Otherwise fixed height.
+    const boxProps = expanded
+        ? { flexGrow: 1 }
+        : { height: 10, flexShrink: 0 };
+
     return (
         <box
             flexDirection="column"
@@ -40,9 +47,8 @@ export function LogsPanel({
             borderStyle="rounded"
             borderColor={borderColor}
             title={title}
-            height={10}
-            flexShrink={0}
             padding={1}
+            {...boxProps}
         >
             <scrollbox
                 scrollY={true}

@@ -118,7 +118,6 @@ export function ResultsPanel({
             borderColor={borderColor}
             title="Results"
             flexGrow={1}
-            flexBasis={0}
             padding={1}
         >
             {renderContent()}
