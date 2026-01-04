@@ -1,6 +1,6 @@
 import { stripANSI } from "bun";
 import type { LogEntry } from "../types";
-import { THEME, LOG_COLORS } from "../types";
+import { Theme, LogColors } from "../types";
 
 interface LogsPanelProps {
     logs: LogEntry[];
@@ -20,7 +20,7 @@ export function LogsPanel({
         return null;
     }
 
-    const borderColor = focused ? THEME.borderFocused : THEME.border;
+    const borderColor = focused ? Theme.borderFocused : Theme.border;
     
     const title = `Logs - ${logs.length}`;
 
@@ -42,7 +42,7 @@ export function LogsPanel({
             >
                 <box flexDirection="column" gap={0}>
                     {logs.map((log, idx) => {
-                        const color = LOG_COLORS[log.level] ?? THEME.statusText;
+                        const color = LogColors[log.level] ?? Theme.statusText;
                         const sanitized = stripANSI(log.message).replaceAll("\n", " ").trim();
                         
                         return (
@@ -53,7 +53,7 @@ export function LogsPanel({
                     })}
                     
                     {logs.length === 0 && (
-                        <text fg={THEME.label}>No logs yet...</text>
+                        <text fg={Theme.label}>No logs yet...</text>
                     )}
                 </box>
             </scrollbox>

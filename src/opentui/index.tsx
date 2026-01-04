@@ -2,7 +2,7 @@ import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { App } from "./App";
 import { setTuiLoggingEnabled, logger } from "../logging";
-import { THEME } from "./types";
+import { Theme } from "./types";
 
 export async function render(): Promise<void> {
     setTuiLoggingEnabled(true);
@@ -11,7 +11,7 @@ export async function render(): Promise<void> {
         useAlternateScreen: true,
         useConsole: false,
         exitOnCtrlC: true,
-        backgroundColor: THEME.background,
+        backgroundColor: Theme.background,
         useMouse: true,
         enableMouseMovement: true,
         openConsoleOnError: false,

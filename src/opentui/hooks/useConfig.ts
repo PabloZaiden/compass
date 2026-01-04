@@ -5,19 +5,19 @@ import { join } from "node:path";
 import { AgentTypes, defaultModels } from "../../agents/factory";
 import { defaultConfigValues } from "../../config/default";
 import { logger } from "../../logging";
-import type { FormValues } from "../types";
+import type { Config } from "../../config/config";
 
 const CONFIG_DIR = join(homedir(), ".compass");
 const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 
-function getDefaultFormValues(): FormValues {
+function getDefaultFormValues(): Config {
     const defaults = defaultConfigValues();
     const initialAgent = AgentTypes.OpenCode;
     return {
         repoPath: "",
         fixture: "",
         agentType: initialAgent,
-        iterationCount: defaults.iterationCount.toString(),
+        iterationCount: defaults.iterationCount,
         outputMode: defaults.outputMode,
         useCache: defaults.useCache,
         stopOnError: defaults.stopOnError,
@@ -28,12 +28,12 @@ function getDefaultFormValues(): FormValues {
     };
 }
 
-function loadConfigFromDisk(): FormValues {
+function loadConfigFromDisk(): Config {
     const defaults = getDefaultFormValues();
     try {
         if (existsSync(CONFIG_FILE)) {
             const content = readFileSync(CONFIG_FILE, "utf-8");
-            const saved = JSON.parse(content) as Partial<FormValues>;
+            const saved = JSON.parse(content) as Partial<Config>;
             logger.debug(`Loaded config from ${CONFIG_FILE}`);
             return { ...defaults, ...saved };
         }
@@ -43,7 +43,7 @@ function loadConfigFromDisk(): FormValues {
     return defaults;
 }
 
-function saveConfigToDisk(values: FormValues): void {
+function saveConfigToDisk(values: Config): void {
     try {
         if (!existsSync(CONFIG_DIR)) {
             mkdirSync(CONFIG_DIR, { recursive: true });
@@ -56,15 +56,15 @@ function saveConfigToDisk(values: FormValues): void {
 }
 
 export interface UseConfigResult {
-    values: FormValues;
-    updateValue: (key: keyof FormValues, value: unknown) => void;
+    values: Config;
+    updateValue: (key: keyof Config, value: unknown) => void;
     resetToDefaults: () => void;
 }
 
 export function useConfig(): UseConfigResult {
-    const [values, setValues] = useState<FormValues>(loadConfigFromDisk);
+    const [values, setValues] = useState<Config>(loadConfigFromDisk);
 
-    const updateValue = useCallback((key: keyof FormValues, value: unknown) => {
+    const updateValue = useCallback((key: keyof Config, value: unknown) => {
         setValues((prev) => {
             const updated = { ...prev, [key]: value };
 

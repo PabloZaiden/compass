@@ -1,4 +1,4 @@
-import { THEME } from "../types";
+import { Theme } from "../types";
 
 interface RunButtonProps {
     isSelected: boolean;
@@ -28,7 +28,7 @@ export function RunButton({ isSelected }: RunButtonProps) {
             paddingLeft={1}
             paddingRight={1}
         >
-            <text fg={THEME.runButton}>
+            <text fg={Theme.runButton}>
                 <strong>{prefix}{label}</strong>
             </text>
         </box>

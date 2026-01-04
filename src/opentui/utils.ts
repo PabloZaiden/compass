@@ -2,7 +2,8 @@ import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
-import type { FieldConfig, FieldOption, FormValues } from "./types";
+import type { Config } from "../config/config";
+import type { FieldConfig, FieldOption } from "./types";
 
 // Field definitions with labels and types
 export const FIELD_CONFIGS: FieldConfig[] = [
@@ -46,7 +47,7 @@ export function getLogLevelOptions(): FieldOption[] {
         }));
 }
 
-export function getFieldOptions(key: keyof FormValues): FieldOption[] | undefined {
+export function getFieldOptions(key: keyof Config): FieldOption[] | undefined {
     switch (key) {
         case "agentType":
             return getAgentOptions();
@@ -60,7 +61,7 @@ export function getFieldOptions(key: keyof FormValues): FieldOption[] | undefine
 }
 
 export function getDisplayValue(
-    key: keyof FormValues,
+    key: keyof Config,
     value: unknown,
     type: string
 ): string {
@@ -80,13 +81,13 @@ export function getModelForAgent(agentType: AgentTypes): string {
     return defaultModels[agentType] ?? "";
 }
 
-export function buildCliCommand(values: FormValues): string {
+export function buildCliCommand(values: Config): string {
     const parts = ["bun", "src/index.ts"];
     
     parts.push("--agent", escapeArg(AgentTypes[values.agentType] ?? ""));
     parts.push("--repo", escapeArg(values.repoPath));
     parts.push("--fixture", escapeArg(values.fixture));
-    parts.push("--iterations", values.iterationCount);
+    parts.push("--iterations", String(values.iterationCount));
     parts.push("--output", escapeArg(OutputMode[values.outputMode] ?? ""));
     parts.push("--log-level", escapeArg(LogLevel[values.logLevel] ?? ""));
     

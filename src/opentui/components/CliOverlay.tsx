@@ -1,4 +1,4 @@
-import { THEME } from "../types";
+import { Theme } from "../types";
 
 interface CliOverlayProps {
     command: string;
@@ -17,24 +17,24 @@ export function CliOverlay({ command, visible }: CliOverlayProps) {
             left={4}
             width="70%"
             height="40%"
-            backgroundColor={THEME.overlay}
+            backgroundColor={Theme.overlay}
             border={true}
             borderStyle="rounded"
-            borderColor={THEME.overlayTitle}
+            borderColor={Theme.overlayTitle}
             padding={1}
             flexDirection="column"
             gap={1}
             zIndex={10}
         >
-            <text fg={THEME.overlayTitle}>
+            <text fg={Theme.overlayTitle}>
                 <strong>CLI flags (Ctrl+F or Esc to close)</strong>
             </text>
             
-            <text fg={THEME.statusText}>
+            <text fg={Theme.statusText}>
                 {command}
             </text>
             
-            <text fg={THEME.label}>
+            <text fg={Theme.label}>
                 Press Ctrl+Y to copy to clipboard
             </text>
         </box>

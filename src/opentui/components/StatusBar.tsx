@@ -1,4 +1,4 @@
-import { THEME, SPINNER_FRAMES } from "../types";
+import { Theme, SpinnerFrames } from "../types";
 
 interface StatusBarProps {
     status: string;
@@ -8,7 +8,7 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = true }: StatusBarProps) {
-    const spinner = isRunning ? `${SPINNER_FRAMES[spinnerFrame] ?? "⠋"} ` : "";
+    const spinner = isRunning ? `${SpinnerFrames[spinnerFrame] ?? "⠋"} ` : "";
     
     const shortcuts = "Ctrl+F CLI flags • Ctrl+L logs • Ctrl+Y copy • Tab switch panels • q/Esc quit";
     
@@ -18,7 +18,7 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
             gap={0}
             border={true}
             borderStyle="rounded"
-            borderColor={isRunning ? "#4ade80" : THEME.border}
+            borderColor={isRunning ? "#4ade80" : Theme.border}
             height={showShortcuts ? 4 : 3}
             flexShrink={0}
         >
@@ -29,7 +29,7 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
                 backgroundColor={isRunning ? "#1a3a1a" : undefined}
                 padding={1}
             >
-                <text fg={isRunning ? "#4ade80" : THEME.statusText}>
+                <text fg={isRunning ? "#4ade80" : Theme.statusText}>
                     {isRunning ? <strong>{spinner}{status}</strong> : <>{spinner}{status}</>}
                 </text>
             </box>
@@ -37,7 +37,7 @@ export function StatusBar({ status, isRunning, spinnerFrame, showShortcuts = tru
             {/* Keyboard shortcuts */}
             {showShortcuts && (
                 <box padding={1}>
-                    <text fg={THEME.label}>
+                    <text fg={Theme.label}>
                         {shortcuts}
                     </text>
                 </box>

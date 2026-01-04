@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboard, useTerminalDimensions } from "@opentui/react";
-import type { FormValues, Mode, FocusedSection } from "./types";
-import { THEME } from "./types";
+import type { Config } from "../config/config";
+import type { Mode, FocusedSection } from "./types";
+import { Theme } from "./types";
 import { FIELD_CONFIGS, buildCliCommand } from "./utils";
 import {
     useConfig,
@@ -37,7 +38,7 @@ export function App({ onExit }: AppProps) {
     // UI state
     const [mode, setMode] = useState<Mode>("config");
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
-    const [editingField, setEditingField] = useState<keyof FormValues | null>(null);
+    const [editingField, setEditingField] = useState<keyof Config | null>(null);
     const [focusedSection, setFocusedSection] = useState<FocusedSection>("config");
     const [logsVisible, setLogsVisible] = useState(true);
     const [cliOverlayVisible, setCliOverlayVisible] = useState(false);
@@ -102,7 +103,7 @@ export function App({ onExit }: AppProps) {
     }, [isRunning, values, run, clearLogs, error]);
 
     // Handle field editing
-    const handleEditField = useCallback((fieldKey: keyof FormValues) => {
+    const handleEditField = useCallback((fieldKey: keyof Config) => {
         setEditingField(fieldKey);
     }, []);
 
@@ -268,7 +269,7 @@ export function App({ onExit }: AppProps) {
             flexDirection="column"
             width="100%"
             height="100%"
-            backgroundColor={THEME.background}
+            backgroundColor={Theme.background}
             padding={1}
             gap={1}
         >

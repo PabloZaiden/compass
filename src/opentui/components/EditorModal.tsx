@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import type { SelectOption } from "@opentui/core";
-import type { FormValues } from "../types";
-import { THEME } from "../types";
+import type { Config } from "../../config/config";
+import { Theme } from "../types";
 import { FIELD_CONFIGS, getFieldOptions } from "../utils";
 
 interface EditorModalProps {
-    fieldKey: keyof FormValues | null;
+    fieldKey: keyof Config | null;
     currentValue: unknown;
     visible: boolean;
     onSubmit: (value: unknown) => void;
@@ -52,7 +52,7 @@ export function EditorModal({
 
     const handleInputSubmit = (value: string) => {
         if (isNumber) {
-            onSubmit(value.replace(/[^0-9]/g, "") || "0");
+            onSubmit(parseInt(value.replace(/[^0-9]/g, ""), 10) || 1);
         } else {
             onSubmit(value);
         }
@@ -92,16 +92,16 @@ export function EditorModal({
             left={6}
             width="60%"
             height="40%"
-            backgroundColor={THEME.overlay}
+            backgroundColor={Theme.overlay}
             border={true}
             borderStyle="rounded"
-            borderColor={THEME.overlayTitle}
+            borderColor={Theme.overlayTitle}
             padding={1}
             flexDirection="column"
             gap={1}
             zIndex={20}
         >
-            <text fg={THEME.overlayTitle}>
+            <text fg={Theme.overlayTitle}>
                 <strong>Edit: {fieldConfig.label}</strong>
             </text>
 
@@ -146,7 +146,7 @@ export function EditorModal({
                 />
             )}
 
-            <text fg={THEME.statusText}>
+            <text fg={Theme.statusText}>
                 Enter to save, Esc to cancel
             </text>
         </box>

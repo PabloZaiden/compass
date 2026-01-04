@@ -1,4 +1,4 @@
-import { THEME } from "../types";
+import { Theme } from "../types";
 
 interface FieldRowProps {
     label: string;
@@ -30,8 +30,8 @@ export function FieldRow({ label, value, isSelected }: FieldRowProps) {
             paddingLeft={1}
             paddingRight={1}
         >
-            <text fg={THEME.label}>
-                {prefix}{label}: <span fg={THEME.value}>{value}</span>
+            <text fg={Theme.label}>
+                {prefix}{label}: <span fg={Theme.value}>{value}</span>
             </text>
         </box>
     );

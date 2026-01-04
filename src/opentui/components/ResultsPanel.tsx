@@ -1,6 +1,6 @@
 import type React from "react";
 import type { RunnerResult } from "../../models";
-import { THEME } from "../types";
+import { Theme } from "../types";
 
 // Classification colors
 const CLASSIFICATION_COLORS: Record<string, string> = {
@@ -31,7 +31,7 @@ export function ResultsPanel({
     isLoading,
     height = 20,
 }: ResultsPanelProps) {
-    const borderColor = focused ? THEME.borderFocused : THEME.border;
+    const borderColor = focused ? Theme.borderFocused : Theme.border;
     
     if (isLoading) {
         return (
@@ -65,7 +65,7 @@ export function ResultsPanel({
                         <text fg="#f78888">
                             <strong>Error occurred:</strong>
                         </text>
-                        <text fg={THEME.statusText}>{error}</text>
+                        <text fg={Theme.statusText}>{error}</text>
                     </box>
                 </scrollbox>
             </box>
@@ -83,7 +83,7 @@ export function ResultsPanel({
                 height={height}
                 flexGrow={1}
             >
-                <text fg={THEME.label}>No results yet. Run iterations to see results.</text>
+                <text fg={Theme.label}>No results yet. Run iterations to see results.</text>
             </box>
         );
     }
@@ -113,8 +113,8 @@ export function ResultsPanel({
             number: "#d19a66",   // orange
             boolean: "#c678dd",  // purple
             null: "#c678dd",     // purple
-            punctuation: THEME.label,
-            whitespace: THEME.label,
+            punctuation: Theme.label,
+            whitespace: Theme.label,
         };
         
         while (remaining.length > 0) {
@@ -125,9 +125,9 @@ export function ResultsPanel({
                 if (match) {
                     if (type === "key") {
                         // Handle key specially: whitespace + key + colon
-                        elements.push(<span key={keyIdx++} fg={THEME.label}>{match[1]}</span>);
+                        elements.push(<span key={keyIdx++} fg={Theme.label}>{match[1]}</span>);
                         elements.push(<span key={keyIdx++} fg={colors["key"]}>{match[2]}</span>);
-                        elements.push(<span key={keyIdx++} fg={THEME.label}>{match[3]}</span>);
+                        elements.push(<span key={keyIdx++} fg={Theme.label}>{match[3]}</span>);
                         remaining = remaining.slice(match[0].length);
                     } else {
                         elements.push(<span key={keyIdx++} fg={colors[type]}>{match[0]}</span>);
@@ -140,7 +140,7 @@ export function ResultsPanel({
             
             if (!matched) {
                 // No pattern matched, take one character
-                elements.push(<span key={keyIdx++} fg={THEME.label}>{remaining[0]}</span>);
+                elements.push(<span key={keyIdx++} fg={Theme.label}>{remaining[0]}</span>);
                 remaining = remaining.slice(1);
             }
         }
@@ -164,14 +164,14 @@ export function ResultsPanel({
                     <text fg="#61afef">
                         <strong>── Summary ──────────────────────────────────────</strong>
                     </text>
-                    <text fg={THEME.statusText}> </text>
+                    <text fg={Theme.statusText}> </text>
                     
                     {/* Iteration Results */}
                     <text fg="#c678dd">
                         <strong>📊 Iteration Results ({result.iterationResults.length})</strong>
                     </text>
                     {result.iterationResults.map((iter, idx) => {
-                        const color = CLASSIFICATION_COLORS[iter.classification] ?? THEME.statusText;
+                        const color = CLASSIFICATION_COLORS[iter.classification] ?? Theme.statusText;
                         const icon = CLASSIFICATION_ICONS[iter.classification] ?? "•";
                         return (
                             <text key={`iter-${idx}`} fg={color}>
@@ -180,7 +180,7 @@ export function ResultsPanel({
                         );
                     })}
                     
-                    <text fg={THEME.statusText}> </text>
+                    <text fg={Theme.statusText}> </text>
                     
                     {/* Aggregated Results */}
                     <text fg="#c678dd">
@@ -191,19 +191,19 @@ export function ResultsPanel({
                             : agg.averagePoints >= 0.4 ? "#fbbf24" 
                             : "#f87171";
                         return (
-                            <text key={`agg-${idx}`} fg={THEME.statusText}>
-                                {"   "}• {agg.promptId}: <span fg={avgColor}>{agg.averagePoints.toFixed(2)} pts</span> <span fg={THEME.label}>({agg.iterations} iterations)</span>
+                            <text key={`agg-${idx}`} fg={Theme.statusText}>
+                                {"   "}• {agg.promptId}: <span fg={avgColor}>{agg.averagePoints.toFixed(2)} pts</span> <span fg={Theme.label}>({agg.iterations} iterations)</span>
                             </text>
                         );
                     })}
                     
-                    <text fg={THEME.statusText}> </text>
+                    <text fg={Theme.statusText}> </text>
                     
                     {/* JSON Header */}
                     <text fg="#e5c07b">
                         <strong>── Raw JSON ─────────────────────────────────────</strong>
                     </text>
-                    <text fg={THEME.statusText}> </text>
+                    <text fg={Theme.statusText}> </text>
                     
                     {/* JSON Content with syntax highlighting */}
                     {jsonString.split("\n").map((line, idx) => (

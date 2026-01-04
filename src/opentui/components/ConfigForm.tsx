@@ -1,11 +1,11 @@
-import type { FormValues } from "../types";
-import { THEME } from "../types";
+import type { Config } from "../../config/config";
+import { Theme } from "../types";
 import { FIELD_CONFIGS, getDisplayValue } from "../utils";
 import { FieldRow } from "./FieldRow";
 import { RunButton } from "./RunButton";
 
 interface ConfigFormProps {
-    values: FormValues;
+    values: Config;
     selectedIndex: number;
     focused: boolean;
     height?: number;
@@ -17,7 +17,7 @@ export function ConfigForm({
     focused,
     height = 20,
 }: ConfigFormProps) {
-    const borderColor = focused ? THEME.borderFocused : THEME.border;
+    const borderColor = focused ? Theme.borderFocused : Theme.border;
 
     return (
         <box

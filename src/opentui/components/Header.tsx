@@ -1,8 +1,8 @@
-import { THEME } from "../types";
+import { Theme } from "../types";
 
 export function Header() {
     return (
-        <text fg={THEME.header}>
+        <text fg={Theme.header}>
             <strong>🧭 Compass</strong>
         </text>
     );
