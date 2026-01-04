@@ -3,9 +3,13 @@ import { fromProcess } from "./config/process";
 import { Runner } from "./runner";
 import { logger } from "./utils";
 
+const useTuiInk = process.env["COMPASS_TUI_INK"] === "true";
 const useTui = process.env["COMPASS_TUI"] === "true";
 
-if (useTui) {
+if (useTuiInk) {
+    const { launchTuiInk } = await import("./tui/launcher");
+    await launchTuiInk();
+} else if (useTui) {
     const { launchTui } = await import("./tui");
     await launchTui();
 } else {
