@@ -65,6 +65,10 @@ echo "Add symlink for zig in $HOME/.local/bin..."
 mkdir -p $HOME/.local/bin
 ln -sf "$HOME/.local/zig/zig" "$HOME/.local/bin/zig"
 
+# ensure $HOME/.local/bin is in PATH for current session and future shells
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
 echo "Clean up temporary Zig files"
 rm -f /tmp/zig.tar.xz
 rm -rf "/tmp/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION"
