@@ -43,7 +43,7 @@ bun start interactive
 Execute the benchmark runner:
 
 ```bash
-bun src/index.ts run \
+bun start run \
   --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
   --agent OpenCode
@@ -54,7 +54,7 @@ bun src/index.ts run \
 Show all available options:
 
 ```bash
-bun src/index.ts help
+bun start help
 ```
 
 ### Options
