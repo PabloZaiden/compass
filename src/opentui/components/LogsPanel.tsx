@@ -1,4 +1,3 @@
-import { stripANSI } from "bun";
 import type { LogEntry } from "../utils";
 import { Theme } from "../utils";
 import { LogLevel } from "../../logging";
@@ -60,7 +59,7 @@ export function LogsPanel({
                 <box flexDirection="column" gap={0}>
                     {logs.map((log, idx) => {
                         const color = LogColors[log.level] ?? Theme.statusText;
-                        const sanitized = stripANSI(log.message).replaceAll("\n", " ").trim();
+                        const sanitized = Bun.stripANSI(log.message).replaceAll("\n", " ").trim();
                         
                         return (
                             <text key={`${log.timestamp.getTime()}-${idx}`} fg={color}>

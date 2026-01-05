@@ -1,4 +1,3 @@
-import { stripANSI } from "bun";
 import type { AgentOutput } from "../models";
 import { run } from "../utils";
 import { logger } from "../logging";
@@ -28,8 +27,8 @@ export class OpenCode extends Agent {
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
 
         return {
-            stdOut: stripANSI(processOutput.stdOut.trim()),
-            stdErr: stripANSI(processOutput.stdErr.trim()),
+            stdOut: Bun.stripANSI(processOutput.stdOut.trim()),
+            stdErr: Bun.stripANSI(processOutput.stdErr.trim()),
             exitCode: processOutput.exitCode,
             gitDiff: diff.stdOut.trim()
         };

@@ -1,13 +1,33 @@
 {
   "name": "@pablozaiden/compass",
   "version": "0.0.0-development",
+  "description": "Console tool to benchmark coding agents across prompts and fixtures.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pablozaiden/compass.git"
+  },
+  "license": "MIT",
+  "author": "Pablo Zaidenvoren",
+  "keywords": [
+    "ai",
+    "cli",
+    "benchmark",
+    "agents",
+    "coding",
+    "copilot",
+    "codex",
+    "opencode",
+    "gemini",
+    "claude",
+    "tui"
+  ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "module": "src/index.ts",
   "type": "module",
   "bin": {
-    "compass": "src/index.ts"
+    "compass": "dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -25,6 +45,7 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "build": "bunx tsc --noEmit",
+    "dist": "bun build src/index.ts --outfile=dist/compass.js",
     "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:anonymous": "bun test --test-name-pattern \"anonymous\"",
     "test:all": "bun test",
