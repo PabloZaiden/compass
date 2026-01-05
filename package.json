@@ -45,7 +45,7 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "build": "bunx tsc --noEmit",
-    "dist": "bun build src/index.ts --outfile=dist/compass.js",
+    "dist": "bun build --target=node src/index.ts --outdir=./dist",
     "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:anonymous": "bun test --test-name-pattern \"anonymous\"",
     "test:all": "bun test",
