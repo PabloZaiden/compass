@@ -1,3 +1,5 @@
+import { useRef, useEffect } from "react";
+import type { ScrollBoxRenderable } from "@opentui/core";
 import type { Config } from "../../config/config";
 import { Theme } from "../utils";
 import { FieldConfigs, getDisplayValue } from "../utils";
@@ -27,6 +29,14 @@ export function ConfigForm({
     onCopy,
 }: ConfigFormProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
+    const scrollboxRef = useRef<ScrollBoxRenderable>(null);
+
+    // Auto-scroll to keep selected item visible
+    useEffect(() => {
+        if (scrollboxRef.current) {
+            scrollboxRef.current.scrollTo(selectedIndex);
+        }
+    }, [selectedIndex]);
 
     // Handle keyboard events at Focused priority (only when focused)
     useKeyboardHandler(
@@ -57,7 +67,6 @@ export function ConfigForm({
             // Enter to edit field or run
             if (key.name === "return" || key.name === "enter") {
                 if (selectedIndex === FieldConfigs.length) {
-                    // Run button selected
                     onRun();
                 } else {
                     const fieldConfig = FieldConfigs[selectedIndex];
@@ -84,6 +93,7 @@ export function ConfigForm({
             padding={1}
         >
             <scrollbox
+                ref={scrollboxRef}
                 scrollY={true}
                 flexGrow={1}
             >

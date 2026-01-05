@@ -221,7 +221,7 @@ function AppContent({ onExit }: AppProps) {
                             <ConfigForm
                                 values={values}
                                 selectedIndex={selectedFieldIndex}
-                                focused={focusedSection === FocusedSection.Config}
+                                focused={focusedSection === FocusedSection.Config && editingField === null}
                                 onSelectionChange={setSelectedFieldIndex}
                                 onEditField={handleEditField}
                                 onRun={handleRun}
