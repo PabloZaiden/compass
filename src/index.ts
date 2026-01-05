@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { stdout } from "bun";
 import { fromProcess } from "./config/process";
 import { Runner } from "./runner";
