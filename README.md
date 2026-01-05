@@ -67,7 +67,7 @@ Command-line arguments take precedence over environment variables.
 |--------|---------------------|----------|-------------|
 | `--repo` | `COMPASS_REPO` | Yes | Path to the repository to evaluate |
 | `--fixture` | `COMPASS_FIXTURE` | Yes | Path to the fixture JSON file |
-| `--agent` | `COMPASS_AGENT` | Yes | Agent type (Copilot, Codex, OpenCode, ClaudeCode, Gemini) |
+| `--agent` | `COMPASS_AGENT` | Yes | Agent type (Copilot, Codex, OpenCode, Gemini; ClaudeCode coming soon, not yet supported at runtime) |
 | `--iterations` | `COMPASS_ITERATIONS` | No | Number of iterations per prompt (default: 1) |
 | `--output-mode` | `COMPASS_OUTPUT_MODE` | No | Output format: Detailed, Aggregated (default) |
 | `--log-level` | `COMPASS_LOG_LEVEL` | No | Logging verbosity (default: Info) |
