@@ -69,6 +69,9 @@ export async function fromParsedOptions(options: ParsedCliOptions): Promise<Conf
     const iterationCount = iterationsStr 
         ? parseInt(iterationsStr, 10) 
         : defaultConfig.iterationCount;
+    if (Number.isNaN(iterationCount)) {
+        throw new Error(`Invalid iteration count: ${iterationsStr}`);
+    }
     
     const outputModeStr = getOption(options, "output-mode") 
         ?? OutputMode[defaultConfig.outputMode];
