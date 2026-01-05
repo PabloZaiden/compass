@@ -106,7 +106,7 @@ export function EditorModal({
             top={4}
             left={6}
             width="60%"
-            height="40%"
+            height={12}
             backgroundColor={Theme.overlay}
             border={true}
             borderStyle="rounded"
@@ -129,7 +129,7 @@ export function EditorModal({
                     onSelect={handleSelectSubmit}
                     showScrollIndicator={true}
                     showDescription={false}
-                    height={10}
+                    height={6}
                     width="100%"
                     wrapSelection={true}
                     selectedBackgroundColor="#61afef"
@@ -145,7 +145,7 @@ export function EditorModal({
                     onSelect={handleBooleanSubmit}
                     showScrollIndicator={false}
                     showDescription={false}
-                    height={4}
+                    height={2}
                     width="100%"
                     wrapSelection={true}
                     selectedBackgroundColor="#61afef"
