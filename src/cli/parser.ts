@@ -57,6 +57,7 @@ export function parseCliArgs(args: string[]): ParsedCli {
         options: cliOptions,
         strict: true,
         allowPositionals: true,
+        allowNegative: true,
     });
 
     return {

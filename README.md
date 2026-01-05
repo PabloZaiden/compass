@@ -71,9 +71,9 @@ Command-line arguments take precedence over environment variables.
 | `--iterations` | `COMPASS_ITERATIONS` | No | Number of iterations per prompt (default: 1) |
 | `--output-mode` | `COMPASS_OUTPUT_MODE` | No | Output format: Detailed, Aggregated (default) |
 | `--log-level` | `COMPASS_LOG_LEVEL` | No | Logging verbosity (default: Info) |
-| `--use-cache` | `COMPASS_USE_CACHE` | No | Enable caching of agent responses |
-| `--stop-on-error` | `COMPASS_STOP_ON_ERROR` | No | Stop on first error (default: true) |
-| `--allow-full-access` | `COMPASS_ALLOW_FULL_ACCESS` | No | Allow full repository access (default: true) |
+| `--use-cache` / `--no-use-cache` | `COMPASS_USE_CACHE` | No | Enable/disable caching of agent responses (default: false) |
+| `--stop-on-error` / `--no-stop-on-error` | `COMPASS_STOP_ON_ERROR` | No | Stop on first error or continue (default: true) |
+| `--allow-full-access` / `--no-allow-full-access` | `COMPASS_ALLOW_FULL_ACCESS` | No | Allow/restrict full repository access (default: true) |
 | `--model` | `COMPASS_MODEL` | No | Model to use for the agent |
 | `--eval-model` | `COMPASS_EVAL_MODEL` | No | Model to use for evaluation |
 

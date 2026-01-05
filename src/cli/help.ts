@@ -40,13 +40,16 @@ OPTIONS (for 'run' command):
                             Valid levels: ${logLevels}
                             Env: COMPASS_LOG_LEVEL
 
-    --use-cache             Enable caching of agent responses
+    --use-cache             Enable caching of agent responses (default: false)
+    --no-use-cache          Disable caching of agent responses
                             Env: COMPASS_USE_CACHE
 
     --stop-on-error         Stop execution on first error (default: true)
+    --no-stop-on-error      Continue execution after errors
                             Env: COMPASS_STOP_ON_ERROR
 
     --allow-full-access     Allow full repository access (default: true)
+    --no-allow-full-access  Restrict repository access
                             Env: COMPASS_ALLOW_FULL_ACCESS
 
     --model <name>          Model to use for the agent (defaults based on --agent)
