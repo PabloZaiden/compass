@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from "react";
-import { useKeyboard } from "@opentui/react";
 import type { Config } from "../config/config";
 import { FieldConfigs, Theme, buildCliCommand } from "./utils";
 import {
@@ -8,7 +7,10 @@ import {
     useLogStream,
     useClipboard,
     useSpinner,
+    useKeyboardHandler,
+    KeyboardPriority,
 } from "./hooks";
+import { KeyboardProvider } from "./context";
 import {
     Header,
     ConfigForm,
@@ -16,7 +18,7 @@ import {
     LogsPanel,
     ResultsPanel,
     StatusBar,
-    CliOverlay,
+    CliModal,
 } from "./components";
 
 enum Mode {
@@ -37,6 +39,14 @@ interface AppProps {
 }
 
 export function App({ onExit }: AppProps) {
+    return (
+        <KeyboardProvider>
+            <AppContent onExit={onExit} />
+        </KeyboardProvider>
+    );
+}
+
+function AppContent({ onExit }: AppProps) {
     // State management via hooks
     const { values, updateValue } = useConfig();
     const { isRunning, result, error, run, reset } = useRunner();
@@ -67,32 +77,6 @@ export function App({ onExit }: AppProps) {
         if (configStatus) return configStatus;
         return "Ready. Select [Run] and press Enter to start.";
     }, [mode, isRunning, editingField, copyStatus, configStatus]);
-
-    // Get content for copying based on focused section
-    const getContentToCopy = useCallback((): { content: string; label: string } | null => {
-        if (cliOverlayVisible) {
-            return { content: cliCommand, label: "CLI command" };
-        }
-        
-        switch (focusedSection) {
-            case FocusedSection.Config:
-                return { content: JSON.stringify(values, null, 2), label: "Config JSON" };
-            case FocusedSection.Logs:
-                if (logs.length === 0) return null;
-                return {
-                    content: logs
-                        .map((log) => `[${log.level}] ${log.timestamp.toISOString()} ${log.message}`)
-                        .join("\n"),
-                    label: "Logs"
-                };
-            case FocusedSection.Results:
-                if (result) return { content: JSON.stringify(result, null, 2), label: "Results JSON" };
-                if (error) return { content: error, label: "Error" };
-                return null;
-            default:
-                return null;
-        }
-    }, [focusedSection, values, logs, result, error, cliOverlayVisible, cliCommand]);
 
     // Handle running
     const handleRun = useCallback(async () => {
@@ -138,16 +122,6 @@ export function App({ onExit }: AppProps) {
         reset();
     }, [reset]);
 
-    // Navigate form fields
-    const moveSelection = useCallback((delta: number) => {
-        setSelectedFieldIndex((prev) => {
-            const newIndex = prev + delta;
-            if (newIndex < 0) return 0;
-            if (newIndex >= totalFields) return totalFields - 1;
-            return newIndex;
-        });
-    }, [totalFields]);
-
     // Cycle through available panels
     const cycleFocusedSection = useCallback(() => {
         const availableSections: FocusedSection[] = [];
@@ -163,105 +137,60 @@ export function App({ onExit }: AppProps) {
         setFocusedSection(availableSections[nextIdx] ?? FocusedSection.Config);
     }, [mode, logsVisible, focusedSection]);
 
-    // Keyboard handling
-    useKeyboard((key) => {
-        // When editing, only handle Escape to cancel
-        if (editingField) {
-            if (key.name === "escape") {
-                handleEditCancel();
-            }
-            // Let the input component handle other keys
-            return;
+    // Copy callback for components
+    const handleCopyWithFeedback = useCallback((content: string, label: string) => {
+        const success = copy(content);
+        if (success) {
+            setLastAction(`✓ ${label} copied`);
+            setTimeout(() => setLastAction(""), 2000);
         }
+    }, [copy, setLastAction]);
 
-        // Global shortcuts (always available)
-        if (key.ctrl && key.name === "c") {
-            onExit();
-            return;
-        }
-
-        if (key.ctrl && key.name === "f") {
-            setCliOverlayVisible((prev) => !prev);
-            return;
-        }
-
-        if (key.ctrl && key.name === "l") {
-            setLogsVisible((prev) => !prev);
-            return;
-        }
-
-        // Ctrl+Y to copy (also check for raw sequence \x19 which is Ctrl+Y)
-        if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
-            const copyData = getContentToCopy();
-            if (copyData) {
-                const success = copy(copyData.content);
-                if (success) {
-                    setLastAction(`✓ ${copyData.label} copied`);
-                    setTimeout(() => setLastAction(""), 2000);
-                }
-            } else {
-                setLastAction("Nothing to copy");
-                setTimeout(() => setLastAction(""), 2000);
-            }
-            return;
-        }
-
-        // Close overlay with Escape
-        if (cliOverlayVisible && key.name === "escape") {
-            setCliOverlayVisible(false);
-            return;
-        }
-
-        // Quit with q or Escape (when not running or in overlay)
-        if (!cliOverlayVisible && !isRunning && (key.name === "q" || key.name === "escape")) {
-            if (mode === Mode.Config) {
+    // Global keyboard handler (lowest priority - runs last)
+    useKeyboardHandler(
+        (event) => {
+            const { key } = event;
+            // Ctrl+C to exit (always)
+            if (key.ctrl && key.name === "c") {
                 onExit();
-            } else {
-                handleReturnToConfig();
-            }
-            return;
-        }
-
-        // Tab to cycle sections
-        if (key.name === "tab") {
-            cycleFocusedSection();
-            return;
-        }
-
-        // Arrow key navigation for config form only
-        if (mode === Mode.Config && focusedSection === FocusedSection.Config) {
-            if (key.name === "down") {
-                moveSelection(1);
+                event.stopPropagation();
                 return;
             }
 
-            if (key.name === "up") {
-                moveSelection(-1);
+            // Ctrl+F to toggle CLI overlay
+            if (key.ctrl && key.name === "f") {
+                setCliOverlayVisible((prev) => !prev);
+                event.stopPropagation();
                 return;
             }
-        }
 
-        // Enter to activate field or return to config
-        if (key.name === "return" || key.name === "enter") {
-            if (mode === Mode.Results || mode === Mode.Error) {
-                handleReturnToConfig();
+            // Ctrl+L to toggle logs
+            if (key.ctrl && key.name === "l") {
+                setLogsVisible((prev) => !prev);
+                event.stopPropagation();
                 return;
             }
-            
-            if (mode === Mode.Config && focusedSection === FocusedSection.Config) {
-                // Check if run button is selected
-                if (selectedFieldIndex === FieldConfigs.length) {
-                    void handleRun();
+
+            // Tab to cycle sections
+            if (key.name === "tab") {
+                cycleFocusedSection();
+                event.stopPropagation();
+                return;
+            }
+
+            // Quit with q or Escape (when not running)
+            if (!isRunning && (key.name === "q" || key.name === "escape")) {
+                if (mode === Mode.Config) {
+                    onExit();
                 } else {
-                    const fieldConfig = FieldConfigs[selectedFieldIndex];
-                    if (fieldConfig) {
-                        handleEditField(fieldConfig.key);
-                    }
+                    handleReturnToConfig();
                 }
+                event.stopPropagation();
+                return;
             }
-            return;
-        }
-    });
+        },
+        KeyboardPriority.Global
+    );
 
     // Determine what to show in the main area
     const showConfig = mode === Mode.Config && !isRunning;
@@ -282,30 +211,37 @@ export function App({ onExit }: AppProps) {
             padding={1}
             gap={0}
         >
-            {/* Header - fixed */}
-            <Header />
+                {/* Header - fixed */}
+                <Header />
 
-            {/* Main content area */}
-            {showMainContent && (
-                <box flexDirection="row" flexGrow={1} gap={0}>
-                    {showConfig && (
-                        <ConfigForm
-                            values={values}
-                            selectedIndex={selectedFieldIndex}
-                            focused={focusedSection === FocusedSection.Config}
-                        />
-                    )}
+                {/* Main content area */}
+                {showMainContent && (
+                    <box flexDirection="row" flexGrow={1} gap={0}>
+                        {showConfig && (
+                            <ConfigForm
+                                values={values}
+                                selectedIndex={selectedFieldIndex}
+                                focused={focusedSection === FocusedSection.Config && editingField === null}
+                                onSelectionChange={setSelectedFieldIndex}
+                                onEditField={handleEditField}
+                                onRun={handleRun}
+                                totalFields={totalFields}
+                                onCopy={handleCopyWithFeedback}
+                            />
+                        )}
 
-                    {showResults && (
-                        <ResultsPanel
-                            result={result}
-                            error={error}
-                            focused={focusedSection === FocusedSection.Results}
-                            isLoading={isRunning}
-                        />
-                    )}
-                </box>
-            )}
+                        {showResults && (
+                            <ResultsPanel
+                                result={result}
+                                error={error}
+                                focused={focusedSection === FocusedSection.Results}
+                                isLoading={isRunning}
+                                onReturnToConfig={handleReturnToConfig}
+                                onCopy={handleCopyWithFeedback}
+                            />
+                        )}
+                    </box>
+                )}
 
             {/* Logs - fixed when sharing, expands when alone */}
             <LogsPanel
@@ -313,6 +249,7 @@ export function App({ onExit }: AppProps) {
                 visible={showLogs}
                 focused={focusedSection === FocusedSection.Logs}
                 expanded={!showMainContent}
+                onCopy={handleCopyWithFeedback}
             />
 
             {/* Status bar - fixed */}
@@ -328,12 +265,15 @@ export function App({ onExit }: AppProps) {
                 currentValue={editingField ? values[editingField] : null}
                 visible={editingField !== null}
                 onSubmit={handleEditSubmit}
+                onCancel={handleEditCancel}
             />
 
-            {/* CLI overlay */}
-            <CliOverlay
+            {/* CLI modal */}
+            <CliModal
                 command={cliCommand}
                 visible={cliOverlayVisible}
+                onClose={() => setCliOverlayVisible(false)}
+                onCopy={handleCopyWithFeedback}
             />
         </box>
     );

@@ -1,6 +1,7 @@
 import type { LogEntry } from "../utils";
 import { Theme } from "../utils";
 import { LogLevel } from "../../logging";
+import { useKeyboardHandler, KeyboardPriority } from "../hooks";
 
 // Colors matching the imperative TUI
 const LogColors: Record<LogLevel, string> = {
@@ -18,6 +19,7 @@ interface LogsPanelProps {
     visible: boolean;
     focused: boolean;
     expanded?: boolean;
+    onCopy: (content: string, label: string) => void;
 }
 
 export function LogsPanel({
@@ -25,7 +27,28 @@ export function LogsPanel({
     visible,
     focused,
     expanded = false,
+    onCopy,
 }: LogsPanelProps) {
+    // Handle keyboard events at Focused priority (only when focused)
+    useKeyboardHandler(
+        (event) => {
+            const { key } = event;
+            // Ctrl+Y to copy logs
+            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
+                if (logs.length > 0) {
+                    const content = logs
+                        .map((log) => `[${log.level}] ${log.timestamp.toISOString()} ${log.message}`)
+                        .join("\n");
+                    onCopy(content, "Logs");
+                }
+                event.stopPropagation();
+                return;
+            }
+        },
+        KeyboardPriority.Focused,
+        { enabled: focused }
+    );
+
     if (!visible) {
         return null;
     }

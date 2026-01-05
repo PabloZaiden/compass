@@ -3,12 +3,14 @@ import type { SelectOption } from "@opentui/core";
 import type { Config } from "../../config/config";
 import { Theme } from "../utils";
 import { FieldConfigs, getFieldOptions } from "../utils";
+import { useKeyboardHandler, KeyboardPriority } from "../hooks";
 
 interface EditorModalProps {
     fieldKey: keyof Config | null;
     currentValue: unknown;
     visible: boolean;
     onSubmit: (value: unknown) => void;
+    onCancel: () => void;
 }
 
 export function EditorModal({
@@ -16,6 +18,7 @@ export function EditorModal({
     currentValue,
     visible,
     onSubmit,
+    onCancel,
 }: EditorModalProps) {
     const [inputValue, setInputValue] = useState("");
     const [selectIndex, setSelectIndex] = useState(0);
@@ -33,6 +36,20 @@ export function EditorModal({
             }
         }
     }, [fieldKey, currentValue, visible]);
+
+    // Modal keyboard handler - blocks all keys from bubbling out of the modal
+    // OpenTUI's <input> and <select> handle their own keys internally, but we intercept some first.
+    useKeyboardHandler(
+        (event) => {
+            // Intercept Escape at modal priority to close the modal before input/select can handle it.
+            if (event.key.name === "escape") {
+                onCancel();
+            }
+            // All other keys: let OpenTUI primitives handle them; bubbling is still blocked via the modal option.
+        },
+        KeyboardPriority.Modal,
+        { enabled: visible, modal: true }
+    );
 
     if (!visible || !fieldKey) {
         return null;
@@ -89,7 +106,7 @@ export function EditorModal({
             top={4}
             left={6}
             width="60%"
-            height="40%"
+            height={12}
             backgroundColor={Theme.overlay}
             border={true}
             borderStyle="rounded"
@@ -111,7 +128,8 @@ export function EditorModal({
                     onChange={handleSelectIndexChange}
                     onSelect={handleSelectSubmit}
                     showScrollIndicator={true}
-                    height={10}
+                    showDescription={false}
+                    height={6}
                     width="100%"
                     wrapSelection={true}
                     selectedBackgroundColor="#61afef"
@@ -126,7 +144,8 @@ export function EditorModal({
                     focused={true}
                     onSelect={handleBooleanSubmit}
                     showScrollIndicator={false}
-                    height={4}
+                    showDescription={false}
+                    height={2}
                     width="100%"
                     wrapSelection={true}
                     selectedBackgroundColor="#61afef"
