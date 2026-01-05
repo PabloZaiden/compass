@@ -49,16 +49,16 @@ OPTIONS (for 'run' command):
     --allow-full-access     Allow full repository access (default: true)
                             Env: COMPASS_ALLOW_FULL_ACCESS
 
-    --model <name>          Model to use for the agent
+    --model <name>          Model to use for the agent (defaults based on --agent)
                             Env: COMPASS_MODEL
 
-    --eval-model <name>     Model to use for evaluation
+    --eval-model <name>     Model to use for evaluation (defaults based on --agent)
                             Env: COMPASS_EVAL_MODEL
 
 EXAMPLES:
     compass                                    # Launch interactive TUI
     compass interactive                        # Same as above
-    compass run --repo ./my-repo --fixture ./prompts.json --agent Copilot
+    compass run --repo ./my-repo --fixture ./prompts.json --agent Copilot --model <model-name> --eval-model <eval-model-name>
     compass help                               # Show this help
 
 ENVIRONMENT VARIABLES:
