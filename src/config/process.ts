@@ -6,26 +6,28 @@ import { LogLevel } from "../logging";
 import { existsSync } from "node:fs";
 import type { ParsedCliOptions } from "../cli/parser";
 
+function toEnvName(name: string): string {
+    return `COMPASS_${name.toUpperCase().replaceAll("-", "_")}`;
+}
+
 function getOption(
     options: ParsedCliOptions,
     name: keyof ParsedCliOptions,
-    envName: string,
     required: true
 ): string;
 function getOption(
     options: ParsedCliOptions,
     name: keyof ParsedCliOptions,
-    envName: string,
     required?: false
 ): string | undefined;
 function getOption(
     options: ParsedCliOptions,
     name: keyof ParsedCliOptions,
-    envName: string,
     required = false
 ): string | undefined {
     const cliValue = options[name];
-    const envValue = process.env[`COMPASS_${envName}`];
+    const envName = toEnvName(name);
+    const envValue = process.env[envName];
     
     // Convert boolean to string for consistency
     const result = cliValue !== undefined 
@@ -33,7 +35,7 @@ function getOption(
         : envValue;
     
     if (required && result === undefined) {
-        throw new Error(`Missing required argument: --${name} or environment variable: COMPASS_${envName}`);
+        throw new Error(`Missing required argument: --${name} or environment variable: ${envName}`);
     }
     return result;
 }
@@ -41,7 +43,6 @@ function getOption(
 function getBooleanOption(
     options: ParsedCliOptions,
     name: keyof ParsedCliOptions,
-    envName: string,
     defaultValue: boolean
 ): boolean {
     const cliValue = options[name];
@@ -49,7 +50,7 @@ function getBooleanOption(
         return cliValue;
     }
     
-    const envValue = process.env[`COMPASS_${envName}`];
+    const envValue = process.env[toEnvName(name)];
     if (envValue !== undefined) {
         return envValue === "true";
     }
@@ -60,26 +61,26 @@ function getBooleanOption(
 export async function fromParsedOptions(options: ParsedCliOptions): Promise<Config> {
     const defaultConfig = defaultConfigValues();
 
-    const repoPath = getOption(options, "repo", "REPO", true);
-    const fixture = getOption(options, "fixture", "FIXTURE", true);
-    const agentTypeStr = getOption(options, "agent", "AGENT", true);
+    const repoPath = getOption(options, "repo", true);
+    const fixture = getOption(options, "fixture", true);
+    const agentTypeStr = getOption(options, "agent", true);
     
-    const iterationsStr = getOption(options, "iterations", "ITERATIONS");
+    const iterationsStr = getOption(options, "iterations");
     const iterationCount = iterationsStr 
         ? parseInt(iterationsStr, 10) 
         : defaultConfig.iterationCount;
     
-    const outputModeStr = getOption(options, "output-mode", "OUTPUT_MODE") 
+    const outputModeStr = getOption(options, "output-mode") 
         ?? OutputMode[defaultConfig.outputMode];
-    const logLevelStr = getOption(options, "log-level", "LOG_LEVEL") 
+    const logLevelStr = getOption(options, "log-level") 
         ?? LogLevel[defaultConfig.logLevel];
     
-    const useCache = getBooleanOption(options, "use-cache", "USE_CACHE", defaultConfig.useCache);
-    const stopOnError = getBooleanOption(options, "stop-on-error", "STOP_ON_ERROR", defaultConfig.stopOnError);
-    const allowFullAccess = getBooleanOption(options, "allow-full-access", "ALLOW_FULL_ACCESS", defaultConfig.allowFullAccess);
+    const useCache = getBooleanOption(options, "use-cache", defaultConfig.useCache);
+    const stopOnError = getBooleanOption(options, "stop-on-error", defaultConfig.stopOnError);
+    const allowFullAccess = getBooleanOption(options, "allow-full-access", defaultConfig.allowFullAccess);
     
-    let model = getOption(options, "model", "MODEL");
-    let evalModel = getOption(options, "eval-model", "EVAL_MODEL");
+    let model = getOption(options, "model");
+    let evalModel = getOption(options, "eval-model");
     
     const agentType = parseEnum(AgentTypes, agentTypeStr);
     if (agentType === undefined) {
