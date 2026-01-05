@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import * as fs from "fs";
-import { stripANSI } from "bun";
 
 /**
  * Copy text to clipboard using OSC 52 escape sequence.
@@ -8,7 +7,7 @@ import { stripANSI } from "bun";
  */
 function copyWithOsc52(text: string): boolean {
     try {
-        const cleanText = stripANSI(text);
+        const cleanText = Bun.stripANSI(text);
         const base64 = Buffer.from(cleanText).toString("base64");
         // OSC 52 sequence: ESC ] 52 ; c ; <base64> BEL
         const osc52 = `\x1b]52;c;${base64}\x07`;

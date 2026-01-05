@@ -1,0 +1,66 @@
+name: Release NPM Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.2.3)'
+        required: true
+
+jobs:
+  publish:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Determine release tag
+        id: get_tag
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+
+          # if the tag is empty, exit with error
+          if [ -z "$TAG" ]; then
+            echo "Error: Tag is empty"
+            exit 1
+          fi
+
+          # Strip 'v' prefix if present
+          VERSION="${TAG#v}"
+
+          echo "Using tag: $TAG"
+          echo "Using version: $VERSION"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.get_tag.outputs.tag }}
+
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.com/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Set package version
+        run: |
+          VERSION="${{ steps.get_tag.outputs.version }}"
+          jq --arg version "$VERSION" '.version = $version' package.json > package.json.tmp && mv package.json.tmp package.json
+
+      - name: Publish to GitHub Packages
+        run: bun publish
+        env:
+          BUN_PUBLISH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

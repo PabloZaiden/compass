@@ -1,0 +1,2 @@
+[install.scopes]
+"@pablozaiden" = { token = "$BUN_PUBLISH_TOKEN", url = "https://npm.pkg.github.com" }
