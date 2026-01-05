@@ -37,15 +37,15 @@ export function EditorModal({
         }
     }, [fieldKey, currentValue, visible]);
 
-    // Modal keyboard handler - blocks all keys from bubbling
-    // OpenTUI's <input> and <select> handle their own keys internally
+    // Modal keyboard handler - blocks all keys from bubbling out of the modal
+    // OpenTUI's <input> and <select> handle their own keys internally, but we intercept some first.
     useKeyboardHandler(
         (event) => {
-            // Only handle Escape ourselves - input/select don't handle it
+            // Intercept Escape at modal priority to close the modal before input/select can handle it.
             if (event.key.name === "escape") {
                 onCancel();
             }
-            // All other keys: let OpenTUI primitives handle, then block bubbling via modal option
+            // All other keys: let OpenTUI primitives handle them; bubbling is still blocked via the modal option.
         },
         KeyboardPriority.Modal,
         { enabled: visible, modal: true }
