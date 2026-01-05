@@ -100,6 +100,8 @@ export function App({ onExit }: AppProps) {
         
         setMode(Mode.Running);
         clearLogs();
+        setLogsVisible(true);
+        setFocusedSection(FocusedSection.Logs);
         
         const outcome = await run(values);
         
