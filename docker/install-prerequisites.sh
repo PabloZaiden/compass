@@ -35,43 +35,10 @@ export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}"
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" ' >> $HOME/.bashrc
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" '>> $HOME/.zshrc
 
-# install zig
-ZIG_VERSION="0.15.2"
-
-ZIG_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-if [ "$ZIG_OS" = "darwin" ]; then
-    ZIG_OS="macos"
-fi
-
-ZIG_ARCH=$(uname -m)
-if [ "$ZIG_ARCH" = "aarch64" ] || [ "$ZIG_ARCH" = "arm64" ]; then
-    ZIG_ARCH="aarch64"
-fi
-
-ZIG_URL="https://ziglang.org/download/$ZIG_VERSION/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION.tar.xz"
-
-echo "Zig download URL: $ZIG_URL"
-echo "Download and extract zig..."
-curl -fsSL $ZIG_URL -o /tmp/zig.tar.xz
-
-echo "Zig downloaded to /tmp/zig.tar.xz, extracting..."
-tar -xf /tmp/zig.tar.xz -C /tmp
-
-echo "Move zig to $HOME/.local/zig..."
-mkdir -p $HOME/.local/zig
-mv /tmp/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION/* $HOME/.local/zig/
-
-echo "Add symlink for zig in $HOME/.local/bin..."
-mkdir -p $HOME/.local/bin
-ln -sf "$HOME/.local/zig/zig" "$HOME/.local/bin/zig"
-
 # ensure $HOME/.local/bin is in PATH for current session and future shells
 export PATH="$HOME/.local/bin:$PATH"
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
-echo "Clean up temporary Zig files"
-rm -f /tmp/zig.tar.xz
-rm -rf "/tmp/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION"
 
 # install github copilot cli
 bun install -g @github/copilot
@@ -85,6 +52,9 @@ curl -fsSL https://claude.ai/install.sh | bash
 # install google gemini cli
 bun install -g @google/gemini-cli
 
+# install opencode
+bun install -g opencode-ai
+
 # install az cli
 if ! command -v az &> /dev/null
 then
@@ -92,10 +62,3 @@ then
     
     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 fi
-
-# install opencode
-curl -fsSL https://opencode.ai/install | bash
-
-# add symlink for opencode in $HOME/.local/bin
-mkdir -p $HOME/.local/bin
-ln -sf "$HOME/.opencode/bin/opencode" "$HOME/.local/bin/opencode"
