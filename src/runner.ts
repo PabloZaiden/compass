@@ -1,4 +1,5 @@
-import { copyDirectory, logger, run } from "./utils";
+import { copyDirectory, run } from "./utils";
+import { logger } from "./logging";
 import type { Fixture, IterationResult, ProcessOutput, RunnerResult } from "./models";
 import { tmpdir } from "os";
 import { Cache } from "./agents/cache";
@@ -9,8 +10,40 @@ import { createAgent } from "./agents/factory";
 import type { Config } from "./config/config";
 import type { AgentOptions } from "./agents/agent";
 
+function validateConfig(config: Config): void {
+    const errors: string[] = [];
+
+    // Required string fields
+    if (!config.repoPath || config.repoPath.trim() === "") {
+        errors.push("repoPath is required");
+    }
+    if (!config.fixture || config.fixture.trim() === "") {
+        errors.push("fixture is required");
+    }
+    if (!config.agentType) {
+        errors.push("agentType is required");
+    }
+    if (!config.model || config.model.trim() === "") {
+        errors.push("model is required");
+    }
+    if (!config.evalModel || config.evalModel.trim() === "") {
+        errors.push("evalModel is required");
+    }
+
+    // Numeric validation
+    if (config.iterationCount === undefined || config.iterationCount < 1) {
+        errors.push("iterationCount must be at least 1");
+    }
+
+    if (errors.length > 0) {
+        throw new Error(`Invalid configuration:\n  - ${errors.join("\n  - ")}`);
+    }
+}
+
 export class Runner {
     async run(config: Config): Promise<RunnerResult> {
+        validateConfig(config);
+
         logger.trace(`Running Compass with config: ${JSON.stringify(config, null, 2)}`);
 
         const fixtureContent = await Bun.file(config.fixture).text();

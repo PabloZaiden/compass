@@ -1,5 +1,5 @@
 import { OutputMode } from "../models";
-import { LogLevel } from "../utils";
+import { LogLevel } from "../logging";
 
 export interface PartialConfig {
     iterationCount: number;

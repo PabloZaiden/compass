@@ -35,13 +35,43 @@ export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}"
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" ' >> $HOME/.bashrc
 echo 'export PATH="$HOME/.bun/bin:$HOME/.bun/global/bin:${PATH}" '>> $HOME/.zshrc
 
-# install brew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $HOME/.bashrc
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
 # install zig
-brew install zig
+ZIG_VERSION="0.15.2"
+
+ZIG_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+if [ "$ZIG_OS" = "darwin" ]; then
+    ZIG_OS="macos"
+fi
+
+ZIG_ARCH=$(uname -m)
+if [ "$ZIG_ARCH" = "aarch64" ] || [ "$ZIG_ARCH" = "arm64" ]; then
+    ZIG_ARCH="aarch64"
+fi
+
+ZIG_URL="https://ziglang.org/download/$ZIG_VERSION/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION.tar.xz"
+
+echo "Zig download URL: $ZIG_URL"
+echo "Download and extract zig..."
+curl -fsSL $ZIG_URL -o /tmp/zig.tar.xz
+
+echo "Zig downloaded to /tmp/zig.tar.xz, extracting..."
+tar -xf /tmp/zig.tar.xz -C /tmp
+
+echo "Move zig to $HOME/.local/zig..."
+mkdir -p $HOME/.local/zig
+mv /tmp/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION/* $HOME/.local/zig/
+
+echo "Add symlink for zig in $HOME/.local/bin..."
+mkdir -p $HOME/.local/bin
+ln -sf "$HOME/.local/zig/zig" "$HOME/.local/bin/zig"
+
+# ensure $HOME/.local/bin is in PATH for current session and future shells
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+echo "Clean up temporary Zig files"
+rm -f /tmp/zig.tar.xz
+rm -rf "/tmp/zig-$ZIG_ARCH-$ZIG_OS-$ZIG_VERSION"
 
 # install github copilot cli
 bun install -g @github/copilot

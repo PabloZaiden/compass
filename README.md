@@ -41,10 +41,10 @@ For a full list of options, check `src/config/config.ts`
 
 ## Terminal UI
 
-Enable an interactive Terminal UI with live logs, activity indicator, and rerun/change-config controls by setting `COMPASS_TUI=true`:
+Enable an interactive Terminal UI with live logs, activity indicator, and config controls by running without any arguments:
 
 ```bash
-COMPASS_TUI=true bun src/index.ts
+bun start
 ```
 
 Features:

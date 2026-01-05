@@ -1,5 +1,7 @@
+import { stripANSI } from "bun";
 import type { AgentOutput } from "../models";
-import { logger, run } from "../utils";
+import { run } from "../utils";
+import { logger } from "../logging";
 import { Agent, type AgentOptions } from "./agent";
 
 export class ClaudeCode extends Agent {
@@ -30,8 +32,8 @@ export class ClaudeCode extends Agent {
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
 
         return {
-            stdOut: processOutput.stdOut.trim(),
-            stdErr: processOutput.stdErr.trim(),
+            stdOut: stripANSI(processOutput.stdOut.trim()),
+            stdErr: stripANSI(processOutput.stdErr.trim()),
             exitCode: processOutput.exitCode,
             gitDiff: diff.stdOut.trim()
         };

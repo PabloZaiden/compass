@@ -2,7 +2,7 @@ import { describe, test, expect } from "bun:test";
 import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
 import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
-import { LogLevel } from "../utils";
+import { LogLevel } from "../logging";
 import { Runner } from "../runner";
 import type { Config } from "../config/config";
 
