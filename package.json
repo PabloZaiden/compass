@@ -1,6 +1,9 @@
 {
-  "name": "compass",
+  "name": "@pablozaiden/compass",
   "version": "0.0.0-development",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "module": "src/index.ts",
   "type": "module",
   "bin": {
