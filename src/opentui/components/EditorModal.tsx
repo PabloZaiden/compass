@@ -128,6 +128,7 @@ export function EditorModal({
                     onChange={handleSelectIndexChange}
                     onSelect={handleSelectSubmit}
                     showScrollIndicator={true}
+                    showDescription={false}
                     height={10}
                     width="100%"
                     wrapSelection={true}
@@ -143,6 +144,7 @@ export function EditorModal({
                     focused={true}
                     onSelect={handleBooleanSubmit}
                     showScrollIndicator={false}
+                    showDescription={false}
                     height={4}
                     width="100%"
                     wrapSelection={true}
