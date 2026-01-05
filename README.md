@@ -33,9 +33,9 @@ Compass supports three commands:
 Launch the interactive Terminal UI:
 
 ```bash
-bun src/index.ts
+bun start
 # or explicitly:
-bun src/index.ts interactive
+bun start interactive
 ```
 
 ### Run Mode
@@ -79,14 +79,14 @@ Command-line arguments take precedence over environment variables.
 
 ## Terminal UI
 
-Enable an interactive Terminal UI with live logs, activity indicator, and config controls by running without any arguments:
+The default mode launches an interactive Terminal UI. To start it, simply run:
 
 ```bash
 bun start
 ```
 
 Features:
-- Interactive form for all CLI options (repo, fixture, agent, iterations, output mode, log level, cache, stop on error, allow full access, model, eval model)
+- Interactive form for all CLI options.
 - Live `tslog` stream in the right panel and spinner-based activity indicator while running
 - Pretty-printed JSON results inside the TUI (no JSON is written to stdout when TUI is enabled)
 - "Show as CLI flags" overlay to copy the equivalent command
