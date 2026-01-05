@@ -56,7 +56,8 @@ export function parseCliArgs(args: string[]): ParsedCli {
         args: remainingArgs,
         options: cliOptions,
         strict: true,
-        allowPositionals: true,
+        // Positionals are currently not used by any commands; disallow them to catch mistakes early.
+        allowPositionals: false,
         allowNegative: true,
     });
 
