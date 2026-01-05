@@ -1,8 +1,11 @@
 {
   "name": "compass",
+  "version": "0.0.0-development",
   "module": "src/index.ts",
   "type": "module",
-  "private": true,
+  "bin": {
+    "compass": "src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^19"
