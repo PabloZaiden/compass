@@ -61,7 +61,7 @@ OPTIONS (for 'run' command):
 EXAMPLES:
     compass                                    # Launch interactive TUI
     compass interactive                        # Same as above
-    compass run --repo ./my-repo --fixture ./prompts.json --agent Copilot --model <model-name> --eval-model <eval-model-name>
+    compass run --repo ./my-repo --fixture ./prompts.json --agent opencode
     compass help                               # Show this help
 
 ENVIRONMENT VARIABLES:
