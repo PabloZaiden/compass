@@ -20,7 +20,7 @@ function validateConfig(config: Config): void {
     if (!config.fixture || config.fixture.trim() === "") {
         errors.push("fixture is required");
     }
-    if (config.agentType === undefined || config.agentType === null) {
+    if (config.agentType === undefined) {
         errors.push("agentType is required");
     }
     if (!config.model || config.model.trim() === "") {
