@@ -49,7 +49,7 @@ export function App({ onExit }: AppProps) {
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
     const [editingField, setEditingField] = useState<keyof Config | null>(null);
     const [focusedSection, setFocusedSection] = useState<FocusedSection>(FocusedSection.Config);
-    const [logsVisible, setLogsVisible] = useState(true);
+    const [logsVisible, setLogsVisible] = useState(false);
     const [cliOverlayVisible, setCliOverlayVisible] = useState(false);
     const [configStatus, setConfigStatus] = useState<string | null>(null);
 
