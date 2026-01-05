@@ -6,4 +6,4 @@ export { EditorModal } from "./EditorModal";
 export { LogsPanel } from "./LogsPanel";
 export { ResultsPanel } from "./ResultsPanel";
 export { StatusBar } from "./StatusBar";
-export { CliOverlay } from "./CliOverlay";
+export { CliModal } from "./CliModal";

@@ -2,6 +2,7 @@ import type { RunnerResult } from "../../models";
 import { Theme } from "../utils";
 import { Classification } from "../../models";
 import { JsonHighlight } from "./JsonHighlight";
+import { useKeyboardHandler, KeyboardPriority } from "../hooks";
 
 const ClassificationTheme = {
     [Classification.SUCCESS]: {
@@ -23,6 +24,8 @@ interface ResultsPanelProps {
     error: string | null;
     focused: boolean;
     isLoading: boolean;
+    onReturnToConfig: () => void;
+    onCopy: (content: string, label: string) => void;
 }
 
 export function ResultsPanel({
@@ -30,8 +33,36 @@ export function ResultsPanel({
     error,
     focused,
     isLoading,
+    onReturnToConfig,
+    onCopy,
 }: ResultsPanelProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
+
+    // Handle keyboard events at Focused priority (only when focused)
+    useKeyboardHandler(
+        (event) => {
+            const { key } = event;
+            // Ctrl+Y to copy results/error
+            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
+                if (result) {
+                    onCopy(JSON.stringify(result, null, 2), "Results JSON");
+                } else if (error) {
+                    onCopy(error, "Error");
+                }
+                event.stopPropagation();
+                return;
+            }
+
+            // Enter to return to config
+            if (key.name === "return" || key.name === "enter") {
+                onReturnToConfig();
+                event.stopPropagation();
+                return;
+            }
+        },
+        KeyboardPriority.Focused,
+        { enabled: focused }
+    );
 
     const renderContent = () => {
         if (isLoading) {

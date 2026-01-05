@@ -3,12 +3,14 @@ import type { SelectOption } from "@opentui/core";
 import type { Config } from "../../config/config";
 import { Theme } from "../utils";
 import { FieldConfigs, getFieldOptions } from "../utils";
+import { useKeyboardHandler, KeyboardPriority } from "../hooks";
 
 interface EditorModalProps {
     fieldKey: keyof Config | null;
     currentValue: unknown;
     visible: boolean;
     onSubmit: (value: unknown) => void;
+    onCancel: () => void;
 }
 
 export function EditorModal({
@@ -16,6 +18,7 @@ export function EditorModal({
     currentValue,
     visible,
     onSubmit,
+    onCancel,
 }: EditorModalProps) {
     const [inputValue, setInputValue] = useState("");
     const [selectIndex, setSelectIndex] = useState(0);
@@ -33,6 +36,20 @@ export function EditorModal({
             }
         }
     }, [fieldKey, currentValue, visible]);
+
+    // Modal keyboard handler - blocks all keys from bubbling
+    // OpenTUI's <input> and <select> handle their own keys internally
+    useKeyboardHandler(
+        (event) => {
+            // Only handle Escape ourselves - input/select don't handle it
+            if (event.key.name === "escape") {
+                onCancel();
+            }
+            // All other keys: let OpenTUI primitives handle, then block bubbling via modal option
+        },
+        KeyboardPriority.Modal,
+        { enabled: visible, modal: true }
+    );
 
     if (!visible || !fieldKey) {
         return null;
