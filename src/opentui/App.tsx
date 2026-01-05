@@ -273,13 +273,7 @@ function AppContent({ onExit }: AppProps) {
                 command={cliCommand}
                 visible={cliOverlayVisible}
                 onClose={() => setCliOverlayVisible(false)}
-                onCopy={(content, label) => {
-                    const success = copy(content);
-                    if (success) {
-                        setLastAction(`✓ ${label} copied`);
-                        setTimeout(() => setLastAction(""), 2000);
-                    }
-                }}
+                onCopy={handleCopyWithFeedback}
             />
         </box>
     );
