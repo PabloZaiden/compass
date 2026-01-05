@@ -15,7 +15,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Use `bun test` to run tests.
+Use `bun run test:anonymous` to run tests. Only run `bun run test:all` after user confirmation.
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
