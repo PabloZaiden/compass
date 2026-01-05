@@ -26,18 +26,56 @@ Console tool to benchmark Coding agents using different agents and models across
 
 ## Usage
 
+Compass supports three commands:
+
+### Interactive Mode (default)
+
+Launch the interactive Terminal UI:
+
 ```bash
-bun src/index.ts \
+bun src/index.ts
+# or explicitly:
+bun src/index.ts interactive
+```
+
+### Run Mode
+
+Execute the benchmark runner:
+
+```bash
+bun src/index.ts run \
   --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
   --agent OpenCode
 ```
 
-Every option can be specified via command-line arguments or environment variables. Command-line arguments should use `--` prefix and camel-case names, while environment variables should use `COMPASS_` prefix and uppercase with underscores.
+### Help
+
+Show all available options:
+
+```bash
+bun src/index.ts help
+```
+
+### Options
+
+Every option can be specified via command-line arguments or environment variables. Command-line arguments should use `--` prefix (e.g., `--repo`), while environment variables should use `COMPASS_` prefix and uppercase with underscores (e.g., `COMPASS_REPO`).
 
 Command-line arguments take precedence over environment variables.
 
-For a full list of options, check `src/config/config.ts`
+| Option | Environment Variable | Required | Description |
+|--------|---------------------|----------|-------------|
+| `--repo` | `COMPASS_REPO` | Yes | Path to the repository to evaluate |
+| `--fixture` | `COMPASS_FIXTURE` | Yes | Path to the fixture JSON file |
+| `--agent` | `COMPASS_AGENT` | Yes | Agent type (Copilot, Codex, OpenCode, ClaudeCode, Gemini) |
+| `--iterations` | `COMPASS_ITERATIONS` | No | Number of iterations per prompt (default: 1) |
+| `--output-mode` | `COMPASS_OUTPUT_MODE` | No | Output format: Detailed, Aggregated (default) |
+| `--log-level` | `COMPASS_LOG_LEVEL` | No | Logging verbosity (default: Info) |
+| `--use-cache` | `COMPASS_USE_CACHE` | No | Enable caching of agent responses |
+| `--stop-on-error` | `COMPASS_STOP_ON_ERROR` | No | Stop on first error (default: true) |
+| `--allow-full-access` | `COMPASS_ALLOW_FULL_ACCESS` | No | Allow full repository access (default: true) |
+| `--model` | `COMPASS_MODEL` | No | Model to use for the agent |
+| `--eval-model` | `COMPASS_EVAL_MODEL` | No | Model to use for evaluation |
 
 ## Terminal UI
 
@@ -60,6 +98,7 @@ docker run --rm -ti \
   -v /absolute/path/to/target-repo:/target-repo \
   -v /absolute/path/to/fixture.json:/fixture.json \
   ghcr.io/pablozaiden/compass:latest \
+  run \
   --repo /target-repo \
   --fixture /fixture.json \
   --agent OpenCode
@@ -74,6 +113,7 @@ docker run --rm -ti \
   -v $(pwd):/target-repo \
   -v $(pwd)/src/sample-fixture.json:/fixture.json \
   compass \
+  run \
   --repo /target-repo \
   --fixture /fixture.json \
   --agent OpenCode
