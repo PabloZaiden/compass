@@ -1,9 +1,8 @@
 name: Release Binaries
 
 on:
-  push:
-    tags:
-      - 'v*'  # Triggers on tags like v1.2.3, v2.0.0, etc.
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
