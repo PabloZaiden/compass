@@ -9,7 +9,19 @@ export { parseCliArgs, type ParsedCliOptions, type ParsedCli, type Command } fro
 export { printHelp } from "./help";
 
 export async function runCli(args: string[]): Promise<void> {
-    const parsed = parseCliArgs(args);
+    let parsed;
+    try {
+        parsed = parseCliArgs(args);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error("Failed to parse command-line arguments:", error.message);
+        } else {
+            logger.error("Failed to parse command-line arguments:", error);
+        }
+        printHelp();
+        process.exitCode = 1;
+        return;
+    }
 
     switch (parsed.command) {
         case "interactive":
