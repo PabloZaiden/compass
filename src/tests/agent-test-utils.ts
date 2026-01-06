@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { expect } from "bun:test";
 import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
 import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
@@ -7,14 +7,16 @@ import { Runner } from "../run/runner";
 import type { Config } from "../config/config";
 
 const srcDir = dirname(import.meta.dir);
-const repoDir = path.resolve(srcDir, "..");
+export const repoDir = path.resolve(srcDir, "..");
 
-const basicTestOptions = {
+export const runAgentTests = process.env["COMPASS_TEST_AGENTS"] === "1";
+
+export const basicTestOptions = {
   timeout: 90 * 1000, // 90 seconds
 };
 
-async function basicTest(type: AgentTypes) {
-  const agent = createAgent(type, { allowFullAccess: false});
+export async function basicTest(type: AgentTypes) {
+  const agent = createAgent(type, { allowFullAccess: false });
 
   const model = defaultModels[type];
 
@@ -26,11 +28,11 @@ async function basicTest(type: AgentTypes) {
   expect(output.stdOut.length).toBeGreaterThan(0);
 }
 
-const endToEndTestOptions = {
+export const endToEndTestOptions = {
   timeout: 2 * 60 * 1000, // 2 minutes
 };
 
-async function endToEnd(type: AgentTypes) {
+export async function endToEnd(type: AgentTypes) {
   const model = defaultModels[type];
 
   const fixtureFileName = path.join(srcDir, "sample-fixture.json");
@@ -76,58 +78,3 @@ async function endToEnd(type: AgentTypes) {
     expect(aggResult.averagePoints).toBe(10);
   }
 }
-
-const anonymous = (name: string) => `[anonymous] ${name}`;
-
-const basicTestName = "Basic test";
-const endToEndTestName = "Self end-to-end test";
-
-describe(AgentTypes[AgentTypes.Copilot], () => {
-  test(basicTestName, async () => {
-    await basicTest(AgentTypes.Copilot);
-  }, basicTestOptions);
-  
-  test(endToEndTestName, async () => {
-    await endToEnd(AgentTypes.Copilot);
-  }, endToEndTestOptions);
-});
-
-describe(AgentTypes[AgentTypes.Codex], () => {
-  test(basicTestName, async () => {
-    await basicTest(AgentTypes.Codex);
-  }, basicTestOptions);
-
-  test(endToEndTestName, async () => {
-    await endToEnd(AgentTypes.Codex);
-  }, endToEndTestOptions);
-});
-
-describe(anonymous(AgentTypes[AgentTypes.OpenCode]), () => {
-  test(basicTestName, async () => {
-    await basicTest(AgentTypes.OpenCode);
-  }, basicTestOptions);
-
-  test(endToEndTestName, async () => {
-    await endToEnd(AgentTypes.OpenCode);
-  }, endToEndTestOptions);
-});
-
-describe.skip(AgentTypes[AgentTypes.ClaudeCode], () => {
-  test(basicTestName, async () => {
-    await basicTest(AgentTypes.ClaudeCode);
-  }, basicTestOptions);
-
-  test(endToEndTestName, async () => {
-    await endToEnd(AgentTypes.ClaudeCode);
-  }, endToEndTestOptions);
-});
-
-describe(AgentTypes[AgentTypes.Gemini], () => {
-  test(basicTestName, async () => {
-    await basicTest(AgentTypes.Gemini);
-  }, basicTestOptions);
-
-  test(endToEndTestName, async () => {
-    await endToEnd(AgentTypes.Gemini);
-  }, endToEndTestOptions);
-});

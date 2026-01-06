@@ -16,11 +16,15 @@ Default to using Bun instead of Node.js.
 ## Testing
 
 Always run `bun run build` before running tests, to make sure there are no build errors.
+Use `bun test` to run all the tests that don't require agent interaction.
 
-Use `bun test:anonymous` to run tests related to agents.
-Use `bun test:parser` to run tests related to the CLI parser.
+Always run `bun test` when you thing you are done making changes.
 
-Only run `bun test:all` after user confirmation.
+Use `bun test:agents src/tests/<agent>.test.ts` to run tests for a specific agent (e.g., `bun test:agents src/tests/copilot.test.ts`, `bun test:agents src/tests/gemini.test.ts`).
+
+Use `bun test:agents src/tests/opencode.test.ts` to run tests for an agent that won't require authentication.
+
+Only run `bun test:agents <...>` after user confirmation.
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
