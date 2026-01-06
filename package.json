@@ -42,8 +42,11 @@
     "react": "19",
     "tslog": "^4.10.2"
   },
+  "trustedDependencies": [
+    "@opentui/core",
+    "@opentui/react"
+  ],
   "scripts": {
-    "postinstall": "bun install --frozen-lockfile || true",
     "start": "bun run src/index.ts",
     "start:interactive": "bun run src/index.ts interactive",
     "start:run": "bun run src/index.ts run",
