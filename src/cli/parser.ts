@@ -77,11 +77,13 @@ export function resolveCommandPath(
     const isHelpRequest = lastSegment === "help";
     const pathWithoutHelp = isHelpRequest ? commandPath.slice(0, -1) : commandPath;
 
-    // If just "help" by itself
+    // If just "help" by itself, show root help
+    // We use interactive mode as a placeholder since the mode won't be accessed
+    // when showHelp is true (the CLI handler calls printHelp and returns early)
     if (pathWithoutHelp.length === 0 && isHelpRequest) {
         return {
             command: "help" as Command,
-            mode: { name: "help", description: "Show help", options: {}, execute: async () => {} },
+            mode: modeRegistry["interactive"]!,
             remainingPath: [],
             showHelp: true,
         };
