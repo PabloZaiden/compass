@@ -27,5 +27,12 @@
   "type": "module",
   "bin": {
     "compass": "bin.js"
+  },
+  "scripts": {
+    "build": "bun build bin.ts --outfile bin.js --target node",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22"
   }
 }

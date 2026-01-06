@@ -69,8 +69,15 @@ jobs:
           fi
           echo "Version verified: $ACTUAL_VERSION"
 
+      - name: Install dependencies
+        working-directory: npm-bootstrap
+        run: bun install
+      - name: Build npm-bootstrap
+        working-directory: npm-bootstrap
+        run: bun run build
+
       - name: Publish to GitHub Packages
         working-directory: npm-bootstrap
-        run: bun publish
+        run: bun publish --no-build
         env:
           BUN_PUBLISH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
