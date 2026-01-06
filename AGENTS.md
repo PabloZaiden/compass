@@ -18,7 +18,7 @@ Default to using Bun instead of Node.js.
 Always run `bun run build` before running tests, to make sure there are no build errors.
 Use `bun test` to run all the tests that don't require agent interaction.
 
-Always run `bun test` when you thing you are done making changes.
+Always run `bun test` when you think you are done making changes.
 
 Use `bun test:agents src/tests/<agent>.test.ts` to run tests for a specific agent (e.g., `bun test:agents src/tests/copilot.test.ts`, `bun test:agents src/tests/gemini.test.ts`).
 
