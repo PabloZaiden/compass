@@ -138,16 +138,10 @@ export function printHelp(commandPath: string[] = []): void {
     const sections: string[] = [];
 
     // Title
-    if (isRoot) {
-        sections.push("Compass\n");
-    } else {
-        sections.push(`compass ${pathWithoutHelp.join(" ")}\n`);
-    }
-
+    sections.push("Compass\n");
+    
     // Description
-    if (isRoot) {
-        sections.push("Agent evaluation and benchmarking tool\n");
-    } else if (mode) {
+    if (mode) {
         sections.push(mode.description + "\n");
     }
 

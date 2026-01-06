@@ -1,23 +1,13 @@
 import type { ParseArgsConfig } from "util";
+import type { OptionDescription } from "../options/schema";
 
 /**
  * Schema for command-line options, compatible with Node's parseArgs.
  */
 export type OptionsSchema = ParseArgsConfig["options"];
 
-/**
- * Description of a single option for help text generation.
- */
-export interface OptionDescription {
-    /** Human-readable description of the option */
-    description: string;
-    /** Placeholder text for the value (e.g., "path", "name") */
-    placeholder?: string;
-    /** Valid values - either a string or a function returning a string */
-    validValues?: string | (() => string);
-    /** Default value for display in help */
-    default?: string;
-}
+// Re-export OptionDescription for convenience
+export type { OptionDescription } from "../options/schema";
 
 /**
  * ExecutionMode interface - the core abstraction for all CLI commands.

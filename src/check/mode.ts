@@ -1,58 +1,43 @@
-import {
-    registerMode,
-    type ExecutionMode,
-    type OptionDescription,
-    type OptionsSchema,
-} from "../modes/mode";
+import { registerMode, type ExecutionMode } from "../modes/mode";
 import { logger } from "../logging";
 import { AgentTypes, createAgent } from "../agents/factory";
 import { defaultAgentOptions } from "../agents/agent";
-import { parseEnum, values } from "../models";
+import { parseEnum } from "../models";
+import {
+    checkOptionsSchema,
+    type CheckOptions,
+    toParseArgsOptions,
+    toOptionDescriptions,
+    getStringOption,
+} from "../options";
 
 /**
- * Options for the check mode.
- */
-export interface CheckOptions {
-    agent?: string;
-}
-
-// Lazy evaluation helper for dynamic values
-const getAgentTypes = () => values(AgentTypes).join(", ");
-
-/**
- * Get all numeric values from a numeric enum
+ * Get all numeric values from a numeric enum.
  */
 function getEnumValues<T extends object>(enumObj: T): number[] {
     return Object.values(enumObj).filter((v): v is number => typeof v === "number");
 }
 
-const checkOptionsSchema: OptionsSchema = {
-    agent: { type: "string" },
-} as const;
-
-const checkOptionDescriptions: Record<string, OptionDescription> = {
-    agent: {
-        description: "Check dependencies for a specific agent only",
-        placeholder: "type",
-        validValues: getAgentTypes,
-    },
-};
-
 /**
  * CheckMode - verifies that required agent dependencies are installed.
+ *
+ * Uses checkOptionsSchema as the single source of truth for:
+ * - CLI option definitions
+ * - parseArgs configuration  
+ * - Help text generation
  */
 export const checkMode: ExecutionMode<CheckOptions> = {
     name: "check",
     description: "Check if all required agent dependencies are installed",
-    options: checkOptionsSchema,
-    optionDescriptions: checkOptionDescriptions,
+    options: toParseArgsOptions(checkOptionsSchema),
+    optionDescriptions: toOptionDescriptions(checkOptionsSchema),
     examples: [
         "compass check                    # Check all agent dependencies",
         "compass check --agent copilot    # Check Copilot dependencies only",
     ],
 
     async execute(options: CheckOptions): Promise<void> {
-        const agentFilter = options.agent;
+        const agentFilter = getStringOption(options, checkOptionsSchema, "agent");
         let hasErrors = false;
 
         // Get all agent types as numeric enum values
@@ -118,3 +103,6 @@ export const checkMode: ExecutionMode<CheckOptions> = {
 
 // Self-register
 registerMode(checkMode);
+
+// Re-export for convenience
+export { type CheckOptions } from "../options";

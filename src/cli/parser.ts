@@ -5,9 +5,8 @@ import {
     type ExecutionMode,
 } from "../modes";
 
-// Re-export option types from modes
-export type { RunOptions } from "../run/mode";
-export type { CheckOptions } from "../check/mode";
+// Re-export option types from options module
+export type { RunOptions, CheckOptions } from "../options";
 export type { InteractiveOptions } from "../interactive/mode";
 
 /**
