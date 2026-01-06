@@ -95,7 +95,13 @@ function downloadFile(url, destPath, redirectCount = 0) {
       });
 
       fileStream.on("error", (err) => {
-        unlinkSync(destPath);
+        try {
+          if (existsSync(destPath)) {
+            unlinkSync(destPath);
+          }
+        } catch {
+          // Ignore cleanup errors
+        }
         reject(err);
       });
     }).on("error", reject);
