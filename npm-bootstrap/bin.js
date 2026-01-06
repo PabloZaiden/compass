@@ -72,6 +72,17 @@ function downloadFile(url, destPath, redirectCount = 0) {
       return;
     }
 
+    const cleanupAndReject = (err) => {
+      try {
+        if (existsSync(destPath)) {
+          unlinkSync(destPath);
+        }
+      } catch {
+        // Ignore cleanup errors
+      }
+      reject(err);
+    };
+
     httpsGet(url, (response) => {
       // Handle redirects
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
@@ -94,17 +105,13 @@ function downloadFile(url, destPath, redirectCount = 0) {
         resolve();
       });
 
-      fileStream.on("error", (err) => {
-        try {
-          if (existsSync(destPath)) {
-            unlinkSync(destPath);
-          }
-        } catch {
-          // Ignore cleanup errors
-        }
-        reject(err);
+      fileStream.on("error", cleanupAndReject);
+
+      response.on("error", (err) => {
+        fileStream.close();
+        cleanupAndReject(err);
       });
-    }).on("error", reject);
+    }).on("error", cleanupAndReject);
   });
 }
 
