@@ -1,73 +1,214 @@
-import { AgentTypes } from "../agents/factory";
-import { OutputMode, values } from "../models";
-import { LogLevel } from "../logging";
+import {
+    modeRegistry,
+    getMode,
+    type ExecutionMode,
+} from "../modes";
 
-export function printHelp(): void {
-    const agentTypes = values(AgentTypes).join(", ");
-    const outputModes = values(OutputMode).join(", ");
-    const logLevels = values(LogLevel).join(", ");
+/**
+ * Formats the usage line for a mode.
+ */
+function formatUsage(commandPath: string[], mode: ExecutionMode | null): string {
+    const parts = ["compass", ...commandPath];
 
-    const helpText = `
-Compass
+    if (mode?.submodes && Object.keys(mode.submodes).length > 0) {
+        parts.push("[command]");
+    }
 
-USAGE:
-    compass [command] [options]
+    if (mode?.options && Object.keys(mode.options).length > 0) {
+        parts.push("[options]");
+    }
 
-COMMANDS:
-    interactive     Launch the interactive TUI (default if no command specified)
-    run             Run the evaluation with the specified configuration
-    help            Show this help message
+    return parts.join(" ");
+}
 
-OPTIONS (for 'run' command):
-    --repo <path>           Path to the repository to evaluate (required)
-                            Env: COMPASS_REPO
+/**
+ * Formats the commands section showing available submodes.
+ */
+function formatCommands(mode: ExecutionMode | null, isRoot: boolean): string {
+    const submodes = isRoot ? modeRegistry : mode?.submodes;
+    
+    if (!submodes || Object.keys(submodes).length === 0) {
+        return "";
+    }
 
-    --fixture <path>        Path to the fixture JSON file (required)
-                            Env: COMPASS_FIXTURE
+    const lines: string[] = ["COMMANDS:"];
 
-    --agent <type>          Agent type to use (required)
-                            Valid types: ${agentTypes}
-                            Env: COMPASS_AGENT
+    // Find the longest mode name for padding (including implicit help)
+    const modeNames = Object.keys(submodes).filter((name) => name !== "help");
+    const allNames = [...modeNames, "help"];
+    const maxLength = Math.max(...allNames.map((name) => name.length));
 
-    --iterations <n>        Number of iterations per prompt (default: 1)
-                            Env: COMPASS_ITERATIONS
+    for (const [name, subMode] of Object.entries(submodes)) {
+        if (name === "help") continue; // Skip explicit help, we'll add implicit one
+        const padding = " ".repeat(maxLength - name.length + 4);
+        lines.push(`    ${name}${padding}${subMode.description}`);
+    }
 
-    --output-mode <mode>    Output format (default: Aggregated)
-                            Valid modes: ${outputModes}
-                            Env: COMPASS_OUTPUT_MODE
+    // Add implicit help subcommand
+    const helpPadding = " ".repeat(maxLength - 4 + 4);
+    lines.push(`    help${helpPadding}Show help for this command`);
 
-    --log-level <level>     Logging verbosity (default: Info)
-                            Valid levels: ${logLevels}
-                            Env: COMPASS_LOG_LEVEL
+    return lines.join("\n");
+}
 
-    --use-cache             Enable caching of agent responses (default: false)
-    --no-use-cache          Disable caching of agent responses
-                            Env: COMPASS_USE_CACHE
+/**
+ * Formats the options section for a mode.
+ */
+function formatOptions(mode: ExecutionMode): string {
+    if (!mode.options || Object.keys(mode.options).length === 0) {
+        return "";
+    }
 
-    --stop-on-error         Stop execution on first error (default: true)
-    --no-stop-on-error      Continue execution after errors
-                            Env: COMPASS_STOP_ON_ERROR
+    const lines: string[] = ["OPTIONS:"];
+    const descriptions = mode.optionDescriptions || {};
 
-    --allow-full-access     Allow full repository access (default: true)
-    --no-allow-full-access  Restrict repository access
-                            Env: COMPASS_ALLOW_FULL_ACCESS
+    for (const [name, schema] of Object.entries(mode.options)) {
+        const desc = descriptions[name];
+        const type = (schema as { type: string }).type;
 
-    --model <name>          Model to use for the agent (defaults based on --agent)
-                            Env: COMPASS_MODEL
+        // Format the flag name
+        let flagFormat: string;
+        if (type === "boolean") {
+            flagFormat = `--${name} / --no-${name}`;
+        } else {
+            const placeholder = desc?.placeholder || "value";
+            flagFormat = `--${name} <${placeholder}>`;
+        }
 
-    --eval-model <name>     Model to use for evaluation (defaults based on --agent)
-                            Env: COMPASS_EVAL_MODEL
+        // Build the description lines
+        const descLines: string[] = [];
 
-EXAMPLES:
-    compass                                    # Launch interactive TUI
-    compass interactive                        # Same as above
-    compass run --repo ./my-repo --fixture ./prompts.json --agent opencode
-    compass help                               # Show this help
+        if (desc) {
+            descLines.push(desc.description);
 
-ENVIRONMENT VARIABLES:
-    All options can be set via environment variables with the COMPASS_ prefix.
-    CLI arguments take precedence over environment variables.
-`;
+            // Add valid values if present
+            if (desc.validValues) {
+                const validValuesStr =
+                    typeof desc.validValues === "function" ? desc.validValues() : desc.validValues;
+                descLines.push(`Valid: ${validValuesStr}`);
+            }
 
-    console.log(helpText);
+            // Add default if present
+            if (desc.default) {
+                descLines.push(`Default: ${desc.default}`);
+            }
+        }
+
+        // Format the option block
+        lines.push(`    ${flagFormat}`);
+        for (const line of descLines) {
+            lines.push(`        ${line}`);
+        }
+        lines.push(""); // Empty line between options
+    }
+
+    return lines.join("\n").trimEnd();
+}
+
+/**
+ * Formats the examples section.
+ */
+function formatExamples(mode: ExecutionMode): string {
+    if (!mode.examples || mode.examples.length === 0) {
+        return "";
+    }
+
+    const lines: string[] = ["EXAMPLES:"];
+    for (const example of mode.examples) {
+        lines.push(`    ${example}`);
+    }
+
+    return lines.join("\n");
+}
+
+/**
+ * Generates and prints help for a given command path.
+ * @param commandPath - The command path (e.g., ["run"] or ["check"])
+ */
+export function printHelp(commandPath: string[] = []): void {
+    // Strip trailing "help" if present
+    const pathWithoutHelp = 
+        commandPath.length > 0 && commandPath[commandPath.length - 1] === "help"
+            ? commandPath.slice(0, -1)
+            : commandPath;
+    
+    const isRoot = pathWithoutHelp.length === 0;
+    const mode = isRoot ? null : resolveModePath(pathWithoutHelp);
+    
+    const sections: string[] = [];
+
+    // Title
+    sections.push("Compass\n");
+    
+    // Description
+    if (mode) {
+        sections.push(mode.description + "\n");
+    }
+
+    // Usage
+    sections.push(`USAGE:\n    ${formatUsage(pathWithoutHelp, mode)}\n`);
+
+    // Commands
+    const commandsSection = formatCommands(mode, isRoot);
+    if (commandsSection) {
+        sections.push(commandsSection + "\n");
+    }
+
+    // Options
+    if (mode) {
+        const optionsSection = formatOptions(mode);
+        if (optionsSection) {
+            sections.push(optionsSection + "\n");
+        }
+
+        // Examples
+        const examplesSection = formatExamples(mode);
+        if (examplesSection) {
+            sections.push(examplesSection + "\n");
+        }
+    } else {
+        // Root examples
+        const rootExamples = [
+            "EXAMPLES:",
+            "    compass                                    # Launch interactive TUI",
+            "    compass run --repo ./my-repo --fixture ./prompts.json --agent opencode",
+            "    compass check                              # Check all agent dependencies",
+            "    compass help                               # Show this help",
+        ];
+        sections.push(rootExamples.join("\n") + "\n");
+    }
+
+    console.log(sections.join("\n"));
+}
+
+/**
+ * Resolves a command path to a mode, traversing submodes.
+ */
+function resolveModePath(commandPath: string[]): ExecutionMode | null {
+    if (commandPath.length === 0) {
+        return null;
+    }
+
+    const rootMode = getMode(commandPath[0]!);
+    if (!rootMode) {
+        return null;
+    }
+
+    let currentMode = rootMode;
+    for (let i = 1; i < commandPath.length; i++) {
+        const submodeName = commandPath[i]!;
+        if (!currentMode.submodes || !currentMode.submodes[submodeName]) {
+            return null;
+        }
+        currentMode = currentMode.submodes[submodeName]!;
+    }
+
+    return currentMode;
+}
+
+/**
+ * Prints help for a specific command path (convenience wrapper).
+ */
+export function printCommandHelp(commandPath: string[]): void {
+    printHelp(commandPath);
 }

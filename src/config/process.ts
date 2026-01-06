@@ -4,91 +4,44 @@ import type { Config } from "./config";
 import { defaultConfigValues } from "./default";
 import { LogLevel } from "../logging";
 import { existsSync } from "node:fs";
-import type { ParsedCliOptions } from "../cli/parser";
+import {
+    runOptionsSchema,
+    type RunOptions,
+    getRequiredStringOption,
+    getStringOption,
+    getBooleanOption,
+    parseEnumOption,
+} from "../options";
 
-function toEnvName(name: string): string {
-    return `COMPASS_${name.toUpperCase().replaceAll("-", "_")}`;
-}
-
-function getOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    required: true
-): string;
-function getOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    required?: false
-): string | undefined;
-function getOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    required = false
-): string | undefined {
-    const cliValue = options[name];
-    const envName = toEnvName(name);
-    const envValue = process.env[envName];
-    
-    // Convert boolean to string for consistency
-    const result = cliValue !== undefined 
-        ? (typeof cliValue === "boolean" ? String(cliValue) : cliValue)
-        : envValue;
-    
-    if (required && result === undefined) {
-        throw new Error(`Missing required argument: --${name} or environment variable: ${envName}`);
-    }
-    return result;
-}
-
-function getBooleanOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    defaultValue: boolean
-): boolean {
-    const cliValue = options[name];
-    if (typeof cliValue === "boolean") {
-        return cliValue;
-    }
-    
-    const envValue = process.env[toEnvName(name)];
-    if (envValue !== undefined) {
-        return envValue === "true";
-    }
-    
-    return defaultValue;
-}
-
-export async function fromParsedOptions(options: ParsedCliOptions): Promise<Config> {
+/**
+ * Converts parsed CLI options to a validated Config object.
+ * Uses the runOptionsSchema as the single source of truth for defaults.
+ */
+export async function fromParsedOptions(options: RunOptions): Promise<Config> {
+    const schema = runOptionsSchema;
     const defaultConfig = defaultConfigValues();
 
-    const repoPath = getOption(options, "repo", true);
-    const fixture = getOption(options, "fixture", true);
-    const agentTypeStr = getOption(options, "agent", true);
-    
-    const iterationsStr = getOption(options, "iterations");
-    const iterationCount = iterationsStr 
-        ? parseInt(iterationsStr, 10) 
+    // Required string options
+    const repoPath = getRequiredStringOption(options, schema, "repo");
+    const fixture = getRequiredStringOption(options, schema, "fixture");
+    const agentTypeStr = getRequiredStringOption(options, schema, "agent");
+
+    // Parse iterations
+    const iterationsStr = getStringOption(options, schema, "iterations");
+    const iterationCount = iterationsStr
+        ? parseInt(iterationsStr, 10)
         : defaultConfig.iterationCount;
     if (Number.isNaN(iterationCount)) {
         throw new Error(`Invalid iteration count: ${iterationsStr}`);
     }
-    
-    const outputModeStr = getOption(options, "output-mode") 
+
+    // Parse enums
+    const outputModeStr = getStringOption(options, schema, "output-mode")
         ?? OutputMode[defaultConfig.outputMode];
-    const logLevelStr = getOption(options, "log-level") 
+    const logLevelStr = getStringOption(options, schema, "log-level")
         ?? LogLevel[defaultConfig.logLevel];
-    
-    const useCache = getBooleanOption(options, "use-cache", defaultConfig.useCache);
-    const stopOnError = getBooleanOption(options, "stop-on-error", defaultConfig.stopOnError);
-    const allowFullAccess = getBooleanOption(options, "allow-full-access", defaultConfig.allowFullAccess);
-    
-    let model = getOption(options, "model");
-    let evalModel = getOption(options, "eval-model");
-    
-    const agentType = parseEnum(AgentTypes, agentTypeStr);
-    if (agentType === undefined) {
-        throw new Error(`Invalid agent type: ${agentTypeStr}`);
-    }
+
+    const agentType = parseEnumOption(agentTypeStr, AgentTypes, "agent");
 
     const outputMode = parseEnum(OutputMode, outputModeStr);
     if (outputMode === undefined) {
@@ -100,15 +53,25 @@ export async function fromParsedOptions(options: ParsedCliOptions): Promise<Conf
         const validLevels = values(LogLevel).join(", ");
         throw new Error(`Invalid log level: ${logLevelStr}. Valid levels are: ${validLevels}`);
     }
-    
-    if (model === undefined) {
+
+    // Boolean options (use schema defaults)
+    const useCache = getBooleanOption(options, schema, "use-cache");
+    const stopOnError = getBooleanOption(options, schema, "stop-on-error");
+    const allowFullAccess = getBooleanOption(options, schema, "allow-full-access");
+
+    // Model options with agent-based defaults
+    let model = getStringOption(options, schema, "model");
+    let evalModel = getStringOption(options, schema, "eval-model");
+
+    if (model === undefined || model === "based on --agent") {
         model = defaultModels[agentType];
     }
 
-    if (evalModel === undefined) {
+    if (evalModel === undefined || evalModel === "based on --agent") {
         evalModel = defaultModels[agentType];
     }
-    
+
+    // Validate paths exist
     if (!existsSync(repoPath)) {
         throw new Error(`Repository path does not exist: ${repoPath}`);
     }

@@ -1,69 +1,153 @@
 import { parseArgs } from "util";
+import {
+    modeRegistry,
+    getRegisteredModes,
+    type ExecutionMode,
+} from "../modes";
 
-export type Command = "interactive" | "run" | "help";
+// Re-export option types from options module
+export type { RunOptions, CheckOptions } from "../options";
+export type { InteractiveOptions } from "../interactive/mode";
 
-export interface ParsedCliOptions {
-    repo?: string;
-    fixture?: string;
-    agent?: string;
-    iterations?: string;
-    "output-mode"?: string;
-    "log-level"?: string;
-    "use-cache"?: boolean;
-    "stop-on-error"?: boolean;
-    "allow-full-access"?: boolean;
-    model?: string;
-    "eval-model"?: string;
-}
+/**
+ * Command types - derived from registered modes plus "help"
+ */
+export type Command = "interactive" | "run" | "check" | "help";
 
-export interface ParsedCli {
-    command: Command;
-    options: ParsedCliOptions;
-    positionals: string[];
-}
+/**
+ * Empty options type for help command
+ */
+export interface HelpOptions {}
 
-const cliOptions = {
-    repo: { type: "string" },
-    fixture: { type: "string" },
-    agent: { type: "string" },
-    iterations: { type: "string" },
-    "output-mode": { type: "string" },
-    "log-level": { type: "string" },
-    "use-cache": { type: "boolean" },
-    "stop-on-error": { type: "boolean" },
-    "allow-full-access": { type: "boolean" },
-    model: { type: "string" },
-    "eval-model": { type: "string" },
-} as const;
+/**
+ * Union type for all options (for backward compatibility)
+ */
+export type ParsedCliOptions = Record<string, unknown>;
 
-const validCommands: Command[] = ["interactive", "run", "help"];
+/**
+ * Discriminated union for parsed CLI result
+ */
+export type ParsedCli =
+    | { command: "run"; options: ParsedCliOptions; commandPath: string[] }
+    | { command: "interactive"; options: ParsedCliOptions; commandPath: string[] }
+    | { command: "check"; options: ParsedCliOptions; commandPath: string[] }
+    | { command: "help"; options: HelpOptions; commandPath: string[] };
 
-export function parseCliArgs(args: string[]): ParsedCli {
-    // First, check if the first arg is a command
-    const firstArg = args[0];
-    let command: Command = "interactive";
-    let remainingArgs = args;
+/**
+ * Extracts the command chain from arguments.
+ * A command chain consists of all non-flag arguments (those not starting with "--")
+ * that appear before any flags. Everything from the first flag onward is passed
+ * to parseArgs, which uses the mode's schema to determine which flags take values.
+ */
+export function extractCommandChain(args: string[]): { commandPath: string[]; flagArgs: string[] } {
+    const firstFlagIndex = args.findIndex(arg => arg.startsWith("--"));
 
-    if (firstArg && validCommands.includes(firstArg as Command)) {
-        command = firstArg as Command;
-        remainingArgs = args.slice(1);
-    } else if (firstArg && !firstArg.startsWith("-")) {
-        // Unknown command
-        throw new Error(`Unknown command: ${firstArg}. Valid commands are: ${validCommands.join(", ")}`);
+    if (firstFlagIndex === -1) {
+        // No flags, everything is command path
+        return { commandPath: [...args], flagArgs: [] };
     }
 
-    const { values, positionals } = parseArgs({
-        args: remainingArgs,
-        options: cliOptions,
+    return {
+        commandPath: args.slice(0, firstFlagIndex),
+        flagArgs: args.slice(firstFlagIndex),
+    };
+}
+
+/**
+ * Resolves a command path to a mode and validates it.
+ * Returns the resolved mode and any remaining path segments.
+ */
+export function resolveCommandPath(
+    commandPath: string[]
+): { command: Command; mode: ExecutionMode; remainingPath: string[]; showHelp: boolean } {
+    const validCommands = getRegisteredModes();
+
+    if (commandPath.length === 0) {
+        // Default to interactive
+        return {
+            command: "interactive" as Command,
+            mode: modeRegistry["interactive"]!,
+            remainingPath: [],
+            showHelp: false,
+        };
+    }
+
+    // Check for help as implicit subcommand
+    const lastSegment = commandPath[commandPath.length - 1]!;
+    const isHelpRequest = lastSegment === "help";
+    const pathWithoutHelp = isHelpRequest ? commandPath.slice(0, -1) : commandPath;
+
+    // If just "help" by itself, show root help
+    // We use interactive mode as a placeholder since the mode won't be accessed
+    // when showHelp is true (the CLI handler calls printHelp and returns early)
+    if (pathWithoutHelp.length === 0 && isHelpRequest) {
+        return {
+            command: "help" as Command,
+            mode: modeRegistry["interactive"]!,
+            remainingPath: [],
+            showHelp: true,
+        };
+    }
+
+    const rootCommand = pathWithoutHelp[0]!;
+
+    if (!validCommands.includes(rootCommand)) {
+        throw new Error(`Unknown command: ${rootCommand}. Valid commands are: ${validCommands.join(", ")}`);
+    }
+
+    const command = rootCommand as Command;
+    let mode: ExecutionMode = modeRegistry[command]!;
+    const remainingPath = pathWithoutHelp.slice(1);
+
+    // Traverse submodes if any
+    let currentPath = remainingPath;
+    while (currentPath.length > 0 && mode.submodes) {
+        const submodeName = currentPath[0]!;
+        if (mode.submodes[submodeName]) {
+            mode = mode.submodes[submodeName]!;
+            currentPath = currentPath.slice(1);
+        } else if (submodeName === "help") {
+            // Help as subcommand - stop here
+            break;
+        } else {
+            // Unknown submode
+            throw new Error(
+                `Unknown subcommand: ${submodeName}. Valid subcommands for '${command}' are: ${Object.keys(
+                    mode.submodes
+                ).join(", ")}, help`
+            );
+        }
+    }
+
+    return { command, mode, remainingPath: currentPath, showHelp: isHelpRequest };
+}
+
+/**
+ * Parses CLI arguments into a structured result.
+ * First extracts the command chain from non-flag arguments,
+ * then parses flags according to the mode's schema.
+ */
+export function parseCliArgs(args: string[]): ParsedCli {
+    // Step 1: Extract command chain and flag arguments
+    const { commandPath, flagArgs } = extractCommandChain(args);
+
+    // Step 2: Resolve command and get its option schema
+    const { command, mode, showHelp } = resolveCommandPath(commandPath);
+
+    // If showing help, return early with help command
+    if (showHelp) {
+        return { command: "help", options: {}, commandPath };
+    }
+
+    // Step 3: Parse flags using the mode's schema
+    const { values } = parseArgs({
+        args: flagArgs,
+        options: mode.options,
         strict: true,
-        // Positionals are currently not used by any commands; disallow them to catch mistakes early.
         allowPositionals: false,
         allowNegative: true,
     });
 
-    return {
-        command,
-        options: values as ParsedCliOptions,
-        positionals,
-    };
+    // Step 4: Return typed result based on command
+    return { command, options: values as ParsedCliOptions, commandPath };
 }

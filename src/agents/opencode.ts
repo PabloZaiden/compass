@@ -37,5 +37,8 @@ export class OpenCode extends Agent {
     override async init(): Promise<void> {
         return;
     }
-    
+
+    override requiredBinaries(): string[] {
+        return ["opencode"];
+    }
 }

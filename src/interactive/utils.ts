@@ -99,17 +99,43 @@ export function buildCliCommand(values: Config): string {
     
     const parts = isCompiledBinary ? ["./compass"] : ["bun", "src/index.ts"];
     
-    parts.push("--agent", escapeArg(AgentTypes[values.agentType] ?? ""));
+    // Add the "run" command
+    parts.push("run");
+    
+    // Required options
     parts.push("--repo", escapeArg(values.repoPath));
     parts.push("--fixture", escapeArg(values.fixture));
-    parts.push("--iterations", String(values.iterationCount));
-    parts.push("--output-mode", escapeArg(OutputMode[values.outputMode] ?? ""));
-    parts.push("--log-level", escapeArg(LogLevel[values.logLevel] ?? ""));
-    parts.push("--use-cache", String(values.useCache));
-    parts.push("--stop-on-error", String(values.stopOnError));
-    parts.push("--allow-full-access", String(values.allowFullAccess));
-    if (values.model) parts.push("--model", escapeArg(values.model));
-    if (values.evalModel) parts.push("--eval-model", escapeArg(values.evalModel));
+    parts.push("--agent", escapeArg(AgentTypes[values.agentType] ?? ""));
+    
+    // Optional options - only include if different from defaults
+    if (values.iterationCount !== 1) {
+        parts.push("--iterations", String(values.iterationCount));
+    }
+    if (values.outputMode !== OutputMode.Aggregated) {
+        parts.push("--output-mode", escapeArg(OutputMode[values.outputMode] ?? ""));
+    }
+    if (values.logLevel !== LogLevel.Info) {
+        parts.push("--log-level", escapeArg(LogLevel[values.logLevel] ?? ""));
+    }
+    
+    // Boolean options - use --flag or --no-flag syntax
+    if (values.useCache) {
+        parts.push("--use-cache");
+    }
+    if (!values.stopOnError) {
+        parts.push("--no-stop-on-error");
+    }
+    if (!values.allowFullAccess) {
+        parts.push("--no-allow-full-access");
+    }
+    
+    // Model options - only include if specified
+    if (values.model) {
+        parts.push("--model", escapeArg(values.model));
+    }
+    if (values.evalModel) {
+        parts.push("--eval-model", escapeArg(values.evalModel));
+    }
     
     return parts.join(" ");
 }

@@ -41,4 +41,8 @@ export class ClaudeCode extends Agent {
     override async init(): Promise<void> {
         return;
     }
+
+    override requiredBinaries(): string[] {
+        return ["claude"];
+    }
 }

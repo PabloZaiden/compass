@@ -1,55 +1,66 @@
-import { parseCliArgs, type ParsedCliOptions } from "./parser";
+import { parseCliArgs, extractCommandChain, type ParsedCli } from "./parser";
 import { printHelp } from "./help";
-import { fromParsedOptions } from "../config/process";
-import { Runner } from "../runner";
+import { modeRegistry } from "../modes";
 import { logger } from "../logging";
-import { launchOpenTui } from "../opentui/launcher";
 
-export { parseCliArgs, type ParsedCliOptions, type ParsedCli, type Command } from "./parser";
+// Re-export types for external consumers
+export {
+    parseCliArgs,
+    type ParsedCliOptions,
+    type ParsedCli,
+    type Command,
+    type RunOptions,
+    type InteractiveOptions,
+    type CheckOptions,
+} from "./parser";
 export { printHelp } from "./help";
 
+/**
+ * Main CLI entry point.
+ * Parses arguments, resolves the mode, and executes it.
+ */
 export async function runCli(args: string[]): Promise<void> {
-    let parsed;
+    // Extract command chain first so we can show context-aware help on errors
+    const { commandPath } = extractCommandChain(args);
+
+    let parsed: ParsedCli;
     try {
         parsed = parseCliArgs(args);
     } catch (error) {
         if (error instanceof Error) {
-            logger.error("Failed to parse command-line arguments:", error.message);
+            logger.error(error.message);
         } else {
             logger.error("Failed to parse command-line arguments:", error);
         }
+        // Show help for the command that was being parsed
+        printHelp(commandPath.length > 0 ? commandPath : undefined);
+        process.exitCode = 1;
+        return;
+    }
+
+    // Handle help command specially
+    if (parsed.command === "help") {
+        printHelp(parsed.commandPath);
+        return;
+    }
+
+    // Get the mode from registry and execute
+    const mode = modeRegistry[parsed.command];
+    if (!mode) {
+        logger.error(`Unknown command: ${parsed.command}`);
         printHelp();
         process.exitCode = 1;
         return;
     }
 
-    switch (parsed.command) {
-        case "interactive":
-            await launchOpenTui(parsed.options);
-            break;
-
-        case "run":
-            await launchRunner(parsed.options);
-            break;
-
-        case "help":
-            printHelp();
-            break;
-    }
-}
-
-async function launchRunner(options: ParsedCliOptions): Promise<void> {
-    const config = await fromParsedOptions(options);
-    logger.settings.minLevel = config.logLevel;
-
-    const runner = new Runner();
-
     try {
-        const result = await runner.run(config);
-        logger.info("Run completed successfully");
-        Bun.stdout.write(JSON.stringify(result, null, 2) + "\n");
+        await mode.execute(parsed.options);
     } catch (error) {
-        logger.error("Run failed:", error);
-        process.exit(1);
+        if (error instanceof Error) {
+            logger.error(error.message);
+        } else {
+            logger.error("An unexpected error occurred:", error);
+        }
+        process.exitCode = 1;
     }
 }

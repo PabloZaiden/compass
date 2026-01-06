@@ -57,5 +57,8 @@ export class Codex extends Agent {
              
         }
     }
-    
+
+    override requiredBinaries(): string[] {
+        return ["codex"];
+    }
 }

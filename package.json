@@ -51,6 +51,7 @@
     "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:anonymous": "bun test --test-name-pattern \"anonymous\"",
     "test:all": "bun test",
+    "test:parser": "bun test src/tests/parser.test.ts",
     "test:gemini": "bun test --test-name-pattern \"Gemini\"",
     "test:opencode": "bun test --test-name-pattern \"OpenCode\"",
     "test:copilot": "bun test --test-name-pattern \"Copilot\"",
