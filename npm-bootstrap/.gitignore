@@ -1,4 +1,4 @@
 .cache
-#bin.js
+bin.js
 node_modules
 bun.lock
