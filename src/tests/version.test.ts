@@ -24,16 +24,22 @@ describe("version", () => {
         });
 
         test("version mode has correct name", () => {
-            expect(modeRegistry["version"].name).toBe("version");
+            const versionMode = modeRegistry["version"];
+            expect(versionMode).toBeDefined();
+            expect(versionMode!.name).toBe("version");
         });
 
         test("version mode has a description", () => {
-            expect(modeRegistry["version"].description).toBeDefined();
-            expect(modeRegistry["version"].description.length).toBeGreaterThan(0);
+            const versionMode = modeRegistry["version"];
+            expect(versionMode).toBeDefined();
+            expect(versionMode!.description).toBeDefined();
+            expect(versionMode!.description.length).toBeGreaterThan(0);
         });
 
         test("version mode has no required options", () => {
-            const options = modeRegistry["version"].options;
+            const versionMode = modeRegistry["version"];
+            expect(versionMode).toBeDefined();
+            const options = versionMode!.options;
             expect(options).toBeDefined();
             expect(Object.keys(options!)).toHaveLength(0);
         });

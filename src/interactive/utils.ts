@@ -97,7 +97,7 @@ export function buildCliCommand(values: Config): string {
     // Detect if running as compiled binary (not a .ts/.js file)
     const isCompiledBinary = !Bun.main.endsWith(".ts") && !Bun.main.endsWith(".js");
     
-    const parts = isCompiledBinary ? ["./compass"] : ["bun", "src/index.ts"];
+    const parts = isCompiledBinary ? ["./compass"] : ["bun", "start"];
     
     // Add the "run" command
     parts.push("run");

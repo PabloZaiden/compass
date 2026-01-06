@@ -86,6 +86,11 @@ export const runOptionsSchema = {
         placeholder: "name",
         default: "based on --agent",
     },
+    "detailed-logs": {
+        type: "boolean",
+        description: "Show detailed logs with timestamp and level",
+        default: false,
+    },
 } as const satisfies OptionSchema;
 
 /**

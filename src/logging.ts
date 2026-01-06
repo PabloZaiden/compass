@@ -9,9 +9,14 @@ export type TuiLogEvent = {
 
 const logEventEmitter = new EventEmitter();
 let tuiLoggingEnabled = false;
+let detailedLogsEnabled = false;
 
 export function setTuiLoggingEnabled(enabled: boolean): void {
     tuiLoggingEnabled = enabled;
+}
+
+export function setDetailedLogs(enabled: boolean): void {
+    detailedLogsEnabled = enabled;
 }
 
 export function onLogEvent(listener: (event: TuiLogEvent) => void): () => void {
@@ -24,6 +29,7 @@ export const logger = new Logger({
     overwrite: {
         transportFormatted: (logMetaMarkup, logArgs, logErrors, logMeta) => {
             const baseLine = `${logMetaMarkup}${logArgs.join(" ")}${logErrors.join("")}`;
+            const simpleLine = `${logArgs.join(" ")}${logErrors.join("")}`;
             const levelFromMeta = typeof (logMeta as any)?.logLevelId === "number" ? (logMeta as any).logLevelId as LogLevel : LogLevel.Info;
 
             if (tuiLoggingEnabled) {
@@ -33,8 +39,9 @@ export const logger = new Logger({
                     timestamp: new Date(),
                 } satisfies TuiLogEvent);
             } else {
-                // Everything pretty goes to stderr, never stdout
-                process.stderr.write(baseLine + "\n");
+                // Use detailed format (with date/level) or simple format (message only)
+                const output = detailedLogsEnabled ? baseLine : simpleLine;
+                process.stderr.write(output + "\n");
             }
         },
     },

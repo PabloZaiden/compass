@@ -12,7 +12,7 @@ export type { InteractiveOptions } from "../interactive/mode";
 /**
  * Command types - derived from registered modes plus "help"
  */
-export type Command = "interactive" | "run" | "check" | "help";
+export type Command = "interactive" | "run" | "check" | "help" | "version";
 
 /**
  * Empty options type for help command
@@ -31,6 +31,7 @@ export type ParsedCli =
     | { command: "run"; options: ParsedCliOptions; commandPath: string[] }
     | { command: "interactive"; options: ParsedCliOptions; commandPath: string[] }
     | { command: "check"; options: ParsedCliOptions; commandPath: string[] }
+    | { command: "version"; options: ParsedCliOptions; commandPath: string[] }
     | { command: "help"; options: HelpOptions; commandPath: string[] };
 
 /**

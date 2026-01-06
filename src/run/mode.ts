@@ -1,12 +1,13 @@
 import { registerMode, type ExecutionMode } from "../modes/mode";
 import { Runner } from "./runner";
 import { fromParsedOptions } from "../config/process";
-import { logger } from "../logging";
+import { logger, setDetailedLogs } from "../logging";
 import {
     runOptionsSchema,
     type RunOptions,
     toParseArgsOptions,
     toOptionDescriptions,
+    getBooleanOption,
 } from "../options";
 
 /**
@@ -29,6 +30,9 @@ export const runMode: ExecutionMode<RunOptions> = {
     ],
 
     async execute(options: RunOptions): Promise<void> {
+        const detailedLogs = getBooleanOption(options, runOptionsSchema, "detailed-logs");
+        setDetailedLogs(detailedLogs);
+
         const config = await fromParsedOptions(options);
         logger.settings.minLevel = config.logLevel;
 

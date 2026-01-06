@@ -15,6 +15,8 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
+Always run `bun run build` before running tests, to make sure there are no build errors.
+
 Use `bun test:anonymous` to run tests related to agents.
 Use `bun test:parser` to run tests related to the CLI parser.
 
