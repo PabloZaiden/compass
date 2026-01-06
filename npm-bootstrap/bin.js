@@ -108,7 +108,7 @@ function downloadFile(url, destPath, redirectCount = 0) {
       fileStream.on("error", cleanupAndReject);
 
       response.on("error", (err) => {
-        fileStream.close();
+        fileStream.destroy();
         cleanupAndReject(err);
       });
     }).on("error", cleanupAndReject);
