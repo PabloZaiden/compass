@@ -7,7 +7,7 @@ Console tool to benchmark Coding agents using different agents and models across
 This package is hosted on GitHub Package Registry. To install, you need to be authenticated with GitHub CLI:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
+curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
 ```
 
 > **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed and authenticated (`gh auth login`).
