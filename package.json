@@ -42,12 +42,6 @@
     "react": "19",
     "tslog": "^4.10.2"
   },
-  "optionalDependencies": {
-    "@opentui/core-darwin-arm64": "0.1.68",
-    "@opentui/core-darwin-x64": "0.1.68",
-    "@opentui/core-linux-arm64": "0.1.68",
-    "@opentui/core-linux-x64": "0.1.68"
-  },
   "scripts": {
     "start": "bun run src/index.ts",
     "start:interactive": "bun run src/index.ts interactive",
