@@ -1,4 +1,4 @@
-import { parseCliArgs, type ParsedCli } from "./parser";
+import { parseCliArgs, extractCommandChain, type ParsedCli } from "./parser";
 import { printHelp } from "./help";
 import { modeRegistry } from "../modes";
 import { logger } from "../logging";
@@ -20,16 +20,20 @@ export { printHelp } from "./help";
  * Parses arguments, resolves the mode, and executes it.
  */
 export async function runCli(args: string[]): Promise<void> {
+    // Extract command chain first so we can show context-aware help on errors
+    const { commandPath } = extractCommandChain(args);
+
     let parsed: ParsedCli;
     try {
         parsed = parseCliArgs(args);
     } catch (error) {
         if (error instanceof Error) {
-            logger.error("Failed to parse command-line arguments:", error.message);
+            logger.error(error.message);
         } else {
             logger.error("Failed to parse command-line arguments:", error);
         }
-        printHelp();
+        // Show help for the command that was being parsed
+        printHelp(commandPath.length > 0 ? commandPath : undefined);
         process.exitCode = 1;
         return;
     }
