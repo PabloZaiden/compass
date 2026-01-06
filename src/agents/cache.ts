@@ -92,4 +92,8 @@ export class Cache extends Agent {
         return Promise.resolve();
     }
 
+    override requiredBinaries(): string[] {
+        return this.innerAgent.requiredBinaries();
+    }
+
 }

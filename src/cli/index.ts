@@ -1,15 +1,26 @@
-import { parseCliArgs, type ParsedCliOptions } from "./parser";
+import { parseCliArgs, type ParsedCli } from "./parser";
 import { printHelp } from "./help";
-import { fromParsedOptions } from "../config/process";
-import { Runner } from "../runner";
+import { modeRegistry } from "../modes";
 import { logger } from "../logging";
-import { launchOpenTui } from "../opentui/launcher";
 
-export { parseCliArgs, type ParsedCliOptions, type ParsedCli, type Command } from "./parser";
+// Re-export types for external consumers
+export {
+    parseCliArgs,
+    type ParsedCliOptions,
+    type ParsedCli,
+    type Command,
+    type RunOptions,
+    type InteractiveOptions,
+    type CheckOptions,
+} from "./parser";
 export { printHelp } from "./help";
 
+/**
+ * Main CLI entry point.
+ * Parses arguments, resolves the mode, and executes it.
+ */
 export async function runCli(args: string[]): Promise<void> {
-    let parsed;
+    let parsed: ParsedCli;
     try {
         parsed = parseCliArgs(args);
     } catch (error) {
@@ -23,33 +34,20 @@ export async function runCli(args: string[]): Promise<void> {
         return;
     }
 
-    switch (parsed.command) {
-        case "interactive":
-            await launchOpenTui(parsed.options);
-            break;
-
-        case "run":
-            await launchRunner(parsed.options);
-            break;
-
-        case "help":
-            printHelp();
-            break;
+    // Handle help command specially
+    if (parsed.command === "help") {
+        printHelp(parsed.commandPath);
+        return;
     }
-}
 
-async function launchRunner(options: ParsedCliOptions): Promise<void> {
-    const config = await fromParsedOptions(options);
-    logger.settings.minLevel = config.logLevel;
-
-    const runner = new Runner();
-
-    try {
-        const result = await runner.run(config);
-        logger.info("Run completed successfully");
-        Bun.stdout.write(JSON.stringify(result, null, 2) + "\n");
-    } catch (error) {
-        logger.error("Run failed:", error);
-        process.exit(1);
+    // Get the mode from registry and execute
+    const mode = modeRegistry[parsed.command];
+    if (!mode) {
+        logger.error(`Unknown command: ${parsed.command}`);
+        printHelp();
+        process.exitCode = 1;
+        return;
     }
+
+    await mode.execute(parsed.options);
 }

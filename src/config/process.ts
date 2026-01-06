@@ -4,66 +4,38 @@ import type { Config } from "./config";
 import { defaultConfigValues } from "./default";
 import { LogLevel } from "../logging";
 import { existsSync } from "node:fs";
-import type { ParsedCliOptions } from "../cli/parser";
+import type { RunOptions } from "../cli/parser";
 
-function toEnvName(name: string): string {
-    return `COMPASS_${name.toUpperCase().replaceAll("-", "_")}`;
-}
-
-function getOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    required: true
-): string;
-function getOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    required?: false
-): string | undefined;
-function getOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    required = false
-): string | undefined {
+function getOption(options: RunOptions, name: keyof RunOptions, required: boolean = false) : string | undefined {
     const cliValue = options[name];
-    const envName = toEnvName(name);
-    const envValue = process.env[envName];
     
     // Convert boolean to string for consistency
     const result = cliValue !== undefined 
         ? (typeof cliValue === "boolean" ? String(cliValue) : cliValue)
-        : envValue;
+        : undefined;
     
     if (required && result === undefined) {
-        throw new Error(`Missing required argument: --${name} or environment variable: ${envName}`);
+        throw new Error(`Missing required argument: --${name}`);
     }
+
     return result;
 }
 
-function getBooleanOption(
-    options: ParsedCliOptions,
-    name: keyof ParsedCliOptions,
-    defaultValue: boolean
-): boolean {
+function getBooleanOption(options: RunOptions, name: keyof RunOptions, defaultValue: boolean): boolean {
     const cliValue = options[name];
     if (typeof cliValue === "boolean") {
         return cliValue;
     }
     
-    const envValue = process.env[toEnvName(name)];
-    if (envValue !== undefined) {
-        return envValue === "true";
-    }
-    
     return defaultValue;
 }
 
-export async function fromParsedOptions(options: ParsedCliOptions): Promise<Config> {
+export async function fromParsedOptions(options: RunOptions): Promise<Config> {
     const defaultConfig = defaultConfigValues();
 
-    const repoPath = getOption(options, "repo", true);
-    const fixture = getOption(options, "fixture", true);
-    const agentTypeStr = getOption(options, "agent", true);
+    const repoPath = getOption(options, "repo", true)!;
+    const fixture = getOption(options, "fixture", true)!;
+    const agentTypeStr = getOption(options, "agent", true)!;
     
     const iterationsStr = getOption(options, "iterations");
     const iterationCount = iterationsStr 

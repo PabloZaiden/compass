@@ -3,7 +3,7 @@ import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
 import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
 import { LogLevel } from "../logging";
-import { Runner } from "../runner";
+import { Runner } from "../run/runner";
 import type { Config } from "../config/config";
 
 const srcDir = dirname(import.meta.dir);

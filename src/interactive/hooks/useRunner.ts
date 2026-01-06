@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Runner } from "../../runner";
+import { Runner } from "../../run/runner";
 import { logger } from "../../logging";
 import type { Config } from "../../config/config";
 import type { RunnerResult } from "../../models";

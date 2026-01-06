@@ -1,14 +1,14 @@
-import { copyDirectory, run } from "./utils";
-import { logger } from "./logging";
-import type { Fixture, IterationResult, ProcessOutput, RunnerResult } from "./models";
+import { copyDirectory, run } from "../utils";
+import { logger } from "../logging";
+import type { Fixture, IterationResult, ProcessOutput, RunnerResult } from "../models";
 import { tmpdir } from "os";
-import { Cache } from "./agents/cache";
-import { evaluator } from "./prompts";
-import { Classification } from "./models";
+import { Cache } from "../agents/cache";
+import { evaluator } from "../prompts";
+import { Classification } from "../models";
 import { promises as fsPromises } from "fs";
-import { createAgent } from "./agents/factory";
-import type { Config } from "./config/config";
-import type { AgentOptions } from "./agents/agent";
+import { createAgent } from "../agents/factory";
+import type { Config } from "../config/config";
+import type { AgentOptions } from "../agents/agent";
 
 function validateConfig(config: Config): void {
     const errors: string[] = [];

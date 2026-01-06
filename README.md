@@ -69,23 +69,21 @@ compass help
 
 ### Options
 
-Every option can be specified via command-line arguments or environment variables. Command-line arguments should use `--` prefix (e.g., `--repo`), while environment variables should use `COMPASS_` prefix and uppercase with underscores (e.g., `COMPASS_REPO`).
+Options are specified via command-line arguments with the `--` prefix.
 
-Command-line arguments take precedence over environment variables.
-
-| Option | Environment Variable | Required | Description |
-|--------|---------------------|----------|-------------|
-| `--repo` | `COMPASS_REPO` | Yes | Path to the repository to evaluate |
-| `--fixture` | `COMPASS_FIXTURE` | Yes | Path to the fixture JSON file |
-| `--agent` | `COMPASS_AGENT` | Yes | Agent type (Copilot, Codex, OpenCode, Gemini; ClaudeCode coming soon, not yet supported at runtime) |
-| `--iterations` | `COMPASS_ITERATIONS` | No | Number of iterations per prompt (default: 1) |
-| `--output-mode` | `COMPASS_OUTPUT_MODE` | No | Output format: Detailed, Aggregated (default) |
-| `--log-level` | `COMPASS_LOG_LEVEL` | No | Logging verbosity (default: Info) |
-| `--use-cache` / `--no-use-cache` | `COMPASS_USE_CACHE` | No | Enable/disable caching of agent responses (default: false) |
-| `--stop-on-error` / `--no-stop-on-error` | `COMPASS_STOP_ON_ERROR` | No | Stop on first error or continue (default: true) |
-| `--allow-full-access` / `--no-allow-full-access` | `COMPASS_ALLOW_FULL_ACCESS` | No | Allow/restrict full repository access (default: true) |
-| `--model` | `COMPASS_MODEL` | No | Model to use for the agent |
-| `--eval-model` | `COMPASS_EVAL_MODEL` | No | Model to use for evaluation |
+| Option | Required | Description |
+|--------|----------|-------------|
+| `--repo` | Yes | Path to the repository to evaluate |
+| `--fixture` | Yes | Path to the fixture JSON file |
+| `--agent` | Yes | Agent type (Copilot, Codex, OpenCode, Gemini; ClaudeCode coming soon) |
+| `--iterations` | No | Number of iterations per prompt (default: 1) |
+| `--output-mode` | No | Output format: Detailed, Aggregated (default) |
+| `--log-level` | No | Logging verbosity (default: Info) |
+| `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: false) |
+| `--stop-on-error` / `--no-stop-on-error` | No | Stop on first error or continue (default: true) |
+| `--allow-full-access` / `--no-allow-full-access` | No | Allow/restrict full repository access (default: true) |
+| `--model` | No | Model to use for the agent |
+| `--eval-model` | No | Model to use for evaluation |
 
 ## Terminal UI
 
