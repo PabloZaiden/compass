@@ -3,6 +3,7 @@ import {
     getMode,
     type ExecutionMode,
 } from "../modes";
+import { getVersion } from "../version";
 
 /**
  * Formats the usage line for a mode.
@@ -138,7 +139,7 @@ export function printHelp(commandPath: string[] = []): void {
     const sections: string[] = [];
 
     // Title
-    sections.push("Compass\n");
+    sections.push(`Compass v${getVersion()}\n`);
     
     // Description
     if (mode) {

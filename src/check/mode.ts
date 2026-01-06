@@ -1,5 +1,5 @@
 import { registerMode, type ExecutionMode } from "../modes/mode";
-import { logger } from "../logging";
+import { logger, setDetailedLogs } from "../logging";
 import { AgentTypes, createAgent } from "../agents/factory";
 import { defaultAgentOptions } from "../agents/agent";
 import { parseEnum } from "../models";
@@ -9,6 +9,7 @@ import {
     toParseArgsOptions,
     toOptionDescriptions,
     getStringOption,
+    getBooleanOption,
 } from "../options";
 
 /**
@@ -37,6 +38,9 @@ export const checkMode: ExecutionMode<CheckOptions> = {
     ],
 
     async execute(options: CheckOptions): Promise<void> {
+        const detailedLogs = getBooleanOption(options, checkOptionsSchema, "detailed-logs");
+        setDetailedLogs(detailedLogs);
+
         const agentFilter = getStringOption(options, checkOptionsSchema, "agent");
         let hasErrors = false;
 

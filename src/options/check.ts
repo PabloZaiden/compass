@@ -17,6 +17,11 @@ export const checkOptionsSchema = {
         placeholder: "type",
         validValues: getAgentTypes,
     },
+    "detailed-logs": {
+        type: "boolean",
+        description: "Show detailed logs with timestamp and level",
+        default: false,
+    },
 } as const satisfies OptionSchema;
 
 /**
