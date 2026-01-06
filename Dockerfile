@@ -21,8 +21,9 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# [optional] tests & build
+# tests & build
 ENV NODE_ENV=production
+RUN bun test
 RUN bun build --compile --outfile=compass ./src/index.ts
 # copy production dependencies and source code into final image
 FROM base AS release
