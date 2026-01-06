@@ -2,6 +2,7 @@ import { parseCliArgs, extractCommandChain, type ParsedCli } from "./parser";
 import { printHelp } from "./help";
 import { modeRegistry } from "../modes";
 import { logger } from "../logging";
+import { ArgumentError } from "../options";
 
 // Re-export types for external consumers
 export {
@@ -60,6 +61,10 @@ export async function runCli(args: string[]): Promise<void> {
             logger.error(error.message);
         } else {
             logger.error("An unexpected error occurred:", error);
+        }
+        // Show help for argument errors (missing/invalid options)
+        if (error instanceof ArgumentError) {
+            printHelp(parsed.commandPath);
         }
         process.exitCode = 1;
     }

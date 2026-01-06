@@ -1,6 +1,18 @@
 import type { ParseArgsConfig } from "util";
 
 /**
+ * Custom error for argument validation failures.
+ * Used to distinguish argument errors from other runtime errors
+ * so the CLI can show help in these cases.
+ */
+export class ArgumentError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "ArgumentError";
+    }
+}
+
+/**
  * Type of CLI option - maps to parseArgs types.
  */
 export type OptionType = "string" | "boolean";
@@ -133,7 +145,7 @@ export function getRequiredStringOption<T extends OptionSchema>(
 ): string {
     const value = getStringOption(options, schema, name);
     if (value === undefined) {
-        throw new Error(`Missing required argument: --${name}`);
+        throw new ArgumentError(`Missing required argument: --${name}`);
     }
     return value;
 }
@@ -170,7 +182,7 @@ export function parseEnumOption<E extends object>(
         if (defaultValue !== undefined) {
             return defaultValue;
         }
-        throw new Error(`Missing required argument: --${optionName}`);
+        throw new ArgumentError(`Missing required argument: --${optionName}`);
     }
 
     // Find matching enum value by name (case-insensitive)

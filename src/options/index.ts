@@ -1,5 +1,6 @@
 // Option schema system
 export {
+    ArgumentError,
     type OptionDef,
     type StringOptionDef,
     type BooleanOptionDef,
