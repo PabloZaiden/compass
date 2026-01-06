@@ -1,5 +1,11 @@
 import { describe, test, expect } from "bun:test";
 import { parseCliArgs, extractCommandChain, resolveCommandPath } from "../cli/parser";
+import {
+    ArgumentError,
+    getRequiredStringOption,
+    parseEnumOption,
+    type OptionSchema,
+} from "../options";
 
 describe("extractCommandChain", () => {
     test("extracts single command from args", () => {
@@ -358,5 +364,82 @@ describe("parseCliArgs", () => {
             expect(result.showHelp).toBe(false);
             expect(result.command).toBe("run");
         });
+    });
+});
+
+describe("ArgumentError", () => {
+    const testSchema = {
+        name: {
+            type: "string",
+            description: "A name",
+            required: true,
+        },
+        optional: {
+            type: "string",
+            description: "An optional value",
+        },
+    } satisfies OptionSchema;
+
+    enum TestEnum {
+        Foo = "Foo",
+        Bar = "Bar",
+    }
+
+    test("is an instance of Error", () => {
+        const error = new ArgumentError("test message");
+        expect(error).toBeInstanceOf(Error);
+        expect(error).toBeInstanceOf(ArgumentError);
+    });
+
+    test("has correct name property", () => {
+        const error = new ArgumentError("test message");
+        expect(error.name).toBe("ArgumentError");
+    });
+
+    test("preserves error message", () => {
+        const error = new ArgumentError("Missing required argument: --repo");
+        expect(error.message).toBe("Missing required argument: --repo");
+    });
+
+    test("getRequiredStringOption throws ArgumentError when value is missing", () => {
+        const options = { optional: "value" };
+        expect(() => {
+            getRequiredStringOption(options, testSchema, "name");
+        }).toThrow(ArgumentError);
+    });
+
+    test("getRequiredStringOption throws with correct message", () => {
+        const options = { optional: "value" };
+        expect(() => {
+            getRequiredStringOption(options, testSchema, "name");
+        }).toThrow("Missing required argument: --name");
+    });
+
+    test("getRequiredStringOption returns value when present", () => {
+        const options = { name: "test-value" };
+        const result = getRequiredStringOption(options, testSchema, "name");
+        expect(result).toBe("test-value");
+    });
+
+    test("parseEnumOption throws ArgumentError when value is missing and no default", () => {
+        expect(() => {
+            parseEnumOption(undefined, TestEnum, "type");
+        }).toThrow(ArgumentError);
+    });
+
+    test("parseEnumOption throws with correct message", () => {
+        expect(() => {
+            parseEnumOption(undefined, TestEnum, "type");
+        }).toThrow("Missing required argument: --type");
+    });
+
+    test("parseEnumOption returns default when value is missing but default provided", () => {
+        const result = parseEnumOption(undefined, TestEnum, "type", TestEnum.Foo);
+        expect(result).toBe(TestEnum.Foo);
+    });
+
+    test("parseEnumOption returns parsed value when present", () => {
+        const result = parseEnumOption("bar", TestEnum, "type");
+        expect(result).toBe(TestEnum.Bar);
     });
 });
