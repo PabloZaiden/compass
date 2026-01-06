@@ -43,6 +43,7 @@
     "tslog": "^4.10.2"
   },
   "scripts": {
+    "postinstall": "bun install --frozen-lockfile || true",
     "start": "bun run src/index.ts",
     "start:interactive": "bun run src/index.ts interactive",
     "start:run": "bun run src/index.ts run",
