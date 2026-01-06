@@ -46,6 +46,11 @@ else
     exit 1
 fi
 
+echo -e "${YELLOW}Removing old version (if installed)...${NC}"
+
+# Try to uninstall any existing version first (ignore errors)
+$PKG_MANAGER uninstall -g @pablozaiden/compass 2>/dev/null || true
+
 echo -e "${YELLOW}Installing package...${NC}"
 
 NPM_CONFIG_TOKEN="$GH_TOKEN" $PKG_MANAGER install -g @pablozaiden/compass --registry=https://npm.pkg.github.com/
