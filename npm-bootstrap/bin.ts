@@ -11,7 +11,7 @@
 
 import { existsSync, mkdirSync, chmodSync, createWriteStream, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { get as httpsGet } from "node:https";
 import type { IncomingMessage } from "node:http";
@@ -29,8 +29,16 @@ interface PlatformInfo {
 }
 
 // Get package version to match with GitHub release
+// Can be overridden with COMPASS_RELEASE_TAG env var (e.g., "v1.2.3" or "1.2.3")
 const packageJson: PackageJson = require("./package.json");
-const VERSION: string = packageJson.version;
+function getVersion(): string {
+  const envTag = process.env["COMPASS_RELEASE_TAG"];
+  if (envTag) {
+    // Strip 'v' prefix if present
+    return envTag.startsWith("v") ? envTag.slice(1) : envTag;
+  }
+  return packageJson.version;
+}
 const REPO_OWNER = "pablozaiden";
 const REPO_NAME = "compass";
 
@@ -64,7 +72,7 @@ function getCacheDir(): string {
 // Get the binary path
 function getBinaryPath(targetOs: string, targetArch: string): string {
   const cacheDir = getCacheDir();
-  const binaryName = `compass-v${VERSION}-${targetOs}-${targetArch}`;
+  const binaryName = `compass-v${getVersion()}-${targetOs}-${targetArch}`;
   return join(cacheDir, binaryName);
 }
 
@@ -97,7 +105,11 @@ function downloadFile(url: string, destPath: string, redirectCount = 0): Promise
       }
 
       if (response.statusCode !== 200) {
-        reject(new Error(`Failed to download: HTTP ${response.statusCode}`));
+        const error = new Error(`Failed to download: HTTP ${response.statusCode}`) as Error & {
+          statusCode?: number;
+        };
+        error.statusCode = response.statusCode;
+        reject(error);
         return;
       }
 
@@ -119,9 +131,52 @@ function downloadFile(url: string, destPath: string, redirectCount = 0): Promise
   });
 }
 
+// Check if GitHub CLI is available and authenticated
+function isGhCliAvailable(): boolean {
+  try {
+    const result = spawnSync("gh", ["auth", "status"], {
+      stdio: "pipe",
+      encoding: "utf-8",
+    });
+    return result.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+// Download a file using GitHub CLI (for private repos)
+function downloadWithGhCli(tag: string, assetName: string, destPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      "gh",
+      ["release", "download", tag, "--repo", `${REPO_OWNER}/${REPO_NAME}`, "--pattern", assetName, "--output", destPath],
+      {
+        stdio: "pipe",
+      }
+    );
+
+    let stderr = "";
+    child.stderr?.on("data", (data: Buffer) => {
+      stderr += data.toString();
+    });
+
+    child.on("close", (code: number | null) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`gh cli failed: ${stderr || `exit code ${code}`}`));
+      }
+    });
+
+    child.on("error", (error: Error) => {
+      reject(new Error(`Failed to run gh cli: ${error.message}`));
+    });
+  });
+}
+
 // Download the binary from GitHub releases
 async function downloadBinary(targetOs: string, targetArch: string): Promise<void> {
-  const tag = `v${VERSION}`;
+  const tag = `v${getVersion()}`;
   const binaryName = `compass-${tag}-${targetOs}-${targetArch}`;
   const downloadUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${tag}/${binaryName}`;
 
@@ -145,6 +200,35 @@ async function downloadBinary(targetOs: string, targetArch: string): Promise<voi
     if (existsSync(binaryPath)) {
       unlinkSync(binaryPath);
     }
+
+    // Check if it's a 404 error (possibly a private repo)
+    const statusCode = (error as Error & { statusCode?: number }).statusCode;
+    if (statusCode === 404) {
+      console.log("Direct download failed (404). Checking for GitHub CLI...");
+
+      if (isGhCliAvailable()) {
+        console.log("GitHub CLI found and authenticated. Attempting download via gh...");
+        try {
+          await downloadWithGhCli(tag, binaryName, binaryPath);
+          chmodSync(binaryPath, 0o755);
+          console.log("Download complete via GitHub CLI!");
+          return;
+        } catch (ghError) {
+          // Clean up partial download
+          if (existsSync(binaryPath)) {
+            unlinkSync(binaryPath);
+          }
+          const ghMessage = ghError instanceof Error ? ghError.message : String(ghError);
+          throw new Error(`Failed to download binary via GitHub CLI: ${ghMessage}`);
+        }
+      } else {
+        throw new Error(
+          "Failed to download binary: HTTP 404. " +
+            "This may be a private repository. Install and authenticate the GitHub CLI (gh) to download."
+        );
+      }
+    }
+
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to download binary: ${message}`);
   }
