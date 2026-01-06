@@ -46,24 +46,9 @@ else
     exit 1
 fi
 
-echo -e "${YELLOW}Configuring registry for GitHub Package Registry...${NC}"
+echo -e "${YELLOW}Installing package...${NC}"
 
-if [ "$PKG_MANAGER" = "bun" ]; then
-    # Configure Bun to use GitHub Package Registry for @pablozaiden scope
-    mkdir -p ~/.bunfig
-    cat > ~/.bunfig.toml << EOF
-[install.scopes]
-"@pablozaiden" = { token = "$GH_TOKEN", url = "https://npm.pkg.github.com" }
-EOF
-    echo -e "${YELLOW}Installing package with Bun...${NC}"
-    bun install -g @pablozaiden/compass
-else
-    # Configure npm to use GitHub Package Registry for @pablozaiden scope
-    npm config set @pablozaiden:registry https://npm.pkg.github.com
-    npm config set //npm.pkg.github.com/:_authToken "$GH_TOKEN"
-    echo -e "${YELLOW}Installing package with npm...${NC}"
-    npm install -g @pablozaiden/compass
-fi
+NPM_CONFIG_TOKEN="$GH_TOKEN" $PKG_MANAGER install -g @pablozaiden/compass --registry=https://npm.pkg.github.com/
 
 echo -e "${GREEN}✓ @pablozaiden/compass installed successfully!${NC}"
 echo -e "Run ${YELLOW}compass${NC} to get started."
