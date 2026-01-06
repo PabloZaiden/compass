@@ -2,6 +2,16 @@
 
 Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes.
 
+## Installation
+
+This package is hosted on GitHub Package Registry. To install, you need to be authenticated with GitHub CLI:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
+```
+
+> **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed and authenticated (`gh auth login`).
+
 ## Supported Agents
 
 - GitHub Copilot
@@ -33,9 +43,9 @@ Compass supports three commands:
 Launch the interactive Terminal UI:
 
 ```bash
-bun start
+compass
 # or explicitly:
-bun start interactive
+compass interactive
 ```
 
 ### Run Mode
@@ -43,7 +53,7 @@ bun start interactive
 Execute the benchmark runner:
 
 ```bash
-bun start run \
+compass run \
   --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
   --agent OpenCode
@@ -54,7 +64,7 @@ bun start run \
 Show all available options:
 
 ```bash
-bun start help
+compass help
 ```
 
 ### Options
@@ -82,7 +92,7 @@ Command-line arguments take precedence over environment variables.
 The default mode launches an interactive Terminal UI. To start it, simply run:
 
 ```bash
-bun start
+compass
 ```
 
 Features:
@@ -112,7 +122,7 @@ For instance, to run the sample configuration against Compass itself:
 docker run --rm -ti \
   -v $(pwd):/target-repo \
   -v $(pwd)/src/sample-fixture.json:/fixture.json \
-  compass \
+  ghcr.io/pablozaiden/compass:latest \
   run \
   --repo /target-repo \
   --fixture /fixture.json \
