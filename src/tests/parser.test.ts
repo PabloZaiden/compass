@@ -59,6 +59,14 @@ describe("extractCommandChain", () => {
         expect(result.flagArgs).toEqual(["--use-cache", "--stop-on-error"]);
     });
 
+    test("does not consume non-flag args as values for boolean flags", () => {
+        // Boolean flags don't take values, so "extra" should remain in flagArgs
+        // for parseArgs to handle (and potentially reject as unexpected positional)
+        const result = extractCommandChain(["run", "--use-cache", "extra", "--agent", "codex"]);
+        expect(result.commandPath).toEqual(["run"]);
+        expect(result.flagArgs).toEqual(["--use-cache", "extra", "--agent", "codex"]);
+    });
+
     test("handles negated boolean flags", () => {
         const result = extractCommandChain(["run", "--no-use-cache", "--no-stop-on-error"]);
         expect(result.commandPath).toEqual(["run"]);

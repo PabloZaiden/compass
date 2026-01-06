@@ -23,5 +23,8 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run anonymous tests
+      - name: Run CLI parser tests
+        run: bun run test:parser
+
+      - name: Run anonymous agent eval tests
         run: bun run test:anonymous

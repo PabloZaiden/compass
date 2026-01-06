@@ -36,37 +36,21 @@ export type ParsedCli =
 /**
  * Extracts the command chain from arguments.
  * A command chain consists of all non-flag arguments (those not starting with "--")
- * that appear before any flags or at the start of the argument list.
+ * that appear before any flags. Everything from the first flag onward is passed
+ * to parseArgs, which uses the mode's schema to determine which flags take values.
  */
 export function extractCommandChain(args: string[]): { commandPath: string[]; flagArgs: string[] } {
-    const commandPath: string[] = [];
-    const flagArgs: string[] = [];
-    let inFlags = false;
+    const firstFlagIndex = args.findIndex(arg => arg.startsWith("--"));
 
-    for (let i = 0; i < args.length; i++) {
-        const arg = args[i]!;
-
-        if (arg.startsWith("--")) {
-            inFlags = true;
-            flagArgs.push(arg);
-            // If this flag takes a value and there's a next arg, include it
-            const nextArg = args[i + 1];
-            if (nextArg && !nextArg.startsWith("--")) {
-                // Check if this looks like a flag value (not a command)
-                // We include it as a flag arg if we're already processing flags
-                flagArgs.push(nextArg);
-                i++;
-            }
-        } else if (inFlags) {
-            // Non-flag arg after flags started - treat as flag value
-            flagArgs.push(arg);
-        } else {
-            // Non-flag arg before any flags - part of command chain
-            commandPath.push(arg);
-        }
+    if (firstFlagIndex === -1) {
+        // No flags, everything is command path
+        return { commandPath: [...args], flagArgs: [] };
     }
 
-    return { commandPath, flagArgs };
+    return {
+        commandPath: args.slice(0, firstFlagIndex),
+        flagArgs: args.slice(firstFlagIndex),
+    };
 }
 
 /**
