@@ -49,5 +49,14 @@ export async function runCli(args: string[]): Promise<void> {
         return;
     }
 
-    await mode.execute(parsed.options);
+    try {
+        await mode.execute(parsed.options);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.error(error.message);
+        } else {
+            logger.error("An unexpected error occurred:", error);
+        }
+        process.exitCode = 1;
+    }
 }
