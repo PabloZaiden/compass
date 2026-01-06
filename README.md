@@ -10,7 +10,7 @@ This package is hosted on GitHub Package Registry. To install, you need to be au
 curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
 ```
 
-> **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed and authenticated (`gh auth login`).
+> **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed, and authenticated with the `read:packages` scope (`gh auth login --scopes read:packages`).
 
 ## Supported Agents
 
