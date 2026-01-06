@@ -11,68 +11,72 @@
 
 import { existsSync, mkdirSync, chmodSync, createWriteStream, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { get as httpsGet } from "node:https";
+import type { IncomingMessage } from "node:http";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
+interface PackageJson {
+  version: string;
+}
+
+interface PlatformInfo {
+  targetOs: string;
+  targetArch: string;
+}
+
 // Get package version to match with GitHub release
-const packageJson = require("./package.json");
-const VERSION = packageJson.version;
+const packageJson: PackageJson = require("./package.json");
+const VERSION: string = packageJson.version;
 const REPO_OWNER = "pablozaiden";
 const REPO_NAME = "compass";
 
 // Determine platform and architecture
-function getPlatformInfo() {
+function getPlatformInfo(): PlatformInfo {
   const platform = process.platform;
   const arch = process.arch;
 
-  let targetOs;
-  if (platform === "darwin") {
-    targetOs = "darwin";
-  } else if (platform === "linux") {
-    targetOs = "linux";
-  } else {
+  let targetOs: string;
+  if (!(platform === "darwin" || platform === "linux")) {
     throw new Error(`Unsupported platform: ${platform}. Only macOS and Linux are supported.`);
   }
+  targetOs = platform;
 
-  let targetArch;
-  if (arch === "x64" || arch === "amd64") {
-    targetArch = "x64";
-  } else if (arch === "arm64" || arch === "aarch64") {
-    targetArch = "arm64";
-  } else {
+  let targetArch: string;
+  if (!(arch === "x64" || arch === "arm64")) {
     throw new Error(`Unsupported architecture: ${arch}. Only x64 and arm64 are supported.`);
   }
+  targetArch = arch;
 
   return { targetOs, targetArch };
 }
 
 // Get the cache directory for storing the binary
-function getCacheDir() {
+function getCacheDir(): string {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   return join(__dirname, ".cache");
 }
 
 // Get the binary path
-function getBinaryPath(targetOs, targetArch) {
+function getBinaryPath(targetOs: string, targetArch: string): string {
   const cacheDir = getCacheDir();
   const binaryName = `compass-v${VERSION}-${targetOs}-${targetArch}`;
   return join(cacheDir, binaryName);
 }
 
 // Download a file using Node.js https module (works in both Node and Bun)
-function downloadFile(url, destPath, redirectCount = 0) {
+function downloadFile(url: string, destPath: string, redirectCount = 0): Promise<void> {
   return new Promise((resolve, reject) => {
     if (redirectCount > 10) {
       reject(new Error("Too many redirects"));
       return;
     }
 
-    const cleanupAndReject = (err) => {
+    const cleanupAndReject = (err: Error): void => {
       try {
         if (existsSync(destPath)) {
           unlinkSync(destPath);
@@ -83,9 +87,9 @@ function downloadFile(url, destPath, redirectCount = 0) {
       reject(err);
     };
 
-    httpsGet(url, (response) => {
+    httpsGet(url, (response: IncomingMessage) => {
       // Handle redirects
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+      if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         downloadFile(response.headers.location, destPath, redirectCount + 1)
           .then(resolve)
           .catch(reject);
@@ -107,7 +111,7 @@ function downloadFile(url, destPath, redirectCount = 0) {
 
       fileStream.on("error", cleanupAndReject);
 
-      response.on("error", (err) => {
+      response.on("error", (err: Error) => {
         fileStream.destroy();
         cleanupAndReject(err);
       });
@@ -116,7 +120,7 @@ function downloadFile(url, destPath, redirectCount = 0) {
 }
 
 // Download the binary from GitHub releases
-async function downloadBinary(targetOs, targetArch) {
+async function downloadBinary(targetOs: string, targetArch: string): Promise<void> {
   const tag = `v${VERSION}`;
   const binaryName = `compass-${tag}-${targetOs}-${targetArch}`;
   const downloadUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${tag}/${binaryName}`;
@@ -141,29 +145,30 @@ async function downloadBinary(targetOs, targetArch) {
     if (existsSync(binaryPath)) {
       unlinkSync(binaryPath);
     }
-    throw new Error(`Failed to download binary: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to download binary: ${message}`);
   }
 }
 
 // Run the binary with the provided arguments
-function runBinary(binaryPath, args) {
-  const child = spawn(binaryPath, args, {
+function runBinary(binaryPath: string, args: string[]): void {
+  const child: ChildProcess = spawn(binaryPath, args, {
     stdio: "inherit",
     env: process.env,
   });
 
-  child.on("close", (code) => {
+  child.on("close", (code: number | null) => {
     process.exit(code ?? 0);
   });
 
-  child.on("error", (error) => {
+  child.on("error", (error: Error) => {
     console.error(`Failed to execute compass: ${error.message}`);
     process.exit(1);
   });
 }
 
 // Main function
-async function main() {
+async function main(): Promise<void> {
   try {
     const { targetOs, targetArch } = getPlatformInfo();
     const binaryPath = getBinaryPath(targetOs, targetArch);
@@ -177,7 +182,8 @@ async function main() {
     const args = process.argv.slice(2);
     runBinary(binaryPath, args);
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Error: ${message}`);
     process.exit(1);
   }
 }
