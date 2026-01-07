@@ -1,7 +1,7 @@
 import { OutputMode } from "../models";
 import { LogLevel } from "../logging";
 
-export interface PartialConfig {
+export interface PartialRunConfig {
     iterationCount: number;
     outputMode: OutputMode;
     useCache: boolean;
@@ -11,7 +11,7 @@ export interface PartialConfig {
 }
 
 
-export function defaultConfigValues(): PartialConfig{
+export function defaultRunConfigValues(): PartialRunConfig {
     return {
         iterationCount: 1,
         outputMode: OutputMode.Aggregated,

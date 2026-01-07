@@ -2,7 +2,7 @@ import { AgentTypes } from "../agents/factory";
 import { OutputMode } from "../models";
 import type { LogLevel } from "../logging";
 
-export interface OptionalConfig {
+export interface OptionalRunConfig {
     iterationCount: number;
     outputMode: OutputMode;
     useCache: boolean;
@@ -13,10 +13,10 @@ export interface OptionalConfig {
     logLevel: LogLevel;
 }
 
-export interface RequiredConfig {
+export interface RequiredRunConfig {
     repoPath: string;
     fixture: string;
     agentType: AgentTypes;
 }
 
-export type Config = OptionalConfig & RequiredConfig;
+export type RunConfig = OptionalRunConfig & RequiredRunConfig;

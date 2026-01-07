@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import type { Config } from "../config/config";
+import type { RunConfig } from "../runconfig/runconfig";
 import { FieldConfigs, Theme, buildCliCommand } from "./utils";
 import {
     useConfig,
@@ -83,7 +83,7 @@ function AppContent({ onExit }: AppProps) {
     // UI state
     const [mode, setMode] = useState<Mode>(Mode.CommandSelect);
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
-    const [editingRunField, setEditingRunField] = useState<keyof Config | null>(null);
+    const [editingRunField, setEditingRunField] = useState<keyof RunConfig | null>(null);
     const [editingGenerateField, setEditingGenerateField] = useState<keyof GenerateConfig | null>(null);
     const [focusedSection, setFocusedSection] = useState<FocusedSection>(FocusedSection.Config);
     const [logsVisible, setLogsVisible] = useState(false);
@@ -184,7 +184,7 @@ function AppContent({ onExit }: AppProps) {
     }, [isGenerating, generateValues, generate, clearLogs]);
 
     // Handle run field editing
-    const handleEditRunField = useCallback((fieldKey: keyof Config) => {
+    const handleEditRunField = useCallback((fieldKey: keyof RunConfig) => {
         setEditingRunField(fieldKey);
     }, []);
 
@@ -492,13 +492,13 @@ function AppContent({ onExit }: AppProps) {
             />
 
             {/* Run Editor modal (overlay) */}
-            <EditorModal<keyof Config>
+            <EditorModal<keyof RunConfig>
                 fieldKey={editingRunField}
                 currentValue={editingRunField ? runValues[editingRunField] : null}
                 visible={editingRunField !== null}
                 onSubmit={handleRunEditSubmit}
                 onCancel={handleRunEditCancel}
-                fieldConfigs={FieldConfigs as FieldConfig<keyof Config>[]}
+                fieldConfigs={FieldConfigs as FieldConfig<keyof RunConfig>[]}
                 getFieldOptions={getRunFieldOptions}
             />
 

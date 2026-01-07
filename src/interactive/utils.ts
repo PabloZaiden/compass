@@ -2,7 +2,7 @@ import { AgentTypes } from "../agents/factory";
 import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
-import type { Config } from "../config/config";
+import type { RunConfig } from "../runconfig/runconfig";
 
 type FieldType = "text" | "number" | "enum" | "boolean";
 
@@ -12,7 +12,7 @@ interface FieldOption {
 }
 
 interface FieldConfig {
-    key: keyof Config;
+    key: keyof RunConfig;
     label: string;
     type: FieldType;
     options?: FieldOption[];
@@ -63,7 +63,7 @@ function getEnumOptions<T extends Record<string, string | number>>(enumObj: T): 
         }));
 }
 
-export function getFieldOptions(key: keyof Config): FieldOption[] | undefined {
+export function getFieldOptions(key: keyof RunConfig): FieldOption[] | undefined {
     switch (key) {
         case "agentType":
             return getEnumOptions(AgentTypes);
@@ -77,7 +77,7 @@ export function getFieldOptions(key: keyof Config): FieldOption[] | undefined {
 }
 
 export function getDisplayValue(
-    key: keyof Config,
+    key: keyof RunConfig,
     value: unknown,
     type: string
 ): string {
@@ -96,7 +96,7 @@ export function getDisplayValue(
     return strValue.length > 60 ? strValue.substring(0, 57) + "..." : strValue;
 }
 
-export function buildCliCommand(values: Config): string {
+export function buildCliCommand(values: RunConfig): string {
     // Detect if running as compiled binary (not a .ts/.js file)
     const isCompiledBinary = !Bun.main.endsWith(".ts") && !Bun.main.endsWith(".js");
     

@@ -4,7 +4,7 @@ import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
 import { LogLevel } from "../logging";
 import { Runner } from "../run/runner";
-import type { Config } from "../config/config";
+import type { RunConfig } from "../runconfig/runconfig";
 import { Generator } from "../generate/generator";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -52,7 +52,7 @@ export async function endToEnd(type: AgentTypes) {
   expect(fixture).toBeDefined();
   expect(fixture.prompts.length).toBe(2);
 
-  const config: Config = {
+  const config: RunConfig = {
     agentType: type,
     model: model,
     evalModel: model,
