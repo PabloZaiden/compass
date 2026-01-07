@@ -17,8 +17,10 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 You can also build and install Compass directly from the source code. This requires [Bun](https://bun.sh/) and [Git](https://git-scm.com/) to be installed:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/pablozaiden/compass/main/install-from-sources.sh | bash
+curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install-from-sources.sh | bash
 ```
+
+> **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed, and authenticated
 
 > **⚠️ Warning:** This installs a development build from the `main` branch, which may contain unstable or untested features, breaking changes, or bugs not present in official releases. For production use, prefer the standard installation method above.
 >
