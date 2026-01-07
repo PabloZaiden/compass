@@ -2,9 +2,9 @@ import { GenerateFieldConfigs } from "../hooks";
 import type { GenerateConfig } from "../hooks/useGenerateConfig";
 import { GenericEditorModal } from "./GenericEditorModal";
 import type { GenericFieldConfig } from "./GenericConfigForm";
-import { getGenerateFieldOptions } from "./GenerateConfigForm";
+import { getGenerateFieldOptions } from "./ConfigForm";
 
-interface GenerateEditorModalProps {
+interface EditorModalProps {
     fieldKey: keyof GenerateConfig | null;
     currentValue: unknown;
     visible: boolean;
@@ -12,13 +12,13 @@ interface GenerateEditorModalProps {
     onCancel: () => void;
 }
 
-export function GenerateEditorModal({
+export function EditorModal({
     fieldKey,
     currentValue,
     visible,
     onSubmit,
     onCancel,
-}: GenerateEditorModalProps) {
+}: EditorModalProps) {
     return (
         <GenericEditorModal<keyof GenerateConfig>
             fieldKey={fieldKey}

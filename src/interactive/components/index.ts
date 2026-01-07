@@ -10,5 +10,5 @@ export { ResultsPanel } from "./ResultsPanel";
 export { StatusBar } from "./StatusBar";
 export { CliModal } from "./CliModal";
 export { CommandSelector, type Command } from "./CommandSelector";
-export { GenerateConfigForm } from "./GenerateConfigForm";
-export { GenerateEditorModal } from "./GenerateEditorModal";
+export { ConfigForm } from "./ConfigForm";
+export { EditorModal } from "./EditorModal";

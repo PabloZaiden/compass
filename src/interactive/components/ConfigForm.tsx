@@ -49,7 +49,7 @@ function GenerateButton({ isSelected }: GenerateButtonProps) {
     );
 }
 
-interface GenerateConfigFormProps {
+interface ConfigFormProps {
     values: GenerateConfig;
     selectedIndex: number;
     focused: boolean;
@@ -59,7 +59,7 @@ interface GenerateConfigFormProps {
     onCopy: (content: string, label: string) => void;
 }
 
-export function GenerateConfigForm({
+export function ConfigForm({
     values,
     selectedIndex,
     focused,
@@ -67,7 +67,7 @@ export function GenerateConfigForm({
     onEditField,
     onGenerate,
     onCopy,
-}: GenerateConfigFormProps) {
+}: ConfigFormProps) {
     return (
         <GenericConfigForm<keyof GenerateConfig, GenerateConfig>
             title="Generate Configuration"
@@ -86,7 +86,7 @@ export function GenerateConfigForm({
     );
 }
 
-// Re-export getFieldOptions for GenerateEditorModal
+// Re-export getFieldOptions for EditorModal
 export function getGenerateFieldOptions(key: keyof GenerateConfig): SelectOption[] | undefined {
     if (key === "agentType") {
         return Object.values(AgentTypes)
