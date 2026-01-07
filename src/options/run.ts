@@ -1,14 +1,13 @@
 import type { OptionSchema } from "./schema";
 import { AgentTypes } from "../agents/factory";
 import { OutputMode, values } from "../models";
-import { LogLevel } from "../logging";
+import { commonOptionsSchema, type CommonOptions } from "./common";
 
 /**
  * Lazy evaluation helpers for dynamic enum values.
  */
 const getAgentTypes = () => values(AgentTypes).join(", ");
 const getOutputModes = () => values(OutputMode).join(", ");
-const getLogLevels = () => values(LogLevel).join(", ");
 
 /**
  * Schema for the "run" command options.
@@ -52,13 +51,6 @@ export const runOptionsSchema = {
         validValues: getOutputModes,
         default: "Aggregated",
     },
-    "log-level": {
-        type: "string",
-        description: "Logging verbosity",
-        placeholder: "level",
-        validValues: getLogLevels,
-        default: "Info",
-    },
     "use-cache": {
         type: "boolean",
         description: "Enable/disable caching of agent responses",
@@ -86,17 +78,21 @@ export const runOptionsSchema = {
         placeholder: "name",
         default: "based on --agent",
     },
-    "detailed-logs": {
-        type: "boolean",
-        description: "Show detailed logs with timestamp and level",
-        default: false,
-    },
+    ...commonOptionsSchema,
 } as const satisfies OptionSchema;
 
 /**
  * Type for parsed run options (derived from schema).
  */
-export type RunOptions = {
-    [K in keyof typeof runOptionsSchema]?: 
-        (typeof runOptionsSchema)[K]["type"] extends "string" ? string : boolean;
+export type RunOptions = CommonOptions & {
+    repo?: string;
+    fixture?: string;
+    agent?: string;
+    iterations?: string;
+    "output-mode"?: string;
+    "use-cache"?: boolean;
+    "stop-on-error"?: boolean;
+    "allow-full-access"?: boolean;
+    model?: string;
+    "eval-model"?: string;
 };

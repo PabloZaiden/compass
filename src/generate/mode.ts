@@ -1,7 +1,6 @@
 import path from "node:path";
 import { registerMode, type ExecutionMode } from "../modes/mode";
-import { createAgent, AgentTypes } from "../agents/factory";
-import { generator } from "../prompts";
+import { AgentTypes, defaultModels } from "../agents/factory";
 import { logger } from "../logging";
 import {
     generateOptionsSchema,
@@ -11,12 +10,9 @@ import {
     getRequiredStringOption,
     getStringOption,
     parseEnumOption,
+    applyCommonOptions,
 } from "../options";
-
-/**
- * Default model for generation if not specified.
- */
-const DEFAULT_MODEL = "";
+import { Generator } from "./generator";
 
 /**
  * GenerateMode - generates compass fixture files for a repository.
@@ -39,94 +35,41 @@ export const generateMode: ExecutionMode<GenerateOptions> = {
     ],
 
     async execute(options: GenerateOptions): Promise<void> {
+        applyCommonOptions(options);
+
         // Extract options
         const repoPath = path.resolve(getRequiredStringOption(options, generateOptionsSchema, "repo"));
         const agentTypeStr = getRequiredStringOption(options, generateOptionsSchema, "agent");
         const agentType = parseEnumOption(agentTypeStr, AgentTypes, "agent");
-        const count = getRequiredStringOption(options, generateOptionsSchema, "count");
-        const model = getStringOption(options, generateOptionsSchema, "model") ?? DEFAULT_MODEL;
+        const countStr = getRequiredStringOption(options, generateOptionsSchema, "count");
         const steering = getStringOption(options, generateOptionsSchema, "steering");
 
+        // Model with agent-based default
+        let model = getStringOption(options, generateOptionsSchema, "model");
+        if (model === undefined) {
+            model = defaultModels[agentType];
+        }
+
         // Validate count is a positive integer
-        const countNum = parseInt(count, 10);
-        if (isNaN(countNum) || countNum <= 0) {
+        const count = parseInt(countStr, 10);
+        if (isNaN(count) || count <= 0) {
             logger.error("Count must be a positive integer");
             process.exit(1);
         }
 
-        // Get repo folder name
-        const repoFolderName = path.basename(repoPath);
-        const expectedFileName = `${repoFolderName}.compass.json`;
-        const expectedFilePath = path.join(repoPath, expectedFileName);
-
-        // Build the prompt
-        let steeringSection = "";
-        if (steering && steering.trim()) {
-            steeringSection = `## Additional Instructions\n\n${steering.trim()}`;
-        }
-
-        const prompt = generator
-            .replace("{{REPO_FOLDER_NAME}}", repoFolderName)
-            .replace("{{COUNT}}", count)
-            .replace("{{STEERING}}", steeringSection);
-
-        logger.info(`Generating fixture for repository: ${repoPath}`);
-        logger.info(`Expected output: ${expectedFileName}`);
-        logger.info(`Prompt count: ${count}`);
-        logger.info(`Agent: ${agentType}`);
-        if (model) {
-            logger.info(`Model: ${model}`);
-        }
-        if (steering) {
-            logger.info(`Steering: ${steering}`);
-        }
-
-        // Create and initialize the agent
-        const agent = createAgent(agentType, {
-            allowFullAccess: true,
+        const generator = new Generator();
+        const result = await generator.generate({
+            repoPath,
+            agentType,
+            count,
+            model,
+            steering,
         });
 
-        try {
-            await agent.init();
-        } catch (error) {
-            logger.error("Failed to initialize agent:", error);
-            process.exit(1);
-        }
-
-        // Execute the agent
-        try {
-            logger.info("Running agent to generate fixture...");
-            await agent.execute(prompt, model, repoPath);
-        } catch (error) {
-            logger.error("Agent execution failed:", error);
-            process.exit(1);
-        }
-
-        // Check if the fixture file was created
-        const file = Bun.file(expectedFilePath);
-        const exists = await file.exists();
-
-        if (exists) {
-            logger.info(`✓ Fixture file created successfully: ${expectedFilePath}`);
-            
-            // Validate it's valid JSON
-            try {
-                const content = await file.text();
-                const parsed = JSON.parse(content);
-                
-                if (!parsed.prompts || !Array.isArray(parsed.prompts)) {
-                    logger.warn("Warning: Fixture file does not contain a 'prompts' array");
-                } else {
-                    logger.info(`✓ Fixture contains ${parsed.prompts.length} prompts`);
-                }
-            } catch {
-                logger.warn("Warning: Fixture file is not valid JSON");
-            }
-            
+        if (result.success) {
             process.exit(0);
         } else {
-            logger.error(`✗ Fixture file was not created: ${expectedFilePath}`);
-            logger.error("The agent did not create the expected output file.");
+            logger.error(result.error ?? "Generation failed");
             process.exit(1);
         }
     },

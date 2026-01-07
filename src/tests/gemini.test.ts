@@ -5,6 +5,8 @@ import {
   basicTestOptions,
   endToEnd,
   endToEndTestOptions,
+  generateFixture,
+  generateTestOptions,
   runAgentTests,
 } from "./agent-test-utils";
 
@@ -16,4 +18,8 @@ describe.if(runAgentTests)("gemini", () => {
   test("end-to-end", async () => {
     await endToEnd(AgentTypes.Gemini);
   }, endToEndTestOptions);
+
+  test("generate", async () => {
+    await generateFixture(AgentTypes.Gemini);
+  }, generateTestOptions);
 });

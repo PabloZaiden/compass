@@ -1,6 +1,7 @@
 import type { OptionSchema } from "./schema";
 import { AgentTypes } from "../agents/factory";
 import { values } from "../models";
+import { commonOptionsSchema, type CommonOptions } from "./common";
 
 /**
  * Lazy evaluation helper for dynamic enum values.
@@ -17,17 +18,12 @@ export const checkOptionsSchema = {
         placeholder: "type",
         validValues: getAgentTypes,
     },
-    "detailed-logs": {
-        type: "boolean",
-        description: "Show detailed logs with timestamp and level",
-        default: false,
-    },
+    ...commonOptionsSchema,
 } as const satisfies OptionSchema;
 
 /**
  * Type for parsed check options (derived from schema).
  */
-export type CheckOptions = {
-    [K in keyof typeof checkOptionsSchema]?: 
-        (typeof checkOptionsSchema)[K]["type"] extends "string" ? string : boolean;
+export type CheckOptions = CommonOptions & {
+    agent?: string;
 };

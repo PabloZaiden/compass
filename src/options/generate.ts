@@ -1,6 +1,7 @@
 import type { OptionSchema } from "./schema";
 import { AgentTypes } from "../agents/factory";
 import { values } from "../models";
+import { commonOptionsSchema, type CommonOptions } from "./common";
 
 /**
  * Lazy evaluation helper for dynamic agent types.
@@ -46,12 +47,13 @@ export const generateOptionsSchema = {
         description: "Additional instructions to steer generation",
         placeholder: "text",
     },
+    ...commonOptionsSchema,
 } as const satisfies OptionSchema;
 
 /**
  * Type derived from the generate options schema.
  */
-export type GenerateOptions = {
+export type GenerateOptions = CommonOptions & {
     repo: string;
     agent: string;
     count: string;

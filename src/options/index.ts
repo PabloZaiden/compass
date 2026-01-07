@@ -23,3 +23,6 @@ export { checkOptionsSchema, type CheckOptions } from "./check";
 
 // Generate options
 export { generateOptionsSchema, type GenerateOptions } from "./generate";
+
+// Common options
+export { commonOptionsSchema, type CommonOptions, applyCommonOptions } from "./common";

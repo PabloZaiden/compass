@@ -5,6 +5,8 @@ import {
   basicTestOptions,
   endToEnd,
   endToEndTestOptions,
+  generateFixture,
+  generateTestOptions,
   runAgentTests,
 } from "./agent-test-utils";
 
@@ -16,4 +18,8 @@ describe.if(runAgentTests)("codex", () => {
   test("end-to-end", async () => {
     await endToEnd(AgentTypes.Codex);
   }, endToEndTestOptions);
+
+  test("generate", async () => {
+    await generateFixture(AgentTypes.Codex);
+  }, generateTestOptions);
 });
