@@ -3,6 +3,7 @@ import { OutputMode } from "../models";
 import { escapeArg } from "../utils";
 import { LogLevel } from "../logging";
 import type { RunConfig } from "../runconfig/runconfig";
+import type { LoggingConfig } from "./hooks/useLoggingConfig";
 
 type FieldType = "text" | "number" | "enum" | "boolean";
 
@@ -95,7 +96,7 @@ export function getDisplayValue(
     return strValue.length > 60 ? strValue.substring(0, 57) + "..." : strValue;
 }
 
-export function buildCliCommand(values: RunConfig): string {
+export function buildCliCommand(values: RunConfig, loggingConfig?: LoggingConfig): string {
     // Detect if running as compiled binary (not a .ts/.js file)
     const isCompiledBinary = !Bun.main.endsWith(".ts") && !Bun.main.endsWith(".js");
     
@@ -116,8 +117,16 @@ export function buildCliCommand(values: RunConfig): string {
     if (values.outputMode !== OutputMode.Aggregated) {
         parts.push("--output-mode", escapeArg(OutputMode[values.outputMode] ?? ""));
     }
-    if (values.logLevel !== LogLevel.Info) {
-        parts.push("--log-level", escapeArg(LogLevel[values.logLevel] ?? ""));
+    
+    // Logging options from logging config (or fall back to run config for backwards compatibility)
+    const logLevel = loggingConfig?.logLevel ?? values.logLevel;
+    const detailedLogs = loggingConfig?.detailedLogs ?? false;
+    
+    if (logLevel !== LogLevel.Info) {
+        parts.push("--log-level", escapeArg(LogLevel[logLevel] ?? ""));
+    }
+    if (detailedLogs) {
+        parts.push("--detailed-logs");
     }
     
     // Boolean options - use --flag or --no-flag syntax

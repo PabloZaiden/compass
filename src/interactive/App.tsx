@@ -100,7 +100,7 @@ function AppContent({ onExit }: AppProps) {
     const [configStatus, setConfigStatus] = useState<string | null>(null);
 
     // Computed values
-    const cliCommand = useMemo(() => buildCliCommand(runValues), [runValues]);
+    const cliCommand = useMemo(() => buildCliCommand(runValues, loggingValues), [runValues, loggingValues]);
     
     // Status message
     const status = useMemo(() => {
