@@ -20,3 +20,6 @@ export { runOptionsSchema, type RunOptions } from "./run";
 
 // Check options
 export { checkOptionsSchema, type CheckOptions } from "./check";
+
+// Generate options
+export { generateOptionsSchema, type GenerateOptions } from "./generate";

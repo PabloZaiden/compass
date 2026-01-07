@@ -36,7 +36,7 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 
 ## Usage
 
-Compass supports three commands:
+Compass supports four commands:
 
 ### Interactive Mode (default)
 
@@ -59,6 +59,29 @@ compass run \
   --agent OpenCode
 ```
 
+### Generate Mode
+
+Auto-generate a fixture file for a repository using an AI agent:
+
+```bash
+compass generate \
+  --repo "/path/to/target/repo" \
+  --agent OpenCode \
+  --count 10
+```
+
+The agent will analyze the repository and create a `{repo-folder-name}.compass.json` fixture file with the specified number of prompts and expectations.
+
+You can optionally steer the generation with additional instructions:
+
+```bash
+compass generate \
+  --repo "/path/to/target/repo" \
+  --agent Copilot \
+  --count 15 \
+  --steering "Focus on API endpoints and error handling"
+```
+
 ### Help
 
 Show all available options:
@@ -70,6 +93,8 @@ compass help
 ### Options
 
 Options are specified via command-line arguments with the `--` prefix.
+
+#### Run Options
 
 | Option | Required | Description |
 |--------|----------|-------------|
@@ -84,6 +109,16 @@ Options are specified via command-line arguments with the `--` prefix.
 | `--allow-full-access` / `--no-allow-full-access` | No | Allow/restrict full repository access (default: true) |
 | `--model` | No | Model to use for the agent |
 | `--eval-model` | No | Model to use for evaluation |
+
+#### Generate Options
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `--repo` | Yes | Path to the repository to analyze |
+| `--agent` | Yes | Agent type (Copilot, Codex, OpenCode, Gemini; ClaudeCode coming soon) |
+| `--count` | Yes | Number of prompts to generate |
+| `--model` | No | Model to use for the agent |
+| `--steering` | No | Additional instructions to steer generation |
 
 ## Terminal UI
 
