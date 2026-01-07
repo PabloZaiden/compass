@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Runner } from "../../run/runner";
 import { logger } from "../../logging";
-import type { Config } from "../../config/config";
+import type { RunConfig } from "../../runconfig/runconfig";
 import type { RunnerResult } from "../../models";
 
 export interface RunOutcome {
@@ -14,7 +14,7 @@ export interface UseRunnerResult {
     isRunning: boolean;
     result: RunnerResult | null;
     error: string | null;
-    run: (config: Config) => Promise<RunOutcome>;
+    run: (config: RunConfig) => Promise<RunOutcome>;
     reset: () => void;
 }
 
@@ -23,7 +23,7 @@ export function useRunner(): UseRunnerResult {
     const [result, setResult] = useState<RunnerResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const run = useCallback(async (config: Config): Promise<RunOutcome> => {
+    const run = useCallback(async (config: RunConfig): Promise<RunOutcome> => {
         if (isRunning) return { success: false, error: "Already running" };
 
         setIsRunning(true);

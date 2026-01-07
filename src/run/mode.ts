@@ -1,6 +1,6 @@
 import { registerMode, type ExecutionMode } from "../modes/mode";
 import { Runner } from "./runner";
-import { fromParsedOptions } from "../config/process";
+import { runConfigFromParsedOptions } from "../runconfig/process";
 import { logger } from "../logging";
 import {
     runOptionsSchema,
@@ -32,7 +32,7 @@ export const runMode: ExecutionMode<RunOptions> = {
     async execute(options: RunOptions): Promise<void> {
         applyCommonOptions(options);
 
-        const config = await fromParsedOptions(options);
+        const config = await runConfigFromParsedOptions(options);
 
         const runner = new Runner();
 

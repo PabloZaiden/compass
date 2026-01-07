@@ -1,9 +1,12 @@
 export { Header } from "./Header";
 export { FieldRow } from "./FieldRow";
 export { RunButton } from "./RunButton";
-export { ConfigForm } from "./ConfigForm";
+export { ConfigForm, type FieldConfig } from "./ConfigForm";
 export { EditorModal } from "./EditorModal";
+export { RunConfigForm, getRunFieldOptions } from "./RunConfigForm";
+export { GenerateConfigForm, getGenerateFieldOptions } from "./GenerateConfigForm";
 export { LogsPanel } from "./LogsPanel";
 export { ResultsPanel } from "./ResultsPanel";
 export { StatusBar } from "./StatusBar";
 export { CliModal } from "./CliModal";
+export { CommandSelector, type Command } from "./CommandSelector";

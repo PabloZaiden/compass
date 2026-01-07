@@ -27,7 +27,7 @@ export async function render(): Promise<void> {
 
     logger.info("OpenTUI React TUI initialized successfully");
     logger.debug("Logs panel should be visible at the bottom");
-    logger.info("Compass TUI ready. Arrows move, Enter edits/runs, Esc exits edit, Ctrl+F flags, q to quit.");
+    logger.info("Compass TUI ready. Arrows move, Enter edits/runs, Esc to go back/exit.");
 
     renderer.start();
 }

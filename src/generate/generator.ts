@@ -1,5 +1,6 @@
 import path from "node:path";
 import { createAgent, AgentTypes, defaultModels } from "../agents/factory";
+import { Cache } from "../agents/cache";
 import { generator } from "../prompts";
 import { logger } from "../logging";
 import type { Fixture } from "../models";
@@ -18,6 +19,8 @@ export interface GeneratorConfig {
     model?: string;
     /** Additional steering instructions */
     steering?: string;
+    /** Whether to use caching for agent responses */
+    useCache?: boolean;
 }
 
 /**
@@ -42,7 +45,7 @@ export class Generator {
      * Generate a fixture file for a repository.
      */
     async generate(config: GeneratorConfig): Promise<GeneratorResult> {
-        const { repoPath, agentType, count, steering } = config;
+        const { repoPath, agentType, count, steering, useCache } = config;
         const model = config.model ?? defaultModels[agentType];
 
         // Get repo folder name
@@ -66,6 +69,7 @@ export class Generator {
         logger.trace(`Repository path: ${repoPath}`);
         logger.trace(`Expected output: ${expectedFileName}`);
         logger.trace(`Model: ${model}`);
+        logger.trace(`Use cache: ${useCache ?? false}`);
         if (steering) {
             logger.trace(`Steering: ${steering}`);
         }
@@ -73,9 +77,16 @@ export class Generator {
         logger.trace("Generated prompt for fixture generation: \n" + prompt);
 
         // Create and initialize the agent
-        const agent = createAgent(agentType, {
+        const agentOptions = {
             allowFullAccess: true,
-        });
+        };
+
+        let agent = createAgent(agentType, agentOptions);
+        
+        // Wrap with cache if enabled
+        if (useCache) {
+            agent = new Cache(agent, agentOptions, repoPath, "generate");
+        }
 
         try {
             await agent.init();

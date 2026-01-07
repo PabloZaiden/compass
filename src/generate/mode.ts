@@ -9,6 +9,7 @@ import {
     toOptionDescriptions,
     getRequiredStringOption,
     getStringOption,
+    getBooleanOption,
     parseEnumOption,
     applyCommonOptions,
 } from "../options";
@@ -43,6 +44,7 @@ export const generateMode: ExecutionMode<GenerateOptions> = {
         const agentType = parseEnumOption(agentTypeStr, AgentTypes, "agent");
         const countStr = getRequiredStringOption(options, generateOptionsSchema, "count");
         const steering = getStringOption(options, generateOptionsSchema, "steering");
+        const useCache = getBooleanOption(options, generateOptionsSchema, "use-cache");
 
         // Model with agent-based default
         let model = getStringOption(options, generateOptionsSchema, "model");
@@ -64,6 +66,7 @@ export const generateMode: ExecutionMode<GenerateOptions> = {
             count,
             model,
             steering,
+            useCache,
         });
 
         if (result.success) {

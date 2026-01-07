@@ -13,8 +13,8 @@ export function CliModal({ command, visible, onClose, onCopy }: CliModalProps) {
     useKeyboardHandler(
         (event) => {
             const { key } = event;
-            // Escape or q to close
-            if (key.name === "escape" || key.name === "q") {
+            // Escape to close
+            if (key.name === "escape") {
                 onClose();
                 return;
             }
@@ -51,7 +51,7 @@ export function CliModal({ command, visible, onClose, onCopy }: CliModalProps) {
             zIndex={10}
         >
             <text fg={Theme.overlayTitle}>
-                <strong>CLI flags (q/Esc to close)</strong>
+                <strong>CLI Command (Esc to close)</strong>
             </text>
             
             <text fg={Theme.statusText}>

@@ -3,15 +3,15 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { AgentTypes, defaultModels } from "../../agents/factory";
-import { defaultConfigValues } from "../../config/default";
+import { defaultRunConfigValues } from "../../runconfig/default";
 import { logger } from "../../logging";
-import type { Config } from "../../config/config";
+import type { RunConfig } from "../../runconfig/runconfig";
 
 const CONFIG_DIR = join(homedir(), ".compass");
 const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 
-function getDefaultFormValues(): Config {
-    const defaults = defaultConfigValues();
+function getDefaultFormValues(): RunConfig {
+    const defaults = defaultRunConfigValues();
     const initialAgent = AgentTypes.OpenCode;
     return {
         repoPath: "",
@@ -28,12 +28,12 @@ function getDefaultFormValues(): Config {
     };
 }
 
-function loadConfigFromDisk(): Config {
+function loadConfigFromDisk(): RunConfig {
     const defaults = getDefaultFormValues();
     try {
         if (existsSync(CONFIG_FILE)) {
             const content = readFileSync(CONFIG_FILE, "utf-8");
-            const saved = JSON.parse(content) as Partial<Config>;
+            const saved = JSON.parse(content) as Partial<RunConfig>;
             logger.info(`Loaded config from ${CONFIG_FILE}`);
             return { ...defaults, ...saved };
         }
@@ -43,7 +43,7 @@ function loadConfigFromDisk(): Config {
     return defaults;
 }
 
-function saveConfigToDisk(values: Config): void {
+function saveConfigToDisk(values: RunConfig): void {
     try {
         if (!existsSync(CONFIG_DIR)) {
             mkdirSync(CONFIG_DIR, { recursive: true });
@@ -56,20 +56,20 @@ function saveConfigToDisk(values: Config): void {
 }
 
 export interface UseConfigResult {
-    values: Config;
-    updateValue: (key: keyof Config, value: unknown) => void;
+    values: RunConfig;
+    updateValue: (key: keyof RunConfig, value: unknown) => void;
     resetToDefaults: () => void;
 }
 
 export function useConfig(): UseConfigResult {
-    const [values, setValues] = useState<Config>(() => {
+    const [values, setValues] = useState<RunConfig>(() => {
         const config = loadConfigFromDisk();
         // Apply initial log level
         logger.settings.minLevel = config.logLevel;
         return config;
     });
 
-    const updateValue = useCallback((key: keyof Config, value: unknown) => {
+    const updateValue = useCallback((key: keyof RunConfig, value: unknown) => {
         setValues((prev) => {
             const updated = { ...prev, [key]: value };
 

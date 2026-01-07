@@ -47,6 +47,11 @@ export const generateOptionsSchema = {
         description: "Additional instructions to steer generation",
         placeholder: "text",
     },
+    "use-cache": {
+        type: "boolean",
+        description: "Enable/disable caching of agent responses",
+        default: false,
+    },
     ...commonOptionsSchema,
 } as const satisfies OptionSchema;
 
@@ -59,4 +64,5 @@ export type GenerateOptions = CommonOptions & {
     count: string;
     model?: string;
     steering?: string;
+    "use-cache"?: boolean;
 };

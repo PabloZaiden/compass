@@ -1,7 +1,7 @@
 import { AgentTypes, defaultModels } from "../agents/factory";
 import { OutputMode, parseEnum, values } from "../models";
-import type { Config } from "./config";
-import { defaultConfigValues } from "./default";
+import type { RunConfig } from "./runconfig";
+import { defaultRunConfigValues } from "./default";
 import { LogLevel } from "../logging";
 import { existsSync } from "node:fs";
 import {
@@ -14,12 +14,12 @@ import {
 } from "../options";
 
 /**
- * Converts parsed CLI options to a validated Config object.
+ * Converts parsed CLI options to a validated RunConfig object.
  * Uses the runOptionsSchema as the single source of truth for defaults.
  */
-export async function fromParsedOptions(options: RunOptions): Promise<Config> {
+export async function runConfigFromParsedOptions(options: RunOptions): Promise<RunConfig> {
     const schema = runOptionsSchema;
-    const defaultConfig = defaultConfigValues();
+    const defaultConfig = defaultRunConfigValues();
 
     // Required string options
     const repoPath = getRequiredStringOption(options, schema, "repo");

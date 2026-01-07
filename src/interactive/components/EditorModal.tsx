@@ -1,25 +1,35 @@
 import { useState, useEffect } from "react";
 import type { SelectOption } from "@opentui/core";
-import type { Config } from "../../config/config";
 import { Theme } from "../utils";
-import { FieldConfigs, getFieldOptions } from "../utils";
 import { useKeyboardHandler, KeyboardPriority } from "../hooks";
+import type { FieldConfig } from "./ConfigForm";
 
-interface EditorModalProps {
-    fieldKey: keyof Config | null;
+interface EditorModalProps<K extends string> {
+    /** The key of the field being edited */
+    fieldKey: K | null;
+    /** The current value of the field */
     currentValue: unknown;
+    /** Whether the modal is visible */
     visible: boolean;
+    /** Called when the user submits a new value */
     onSubmit: (value: unknown) => void;
+    /** Called when the user cancels editing */
     onCancel: () => void;
+    /** Field configurations */
+    fieldConfigs: FieldConfig<K>[];
+    /** Function to get enum options for a field (if applicable) */
+    getFieldOptions: (key: K) => SelectOption[] | undefined;
 }
 
-export function EditorModal({
+export function EditorModal<K extends string>({
     fieldKey,
     currentValue,
     visible,
     onSubmit,
     onCancel,
-}: EditorModalProps) {
+    fieldConfigs,
+    getFieldOptions,
+}: EditorModalProps<K>) {
     const [inputValue, setInputValue] = useState("");
     const [selectIndex, setSelectIndex] = useState(0);
 
@@ -35,17 +45,14 @@ export function EditorModal({
                 setSelectIndex(idx >= 0 ? idx : 0);
             }
         }
-    }, [fieldKey, currentValue, visible]);
+    }, [fieldKey, currentValue, visible, getFieldOptions]);
 
     // Modal keyboard handler - blocks all keys from bubbling out of the modal
-    // OpenTUI's <input> and <select> handle their own keys internally, but we intercept some first.
     useKeyboardHandler(
         (event) => {
-            // Intercept Escape at modal priority to close the modal before input/select can handle it.
             if (event.key.name === "escape") {
                 onCancel();
             }
-            // All other keys: let OpenTUI primitives handle them; bubbling is still blocked via the modal option.
         },
         KeyboardPriority.Modal,
         { enabled: visible, modal: true }
@@ -55,7 +62,7 @@ export function EditorModal({
         return null;
     }
 
-    const fieldConfig = FieldConfigs.find((f) => f.key === fieldKey);
+    const fieldConfig = fieldConfigs.find((f) => f.key === fieldKey);
     if (!fieldConfig) {
         return null;
     }
@@ -95,11 +102,6 @@ export function EditorModal({
         { name: "True", description: "", value: true },
     ];
 
-    // Convert field options to SelectOption format
-    const selectOptions: SelectOption[] = options 
-        ? options.map((o) => ({ name: o.name, description: "", value: o.value }))
-        : [];
-
     return (
         <box
             position="absolute"
@@ -120,9 +122,9 @@ export function EditorModal({
                 <strong>Edit: {fieldConfig.label}</strong>
             </text>
 
-            {isEnum && (
+            {isEnum && options && (
                 <select
-                    options={selectOptions}
+                    options={options}
                     selectedIndex={selectIndex}
                     focused={true}
                     onChange={handleSelectIndexChange}

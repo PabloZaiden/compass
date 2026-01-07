@@ -7,10 +7,10 @@ import { evaluator } from "../prompts";
 import { Classification } from "../models";
 import { promises as fsPromises } from "fs";
 import { createAgent, AgentTypes } from "../agents/factory";
-import type { Config } from "../config/config";
+import type { RunConfig } from "../runconfig/runconfig";
 import type { AgentOptions } from "../agents/agent";
 
-function validateConfig(config: Config): void {
+function validateConfig(config: RunConfig): void {
     const errors: string[] = [];
 
     // Required string fields
@@ -41,7 +41,7 @@ function validateConfig(config: Config): void {
 }
 
 export class Runner {
-    async run(config: Config): Promise<RunnerResult> {
+    async run(config: RunConfig): Promise<RunnerResult> {
         validateConfig(config);
 
         logger.trace(`Running Compass with config: ${JSON.stringify(config, null, 2)}`);
