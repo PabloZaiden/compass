@@ -55,7 +55,7 @@ TEMP_DIR=$(mktemp -d)
 echo -e "${YELLOW}Cloning repository to $TEMP_DIR...${NC}"
 
 # Clone the repository
-git clone --depth 1 https://github.com/PabloZaiden/compass.git "$TEMP_DIR/compass"
+git clone --depth 1 https://github.com/pablozaiden/compass.git "$TEMP_DIR/compass"
 
 # Change to the cloned directory
 cd "$TEMP_DIR/compass"
