@@ -90,6 +90,9 @@ export function getDisplayValue(
         return option?.name ?? String(value);
     }
     const strValue = String(value ?? "");
+    if (strValue === "") {
+        return "(empty)";
+    }
     return strValue.length > 60 ? strValue.substring(0, 57) + "..." : strValue;
 }
 

@@ -9,19 +9,28 @@ import {
     useSpinner,
     useKeyboardHandler,
     KeyboardPriority,
+    useGenerateConfig,
+    useGenerator,
+    useChecker,
 } from "./hooks";
 import { KeyboardProvider } from "./context";
 import {
     Header,
-    ConfigForm,
-    EditorModal,
+    RunConfigForm,
+    RunEditorModal,
     LogsPanel,
     ResultsPanel,
     StatusBar,
     CliModal,
+    CommandSelector,
+    GenerateConfigForm,
+    GenerateEditorModal,
 } from "./components";
+import type { Command } from "./components/CommandSelector";
+import type { GenerateConfig } from "./hooks/useGenerateConfig";
 
 enum Mode {
+    CommandSelect,
     Config,
     Running,
     Results,
@@ -47,38 +56,93 @@ export function App({ onExit }: AppProps) {
 }
 
 function AppContent({ onExit }: AppProps) {
-    // State management via hooks
-    const { values, updateValue } = useConfig();
-    const { isRunning, result, error, run, reset } = useRunner();
+    // Command selection state
+    const [selectedCommand, setSelectedCommand] = useState<Command | null>(null);
+    const [commandSelectorIndex, setCommandSelectorIndex] = useState(0);
+
+    // Run mode state
+    const { values: runValues, updateValue: updateRunValue } = useConfig();
+    const { isRunning, result, error: runError, run, reset: resetRunner } = useRunner();
+
+    // Generate mode state
+    const { values: generateValues, updateValue: updateGenerateValue } = useGenerateConfig();
+    const { isGenerating, generatedPath, error: generateError, generate, reset: resetGenerator } = useGenerator();
+
+    // Check mode state
+    const { isChecking, checkResult, error: checkError, check, reset: resetChecker } = useChecker();
+
+    // Common state
     const { logs, clearLogs } = useLogStream();
     const { copy, lastAction: copyStatus, setLastAction } = useClipboard();
-    const { frameIndex } = useSpinner(isRunning);
+    const isProcessing = isRunning || isGenerating || isChecking;
+    const { frameIndex } = useSpinner(isProcessing);
 
     // UI state
-    const [mode, setMode] = useState<Mode>(Mode.Config);
+    const [mode, setMode] = useState<Mode>(Mode.CommandSelect);
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
-    const [editingField, setEditingField] = useState<keyof Config | null>(null);
+    const [editingRunField, setEditingRunField] = useState<keyof Config | null>(null);
+    const [editingGenerateField, setEditingGenerateField] = useState<keyof GenerateConfig | null>(null);
     const [focusedSection, setFocusedSection] = useState<FocusedSection>(FocusedSection.Config);
     const [logsVisible, setLogsVisible] = useState(false);
     const [cliOverlayVisible, setCliOverlayVisible] = useState(false);
     const [configStatus, setConfigStatus] = useState<string | null>(null);
 
     // Computed values
-    const totalFields = FieldConfigs.length + 1; // +1 for run button
-    const cliCommand = useMemo(() => buildCliCommand(values), [values]);
+    const runTotalFields = FieldConfigs.length + 1; // +1 for run button
+    const cliCommand = useMemo(() => buildCliCommand(runValues), [runValues]);
     
     // Status message
     const status = useMemo(() => {
         if (copyStatus) return copyStatus;
+        if (isChecking) return "Checking dependencies...";
+        if (isGenerating) return "Generating fixture...";
         if (isRunning) return "Running benchmark...";
-        if (mode === Mode.Error) return "Error occurred. Press Enter to return to config.";
-        if (mode === Mode.Results) return "Run completed. Press Enter to return to config.";
-        if (editingField) return `Editing: ${editingField}. Enter to save, Esc to cancel.`;
+        if (mode === Mode.Error) return "Error occurred. Press Esc to go back.";
+        if (mode === Mode.Results) {
+            if (selectedCommand === "generate" && generatedPath) {
+                return `✓ Fixture generated: ${generatedPath} • Ctrl+Y to copy path`;
+            }
+            if (selectedCommand === "check") {
+                return checkResult?.success 
+                    ? "✓ All dependencies found. Press Esc to continue."
+                    : "Some dependencies missing. Press Esc to continue.";
+            }
+            return "Run completed. Press Esc to return to config.";
+        }
+        if (editingRunField) return `Editing: ${editingRunField}. Enter to save, Esc to cancel.`;
+        if (editingGenerateField) return `Editing: ${editingGenerateField}. Enter to save, Esc to cancel.`;
         if (configStatus) return configStatus;
-        return "Ready. Select [Run] and press Enter to start.";
-    }, [mode, isRunning, editingField, copyStatus, configStatus]);
+        if (mode === Mode.CommandSelect) return "Select a command to get started.";
+        if (selectedCommand === "run") return "Ready. Select [Run] and press Enter to start.";
+        if (selectedCommand === "generate") return "Ready. Select [Generate] and press Enter to start.";
+        return "Ready.";
+    }, [
+        mode, isRunning, isGenerating, isChecking, editingRunField, editingGenerateField, 
+        copyStatus, configStatus, selectedCommand, generatedPath, checkResult
+    ]);
 
-    // Handle running
+    // Handle command selection
+    const handleCommandSelect = useCallback((command: Command) => {
+        setSelectedCommand(command);
+        setSelectedFieldIndex(0);
+        
+        if (command === "check") {
+            // Check runs immediately
+            setMode(Mode.Running);
+            clearLogs();
+            setLogsVisible(true);
+            setFocusedSection(FocusedSection.Logs);
+            
+            check().then(() => {
+                // Always show results for check (even on failure)
+                setMode(Mode.Results);
+            });
+        } else {
+            setMode(Mode.Config);
+        }
+    }, [check, clearLogs]);
+
+    // Handle running benchmark
     const handleRun = useCallback(async () => {
         if (isRunning) return;
         
@@ -87,7 +151,7 @@ function AppContent({ onExit }: AppProps) {
         setLogsVisible(true);
         setFocusedSection(FocusedSection.Logs);
         
-        const outcome = await run(values);
+        const outcome = await run(runValues);
         
         if (outcome.success) {
             setMode(Mode.Results);
@@ -95,32 +159,82 @@ function AppContent({ onExit }: AppProps) {
         } else {
             setMode(Mode.Error);
         }
-    }, [isRunning, values, run, clearLogs]);
+    }, [isRunning, runValues, run, clearLogs]);
 
-    // Handle field editing
-    const handleEditField = useCallback((fieldKey: keyof Config) => {
-        setEditingField(fieldKey);
+    // Handle generating fixture
+    const handleGenerate = useCallback(async () => {
+        if (isGenerating) return;
+        
+        setMode(Mode.Running);
+        clearLogs();
+        setLogsVisible(true);
+        setFocusedSection(FocusedSection.Logs);
+        
+        const outcome = await generate(generateValues);
+        
+        if (outcome.success) {
+            setMode(Mode.Results);
+            setFocusedSection(FocusedSection.Logs); // Keep focus on logs to see path
+        } else {
+            setMode(Mode.Error);
+        }
+    }, [isGenerating, generateValues, generate, clearLogs]);
+
+    // Handle run field editing
+    const handleEditRunField = useCallback((fieldKey: keyof Config) => {
+        setEditingRunField(fieldKey);
     }, []);
 
-    const handleEditSubmit = useCallback((value: unknown) => {
-        if (editingField) {
-            updateValue(editingField, value);
-            setConfigStatus(`✓ ${editingField} updated`);
+    const handleRunEditSubmit = useCallback((value: unknown) => {
+        if (editingRunField) {
+            updateRunValue(editingRunField, value);
+            setConfigStatus(`✓ ${editingRunField} updated`);
             setTimeout(() => setConfigStatus(null), 2000);
         }
-        setEditingField(null);
-    }, [editingField, updateValue]);
+        setEditingRunField(null);
+    }, [editingRunField, updateRunValue]);
 
-    const handleEditCancel = useCallback(() => {
-        setEditingField(null);
+    const handleRunEditCancel = useCallback(() => {
+        setEditingRunField(null);
+    }, []);
+
+    // Handle generate field editing
+    const handleEditGenerateField = useCallback((fieldKey: keyof GenerateConfig) => {
+        setEditingGenerateField(fieldKey);
+    }, []);
+
+    const handleGenerateEditSubmit = useCallback((value: unknown) => {
+        if (editingGenerateField) {
+            updateGenerateValue(editingGenerateField, value);
+            setConfigStatus(`✓ ${editingGenerateField} updated`);
+            setTimeout(() => setConfigStatus(null), 2000);
+        }
+        setEditingGenerateField(null);
+    }, [editingGenerateField, updateGenerateValue]);
+
+    const handleGenerateEditCancel = useCallback(() => {
+        setEditingGenerateField(null);
     }, []);
 
     // Return to config mode
     const handleReturnToConfig = useCallback(() => {
         setMode(Mode.Config);
         setFocusedSection(FocusedSection.Config);
-        reset();
-    }, [reset]);
+        resetRunner();
+        resetGenerator();
+        resetChecker();
+    }, [resetRunner, resetGenerator, resetChecker]);
+
+    // Return to command selection
+    const handleReturnToCommandSelect = useCallback(() => {
+        setSelectedCommand(null);
+        setMode(Mode.CommandSelect);
+        setLogsVisible(false);
+        setFocusedSection(FocusedSection.Config);
+        resetRunner();
+        resetGenerator();
+        resetChecker();
+    }, [resetRunner, resetGenerator, resetChecker]);
 
     // Cycle through available panels
     const cycleFocusedSection = useCallback(() => {
@@ -146,6 +260,9 @@ function AppContent({ onExit }: AppProps) {
         }
     }, [copy, setLastAction]);
 
+    // Check if we're in a modal
+    const inModal = editingRunField !== null || editingGenerateField !== null || cliOverlayVisible;
+
     // Global keyboard handler (lowest priority - runs last)
     useKeyboardHandler(
         (event) => {
@@ -157,8 +274,17 @@ function AppContent({ onExit }: AppProps) {
                 return;
             }
 
-            // Ctrl+F to toggle CLI overlay
-            if (key.ctrl && key.name === "f") {
+            // Ctrl+Y to copy generated path when in generate results
+            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
+                if (selectedCommand === "generate" && generatedPath && mode === Mode.Results) {
+                    handleCopyWithFeedback(generatedPath, "Fixture path");
+                    event.stopPropagation();
+                    return;
+                }
+            }
+
+            // Ctrl+F to toggle CLI overlay (only for run command)
+            if (key.ctrl && key.name === "f" && selectedCommand === "run") {
                 setCliOverlayVisible((prev) => !prev);
                 event.stopPropagation();
                 return;
@@ -171,19 +297,29 @@ function AppContent({ onExit }: AppProps) {
                 return;
             }
 
-            // Tab to cycle sections
-            if (key.name === "tab") {
+            // Tab to cycle sections (when not in command select)
+            if (key.name === "tab" && mode !== Mode.CommandSelect) {
                 cycleFocusedSection();
                 event.stopPropagation();
                 return;
             }
 
-            // Quit with q or Escape (when not running)
-            if (!isRunning && (key.name === "q" || key.name === "escape")) {
-                if (mode === Mode.Config) {
+            // Escape navigation (when not processing and not in modal)
+            if (!isProcessing && !inModal && key.name === "escape") {
+                if (mode === Mode.CommandSelect) {
+                    // Exit app from command select
                     onExit();
-                } else {
-                    handleReturnToConfig();
+                } else if (mode === Mode.Results || mode === Mode.Error) {
+                    // For check command, go back to command selection (no config screen)
+                    // For run/generate, go back to config
+                    if (selectedCommand === "check") {
+                        handleReturnToCommandSelect();
+                    } else {
+                        handleReturnToConfig();
+                    }
+                } else if (mode === Mode.Config) {
+                    // Return to command selection from config
+                    handleReturnToCommandSelect();
                 }
                 event.stopPropagation();
                 return;
@@ -193,14 +329,16 @@ function AppContent({ onExit }: AppProps) {
     );
 
     // Determine what to show in the main area
-    const showConfig = mode === Mode.Config && !isRunning;
-    const showResults = (mode === Mode.Results || mode === Mode.Error) && !isRunning;
+    const showCommandSelect = mode === Mode.CommandSelect;
+    const showRunConfig = selectedCommand === "run" && mode === Mode.Config && !isProcessing;
+    const showGenerateConfig = selectedCommand === "generate" && mode === Mode.Config && !isProcessing;
+    const showResults = (mode === Mode.Results || mode === Mode.Error) && !isProcessing;
     
-    // Show logs automatically when running, otherwise respect user toggle
-    const showLogs = isRunning || logsVisible;
+    // Show logs automatically when processing, otherwise respect user toggle
+    const showLogs = isProcessing || logsVisible;
     
-    // Main content only shown when not running
-    const showMainContent = showConfig || showResults;
+    // Main content only shown when not processing (unless in command select)
+    const showMainContent = showCommandSelect || showRunConfig || showGenerateConfig || showResults;
 
     return (
         <box
@@ -211,61 +349,161 @@ function AppContent({ onExit }: AppProps) {
             padding={1}
             gap={0}
         >
-                {/* Header - fixed */}
-                <Header />
+            {/* Header - fixed */}
+            <Header />
 
-                {/* Main content area */}
-                {showMainContent && (
-                    <box flexDirection="row" flexGrow={1} gap={0}>
-                        {showConfig && (
-                            <ConfigForm
-                                values={values}
-                                selectedIndex={selectedFieldIndex}
-                                focused={focusedSection === FocusedSection.Config && editingField === null}
-                                onSelectionChange={setSelectedFieldIndex}
-                                onEditField={handleEditField}
-                                onRun={handleRun}
-                                totalFields={totalFields}
-                                onCopy={handleCopyWithFeedback}
-                            />
-                        )}
+            {/* Command selector */}
+            {showCommandSelect && (
+                <CommandSelector
+                    selectedIndex={commandSelectorIndex}
+                    onSelectionChange={setCommandSelectorIndex}
+                    onSelect={handleCommandSelect}
+                    onExit={onExit}
+                />
+            )}
 
-                        {showResults && (
-                            <ResultsPanel
-                                result={result}
-                                error={error}
-                                focused={focusedSection === FocusedSection.Results}
-                                isLoading={isRunning}
-                                onReturnToConfig={handleReturnToConfig}
-                                onCopy={handleCopyWithFeedback}
-                            />
-                        )}
-                    </box>
-                )}
+            {/* Main content area */}
+            {showMainContent && !showCommandSelect && (
+                <box flexDirection="row" flexGrow={1} gap={0}>
+                    {showRunConfig && (
+                        <RunConfigForm
+                            values={runValues}
+                            selectedIndex={selectedFieldIndex}
+                            focused={focusedSection === FocusedSection.Config && editingRunField === null}
+                            onSelectionChange={setSelectedFieldIndex}
+                            onEditField={handleEditRunField}
+                            onRun={handleRun}
+                            totalFields={runTotalFields}
+                            onCopy={handleCopyWithFeedback}
+                        />
+                    )}
+
+                    {showGenerateConfig && (
+                        <GenerateConfigForm
+                            values={generateValues}
+                            selectedIndex={selectedFieldIndex}
+                            focused={focusedSection === FocusedSection.Config && editingGenerateField === null}
+                            onSelectionChange={setSelectedFieldIndex}
+                            onEditField={handleEditGenerateField}
+                            onGenerate={handleGenerate}
+                            onCopy={handleCopyWithFeedback}
+                        />
+                    )}
+
+                    {showResults && selectedCommand === "run" && (
+                        <ResultsPanel
+                            result={result}
+                            error={runError}
+                            focused={focusedSection === FocusedSection.Results}
+                            isLoading={isRunning}
+                            onReturnToConfig={handleReturnToConfig}
+                            onCopy={handleCopyWithFeedback}
+                        />
+                    )}
+
+                    {showResults && selectedCommand === "generate" && (
+                        <box
+                            flexDirection="column"
+                            border={true}
+                            borderStyle="rounded"
+                            borderColor={focusedSection === FocusedSection.Results ? Theme.borderFocused : Theme.border}
+                            title="Generate Results"
+                            flexGrow={1}
+                            padding={1}
+                        >
+                            {generateError ? (
+                                <text fg="#f78888">
+                                    <strong>Error:</strong> {generateError}
+                                </text>
+                            ) : generatedPath ? (
+                                <box flexDirection="column" gap={1}>
+                                    <text fg="#4ade80">
+                                        <strong>✓ Fixture generated successfully!</strong>
+                                    </text>
+                                    <text fg={Theme.statusText}>
+                                        Path: <span fg={Theme.value}>{generatedPath}</span>
+                                    </text>
+                                    <text fg={Theme.label}>
+                                        Press Ctrl+Y to copy the path, Esc to go back
+                                    </text>
+                                </box>
+                            ) : (
+                                <text fg={Theme.label}>Generating...</text>
+                            )}
+                        </box>
+                    )}
+
+                    {showResults && selectedCommand === "check" && (
+                        <box
+                            flexDirection="column"
+                            border={true}
+                            borderStyle="rounded"
+                            borderColor={focusedSection === FocusedSection.Results ? Theme.borderFocused : Theme.border}
+                            title="Check Results"
+                            flexGrow={1}
+                            padding={1}
+                        >
+                            {checkError ? (
+                                <text fg="#f78888">
+                                    <strong>Error:</strong> {checkError}
+                                </text>
+                            ) : checkResult ? (
+                                <box flexDirection="column" gap={1}>
+                                    <text fg={checkResult.success ? "#4ade80" : "#fbbf24"}>
+                                        <strong>
+                                            {checkResult.success 
+                                                ? "✓ All agent dependencies found!"
+                                                : "⚠ Some dependencies are missing"
+                                            }
+                                        </strong>
+                                    </text>
+                                    <text fg={Theme.label}>
+                                        See logs for details. Press Esc to go back.
+                                    </text>
+                                </box>
+                            ) : (
+                                <text fg={Theme.label}>Checking...</text>
+                            )}
+                        </box>
+                    )}
+                </box>
+            )}
 
             {/* Logs - fixed when sharing, expands when alone */}
-            <LogsPanel
-                logs={logs}
-                visible={showLogs}
-                focused={focusedSection === FocusedSection.Logs}
-                expanded={!showMainContent}
-                onCopy={handleCopyWithFeedback}
-            />
+            {!showCommandSelect && (
+                <LogsPanel
+                    logs={logs}
+                    visible={showLogs}
+                    focused={focusedSection === FocusedSection.Logs}
+                    expanded={!showMainContent || showCommandSelect}
+                    onCopy={handleCopyWithFeedback}
+                />
+            )}
 
             {/* Status bar - fixed */}
             <StatusBar
                 status={status}
-                isRunning={isRunning}
+                isRunning={isProcessing}
                 spinnerFrame={frameIndex}
+                showShortcuts={!showCommandSelect}
             />
 
-            {/* Editor modal (overlay) */}
-            <EditorModal
-                fieldKey={editingField}
-                currentValue={editingField ? values[editingField] : null}
-                visible={editingField !== null}
-                onSubmit={handleEditSubmit}
-                onCancel={handleEditCancel}
+            {/* Run Editor modal (overlay) */}
+            <RunEditorModal
+                fieldKey={editingRunField}
+                currentValue={editingRunField ? runValues[editingRunField] : null}
+                visible={editingRunField !== null}
+                onSubmit={handleRunEditSubmit}
+                onCancel={handleRunEditCancel}
+            />
+
+            {/* Generate Editor modal (overlay) */}
+            <GenerateEditorModal
+                fieldKey={editingGenerateField}
+                currentValue={editingGenerateField ? generateValues[editingGenerateField] : null}
+                visible={editingGenerateField !== null}
+                onSubmit={handleGenerateEditSubmit}
+                onCancel={handleGenerateEditCancel}
             />
 
             {/* CLI modal */}

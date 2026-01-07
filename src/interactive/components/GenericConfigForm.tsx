@@ -1,35 +1,62 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, type ReactNode } from "react";
 import type { ScrollBoxRenderable } from "@opentui/core";
-import type { Config } from "../../config/config";
 import { Theme } from "../utils";
-import { FieldConfigs, getDisplayValue } from "../utils";
 import { FieldRow } from "./FieldRow";
-import { RunButton } from "./RunButton";
 import { useKeyboardHandler, KeyboardPriority } from "../hooks";
 
-interface ConfigFormProps {
-    values: Config;
-    selectedIndex: number;
-    focused: boolean;
-    onSelectionChange: (index: number) => void;
-    onEditField: (fieldKey: keyof Config) => void;
-    onRun: () => void;
-    totalFields: number;
-    onCopy: (content: string, label: string) => void;
+/**
+ * Generic field configuration for any config form.
+ */
+export interface GenericFieldConfig<K extends string> {
+    key: K;
+    label: string;
+    type: "text" | "number" | "enum" | "boolean";
 }
 
-export function ConfigForm({
+interface GenericConfigFormProps<K extends string, V extends Record<K, unknown>> {
+    /** Title for the form border */
+    title: string;
+    /** Field configurations */
+    fieldConfigs: GenericFieldConfig<K>[];
+    /** Current values */
+    values: V;
+    /** Currently selected index */
+    selectedIndex: number;
+    /** Whether the form is focused */
+    focused: boolean;
+    /** Called when selection changes */
+    onSelectionChange: (index: number) => void;
+    /** Called when a field should be edited */
+    onEditField: (fieldKey: K) => void;
+    /** Called when the action button is pressed */
+    onAction: () => void;
+    /** Called to copy content */
+    onCopy: (content: string, label: string) => void;
+    /** Function to get display value for a field */
+    getDisplayValue: (key: K, value: unknown, type: string) => string;
+    /** Label for the copy notification */
+    copyLabel: string;
+    /** The action button component */
+    actionButton: ReactNode;
+}
+
+export function GenericConfigForm<K extends string, V extends Record<K, unknown>>({
+    title,
+    fieldConfigs,
     values,
     selectedIndex,
     focused,
     onSelectionChange,
     onEditField,
-    onRun,
-    totalFields,
+    onAction,
     onCopy,
-}: ConfigFormProps) {
+    getDisplayValue,
+    copyLabel,
+    actionButton,
+}: GenericConfigFormProps<K, V>) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
     const scrollboxRef = useRef<ScrollBoxRenderable>(null);
+    const totalFields = fieldConfigs.length + 1; // +1 for action button
 
     // Auto-scroll to keep selected item visible
     useEffect(() => {
@@ -44,7 +71,7 @@ export function ConfigForm({
             const { key } = event;
             // Ctrl+Y to copy config JSON
             if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
-                onCopy(JSON.stringify(values, null, 2), "Config JSON");
+                onCopy(JSON.stringify(values, null, 2), copyLabel);
                 event.stopPropagation();
                 return;
             }
@@ -64,12 +91,12 @@ export function ConfigForm({
                 return;
             }
 
-            // Enter to edit field or run
+            // Enter to edit field or run action
             if (key.name === "return" || key.name === "enter") {
-                if (selectedIndex === FieldConfigs.length) {
-                    onRun();
+                if (selectedIndex === fieldConfigs.length) {
+                    onAction();
                 } else {
-                    const fieldConfig = FieldConfigs[selectedIndex];
+                    const fieldConfig = fieldConfigs[selectedIndex];
                     if (fieldConfig) {
                         onEditField(fieldConfig.key);
                     }
@@ -88,7 +115,7 @@ export function ConfigForm({
             border={true}
             borderStyle="rounded"
             borderColor={borderColor}
-            title="Configuration"
+            title={title}
             flexGrow={1}
             padding={1}
         >
@@ -98,7 +125,7 @@ export function ConfigForm({
                 flexGrow={1}
             >
                 <box flexDirection="column" gap={0}>
-                    {FieldConfigs.map((field, idx) => {
+                    {fieldConfigs.map((field, idx) => {
                         const isSelected = idx === selectedIndex;
                         const displayValue = getDisplayValue(
                             field.key,
@@ -116,7 +143,7 @@ export function ConfigForm({
                         );
                     })}
                     
-                    <RunButton isSelected={selectedIndex === FieldConfigs.length} />
+                    {actionButton}
                 </box>
             </scrollbox>
         </box>
