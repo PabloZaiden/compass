@@ -3,6 +3,7 @@ import { createAgent, AgentTypes, defaultModels } from "../agents/factory";
 import { generator } from "../prompts";
 import { logger } from "../logging";
 import type { Fixture } from "../models";
+import { log } from "node:console";
 
 /**
  * Configuration for fixture generation.
@@ -57,9 +58,10 @@ export class Generator {
         }
 
         const prompt = generator
-            .replace("{{REPO_FOLDER_NAME}}", repoFolderName)
-            .replace("{{COUNT}}", String(count))
-            .replace("{{STEERING}}", steeringSection);
+            .replaceAll("{{REPO_FOLDER_NAME}}", repoFolderName)
+            .replaceAll("{{COUNT}}", String(count))
+            .replaceAll("{{STEERING}}", steeringSection);
+
 
         logger.info(`Generating fixture for ${repoFolderName} with ${count} prompts using ${AgentTypes[agentType]}`);
         logger.trace(`Repository path: ${repoPath}`);
@@ -69,6 +71,8 @@ export class Generator {
             logger.trace(`Steering: ${steering}`);
         }
 
+        logger.trace("Generated prompt for fixture generation: \n" + prompt);
+        
         // Create and initialize the agent
         const agent = createAgent(agentType, {
             allowFullAccess: true,

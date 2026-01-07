@@ -96,9 +96,9 @@ export class Runner {
                 logger.trace(`Agent output: ${agentOutputJson}`);
 
                 const evalPrompt = evaluator
-                    .replace("{{ORIGINAL_PROMPT}}", prompt.prompt)
-                    .replace("{{EXPECTED}}", prompt.expected)
-                    .replace("{{RESULT}}", agentOutputJson);
+                    .replaceAll("{{ORIGINAL_PROMPT}}", prompt.prompt)
+                    .replaceAll("{{EXPECTED}}", prompt.expected)
+                    .replaceAll("{{RESULT}}", agentOutputJson);
 
                 logger.trace(`Evaluating agent output for prompt ${prompt.id} with model ${config.evalModel}`);
                 const evalOutput = await evaluationAgent.execute(evalPrompt, config.evalModel, tempPath);
