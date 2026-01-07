@@ -46,7 +46,6 @@ export const FieldConfigs: FieldConfig[] = [
     { key: "fixture", label: "Fixture file", type: "text" },
     { key: "iterationCount", label: "Iterations", type: "number" },
     { key: "outputMode", label: "Output mode", type: "enum" },
-    { key: "logLevel", label: "Log level", type: "enum" },
     { key: "useCache", label: "Use cache", type: "boolean" },
     { key: "stopOnError", label: "Stop on error", type: "boolean" },
     { key: "allowFullAccess", label: "Allow full access", type: "boolean" },
