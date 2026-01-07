@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createAgent, type AgentTypes, defaultModels } from "../agents/factory";
+import { createAgent, AgentTypes, defaultModels } from "../agents/factory";
 import { generator } from "../prompts";
 import { logger } from "../logging";
 import type { Fixture } from "../models";
@@ -61,7 +61,7 @@ export class Generator {
             .replace("{{COUNT}}", String(count))
             .replace("{{STEERING}}", steeringSection);
 
-        logger.info(`Generating fixture for ${repoFolderName} with ${count} prompts using ${agentType}`);
+        logger.info(`Generating fixture for ${repoFolderName} with ${count} prompts using ${AgentTypes[agentType]}`);
         logger.trace(`Repository path: ${repoPath}`);
         logger.trace(`Expected output: ${expectedFileName}`);
         logger.trace(`Model: ${model}`);

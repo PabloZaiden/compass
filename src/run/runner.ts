@@ -6,7 +6,7 @@ import { Cache } from "../agents/cache";
 import { evaluator } from "../prompts";
 import { Classification } from "../models";
 import { promises as fsPromises } from "fs";
-import { createAgent } from "../agents/factory";
+import { createAgent, AgentTypes } from "../agents/factory";
 import type { Config } from "../config/config";
 import type { AgentOptions } from "../agents/agent";
 
@@ -119,7 +119,7 @@ export class Runner {
                     evaluationOutput: evalOutput,
                     classification: Classification[classification] as keyof typeof Classification,
                     points: points,
-                    agentType: config.agentType,
+                    agentType: AgentTypes[config.agentType],
                     model: config.model,
                     iteration: iterationIndex + 1
                 });
