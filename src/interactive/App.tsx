@@ -124,7 +124,7 @@ function AppContent({ onExit }: AppProps) {
     ]);
 
     // Handle command selection
-    const handleCommandSelect = useCallback((command: Command) => {
+    const handleCommandSelect = useCallback(async (command: Command) => {
         setSelectedCommand(command);
         setSelectedFieldIndex(0);
         
@@ -135,10 +135,9 @@ function AppContent({ onExit }: AppProps) {
             setLogsVisible(true);
             setFocusedSection(FocusedSection.Logs);
             
-            check().then(() => {
-                // Always show results for check (even on failure)
-                setMode(Mode.Results);
-            });
+            await check();
+            // Always show results for check (even on failure)
+            setMode(Mode.Results);
         } else {
             setMode(Mode.Config);
         }
