@@ -9,6 +9,14 @@ then
     
     curl -fsSL https://bun.com/install | bash
 
+    # manual fix for missing package.json issue
+    if [ ! -f "$HOME/.bun/install/global/package.json" ]; then
+        echo "Creating missing package.json for bun global..."
+        mkdir -p "$HOME/.bun/install/global"
+        echo '{}' > "$HOME/.bun/install/global/package.json"
+    fi
+
+
     # add bun to PATH
     export PATH="$HOME/.bun/bin:$PATH"
 fi
