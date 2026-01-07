@@ -12,19 +12,22 @@ import {
     useGenerateConfig,
     useGenerator,
     useChecker,
+    GenerateFieldConfigs,
 } from "./hooks";
 import { KeyboardProvider } from "./context";
 import {
     Header,
     RunConfigForm,
-    RunEditorModal,
     LogsPanel,
     ResultsPanel,
     StatusBar,
     CliModal,
     CommandSelector,
     GenerateConfigForm,
-    GenerateEditorModal,
+    EditorModal,
+    type FieldConfig,
+    getRunFieldOptions,
+    getGenerateFieldOptions,
 } from "./components";
 import type { Command } from "./components/CommandSelector";
 import type { GenerateConfig } from "./hooks/useGenerateConfig";
@@ -489,21 +492,25 @@ function AppContent({ onExit }: AppProps) {
             />
 
             {/* Run Editor modal (overlay) */}
-            <RunEditorModal
+            <EditorModal<keyof Config>
                 fieldKey={editingRunField}
                 currentValue={editingRunField ? runValues[editingRunField] : null}
                 visible={editingRunField !== null}
                 onSubmit={handleRunEditSubmit}
                 onCancel={handleRunEditCancel}
+                fieldConfigs={FieldConfigs as FieldConfig<keyof Config>[]}
+                getFieldOptions={getRunFieldOptions}
             />
 
             {/* Generate Editor modal (overlay) */}
-            <GenerateEditorModal
+            <EditorModal<keyof GenerateConfig>
                 fieldKey={editingGenerateField}
                 currentValue={editingGenerateField ? generateValues[editingGenerateField] : null}
                 visible={editingGenerateField !== null}
                 onSubmit={handleGenerateEditSubmit}
                 onCancel={handleGenerateEditCancel}
+                fieldConfigs={GenerateFieldConfigs as FieldConfig<keyof GenerateConfig>[]}
+                getFieldOptions={getGenerateFieldOptions}
             />
 
             {/* CLI modal */}
