@@ -56,7 +56,7 @@ Execute the benchmark runner:
 compass run \
   --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
-  --agent OpenCode
+  --agent opencode
 ```
 
 ### Generate Mode
@@ -66,7 +66,7 @@ Auto-generate a fixture file for a repository using an AI agent:
 ```bash
 compass generate \
   --repo "/path/to/target/repo" \
-  --agent OpenCode \
+  --agent opencode \
   --count 10
 ```
 
@@ -77,7 +77,7 @@ You can optionally steer the generation with additional instructions:
 ```bash
 compass generate \
   --repo "/path/to/target/repo" \
-  --agent Copilot \
+  --agent copilot \
   --count 15 \
   --steering "Focus on API endpoints and error handling"
 ```
@@ -88,7 +88,7 @@ Verify that required agent dependencies are installed:
 
 ```bash
 compass check                    # Check all agent dependencies
-compass check --agent copilot    # Check Copilot dependencies only
+compass check --agent copilot    # Check copilot dependencies only
 ```
 
 ### Version
@@ -119,7 +119,7 @@ Options are specified via command-line arguments with the `--` prefix.
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to evaluate |
 | `--fixture` | Yes | Path to the fixture JSON file |
-| `--agent` | Yes | Agent type: `Copilot`, `Codex`, `OpenCode`, `Gemini` |
+| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini` |
 | `--iterations` | No | Number of iterations per prompt (default: `1`) |
 | `--output-mode` | No | Output format: `Detailed`, `Aggregated` (default) |
 | `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: `false`) |
@@ -133,7 +133,7 @@ Options are specified via command-line arguments with the `--` prefix.
 | Option | Required | Description |
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to analyze |
-| `--agent` | Yes | Agent type: `Copilot`, `Codex`, `OpenCode`, `Gemini` |
+| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini` |
 | `--count` | Yes | Number of prompts to generate |
 | `--model` | No | Model to use for the agent |
 | `--steering` | No | Additional instructions to steer generation |
@@ -177,7 +177,7 @@ docker run --rm -ti \
   run \
   --repo /target-repo \
   --fixture /fixture.json \
-  --agent OpenCode
+  --agent opencode
 ```
 
 Mount your fixture as `/fixture.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands.
@@ -192,7 +192,7 @@ docker run --rm -ti \
   run \
   --repo /target-repo \
   --fixture /fixture.json \
-  --agent OpenCode
+  --agent opencode
 ```
 
 ## Fixture File
