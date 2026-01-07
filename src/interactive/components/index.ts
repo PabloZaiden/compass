@@ -1,14 +1,14 @@
 export { Header } from "./Header";
 export { FieldRow } from "./FieldRow";
 export { RunButton } from "./RunButton";
-export { GenericConfigForm, type GenericFieldConfig } from "./GenericConfigForm";
-export { GenericEditorModal } from "./GenericEditorModal";
+export { ConfigForm, type FieldConfig } from "./ConfigForm";
+export { EditorModal } from "./EditorModal";
 export { RunConfigForm } from "./RunConfigForm";
 export { RunEditorModal } from "./RunEditorModal";
+export { GenerateConfigForm } from "./GenerateConfigForm";
+export { GenerateEditorModal } from "./GenerateEditorModal";
 export { LogsPanel } from "./LogsPanel";
 export { ResultsPanel } from "./ResultsPanel";
 export { StatusBar } from "./StatusBar";
 export { CliModal } from "./CliModal";
 export { CommandSelector, type Command } from "./CommandSelector";
-export { ConfigForm } from "./ConfigForm";
-export { EditorModal } from "./EditorModal";

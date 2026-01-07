@@ -1,8 +1,8 @@
 import type { Config } from "../../config/config";
 import { FieldConfigs } from "../utils";
-import { GenericEditorModal } from "./GenericEditorModal";
-import type { GenericFieldConfig } from "./GenericConfigForm";
-import { getFieldOptions } from "./RunConfigForm";
+import { EditorModal } from "./EditorModal";
+import type { FieldConfig } from "./ConfigForm";
+import { getRunFieldOptions } from "./RunConfigForm";
 
 interface RunEditorModalProps {
     fieldKey: keyof Config | null;
@@ -20,14 +20,14 @@ export function RunEditorModal({
     onCancel,
 }: RunEditorModalProps) {
     return (
-        <GenericEditorModal<keyof Config>
+        <EditorModal<keyof Config>
             fieldKey={fieldKey}
             currentValue={currentValue}
             visible={visible}
             onSubmit={onSubmit}
             onCancel={onCancel}
-            fieldConfigs={FieldConfigs as GenericFieldConfig<keyof Config>[]}
-            getFieldOptions={getFieldOptions}
+            fieldConfigs={FieldConfigs as FieldConfig<keyof Config>[]}
+            getFieldOptions={getRunFieldOptions}
         />
     );
 }

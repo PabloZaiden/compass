@@ -1,7 +1,7 @@
 import type { SelectOption } from "@opentui/core";
 import type { Config } from "../../config/config";
 import { FieldConfigs, getFieldOptions as getFieldOptionsUtil, getDisplayValue } from "../utils";
-import { GenericConfigForm, type GenericFieldConfig } from "./GenericConfigForm";
+import { ConfigForm, type FieldConfig } from "./ConfigForm";
 import { RunButton } from "./RunButton";
 
 interface RunConfigFormProps {
@@ -25,9 +25,9 @@ export function RunConfigForm({
     onCopy,
 }: RunConfigFormProps) {
     return (
-        <GenericConfigForm<keyof Config, Config>
+        <ConfigForm<keyof Config, Config>
             title="Configuration"
-            fieldConfigs={FieldConfigs as GenericFieldConfig<keyof Config>[]}
+            fieldConfigs={FieldConfigs as FieldConfig<keyof Config>[]}
             values={values}
             selectedIndex={selectedIndex}
             focused={focused}
@@ -43,7 +43,7 @@ export function RunConfigForm({
 }
 
 // Re-export getFieldOptions for RunEditorModal
-export function getFieldOptions(key: keyof Config): SelectOption[] | undefined {
+export function getRunFieldOptions(key: keyof Config): SelectOption[] | undefined {
     const options = getFieldOptionsUtil(key);
     if (!options) return undefined;
     return options.map((o) => ({ name: o.name, description: "", value: o.value }));

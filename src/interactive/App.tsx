@@ -23,8 +23,8 @@ import {
     StatusBar,
     CliModal,
     CommandSelector,
-    ConfigForm,
-    EditorModal,
+    GenerateConfigForm,
+    GenerateEditorModal,
 } from "./components";
 import type { Command } from "./components/CommandSelector";
 import type { GenerateConfig } from "./hooks/useGenerateConfig";
@@ -379,7 +379,7 @@ function AppContent({ onExit }: AppProps) {
                     )}
 
                     {showGenerateConfig && (
-                        <ConfigForm
+                        <GenerateConfigForm
                             values={generateValues}
                             selectedIndex={selectedFieldIndex}
                             focused={focusedSection === FocusedSection.Config && editingGenerateField === null}
@@ -498,7 +498,7 @@ function AppContent({ onExit }: AppProps) {
             />
 
             {/* Generate Editor modal (overlay) */}
-            <EditorModal
+            <GenerateEditorModal
                 fieldKey={editingGenerateField}
                 currentValue={editingGenerateField ? generateValues[editingGenerateField] : null}
                 visible={editingGenerateField !== null}
