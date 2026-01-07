@@ -1,10 +1,11 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { LogLevel, logger, setDetailedLogs } from "../logging";
 
 // Create a temporary directory for testing
-const TEST_CONFIG_DIR = join("/tmp", ".compass-test-" + Date.now());
+const TEST_CONFIG_DIR = join(tmpdir(), ".compass-test-" + Date.now());
 const TEST_CONFIG_FILE = join(TEST_CONFIG_DIR, "logging-config.json");
 
 describe("logging config", () => {
