@@ -25,15 +25,6 @@ echo -e "${YELLOW}   in your bun global bin directory. To remove it later, run:$
 echo -e "${YELLOW}   rm \"\$(bun pm bin -g)/compass\"${NC}"
 echo ""
 
-# Ask for confirmation
-read -p "Do you want to continue? (y/N) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${RED}Installation cancelled.${NC}"
-    exit 1
-fi
-
-echo ""
 echo -e "${GREEN}Starting installation...${NC}"
 
 # Check if bun is installed
@@ -54,13 +45,27 @@ fi
 TEMP_DIR=$(mktemp -d)
 echo -e "${YELLOW}Cloning repository to $TEMP_DIR...${NC}"
 
-# Clone the repository
-git clone --depth 1 https://github.com/pablozaiden/compass.git "$TEMP_DIR/compass"
+# Clone the repository (try HTTPS first, then SSH)
+REPO_HTTPS="https://github.com/pablozaiden/compass.git"
+REPO_SSH="git@github.com:pablozaiden/compass.git"
+
+if git clone --depth 1 "$REPO_HTTPS" "$TEMP_DIR/compass" 2>/dev/null; then
+    echo -e "${GREEN}Cloned via HTTPS${NC}"
+elif git clone --depth 1 "$REPO_SSH" "$TEMP_DIR/compass"; then
+    echo -e "${GREEN}Cloned via SSH${NC}"
+else
+    echo -e "${RED}Error: Failed to clone repository via HTTPS and SSH.${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
 
 # Change to the cloned directory
 cd "$TEMP_DIR/compass"
 
 echo -e "${YELLOW}Building compass from sources...${NC}"
+
+# Install dependencies
+bun install
 
 # Run bun compile (using the compile script from package.json)
 bun run compile
