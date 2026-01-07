@@ -131,7 +131,7 @@ jobs:
         if: needs.determine-tag.outputs.is_dev_release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete v0.0.0-development --yes --cleanup-tag || true
+        run: gh release delete "${{ needs.determine-tag.outputs.tag }}" --yes --cleanup-tag || true
 
       - name: Create dev prerelease
         if: needs.determine-tag.outputs.is_dev_release == 'true'
