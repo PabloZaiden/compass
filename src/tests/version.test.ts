@@ -6,9 +6,19 @@ import pkg from "../../package.json";
 
 describe("version", () => {
     describe("getVersion", () => {
-        test("returns the version from package.json", () => {
+        test("returns a string that contains the version from package.json", () => {
             const version = getVersion();
-            expect(version).toBe(pkg.version);
+            expect(version).toContain(pkg.version);
+        });
+
+        test("contains (dev) when commit hash is empty, otherwise short hash", () => {
+            const version = getVersion();
+            const commitHash = pkg.config?.commitHash;
+            if (commitHash) {
+                expect(version).toContain(commitHash.substring(0, 7));
+            } else {
+                expect(version).toContain("(dev)");
+            }
         });
 
         test("returns a non-empty string", () => {

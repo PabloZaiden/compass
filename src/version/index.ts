@@ -1,8 +1,10 @@
 import pkg from "../../package.json";
 
 /**
- * Returns the application version from package.json.
+ * Returns the application version from package.json with short commit hash.
  */
 export function getVersion(): string {
-    return pkg.version;
+    const commitHash = pkg.config?.commitHash;
+    const shortHash = commitHash && commitHash.length > 0 ? commitHash.substring(0, 7) : "(dev)";
+    return `${pkg.version} - ${shortHash}`;
 }
