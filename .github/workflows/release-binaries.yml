@@ -88,6 +88,15 @@ jobs:
       - name: Install dependencies
         run: bun install --cpu=${{ matrix.target_arch }} --os=${{ matrix.target_os }}
 
+      - name: Set version and commit hash from release tag
+        run: |
+          VERSION="${{ needs.determine-tag.outputs.tag }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix
+          COMMIT_HASH="${{ github.sha }}"
+          echo "Setting package.json version to: $VERSION"
+          echo "Setting package.json config.commitHash to: $COMMIT_HASH"
+          jq --arg v "$VERSION" --arg c "$COMMIT_HASH" '.version = $v | .config.commitHash = $c' package.json > package.json.tmp && mv package.json.tmp package.json
+
       - name: Build binary
         env:
           TARGET_OS: ${{ matrix.target_os }}
