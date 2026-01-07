@@ -20,10 +20,6 @@ export class Codex extends Agent {
             ...sandboxParameters,
             prompt);
 
-        logger.trace("Codex stdOut: " + processOutput.stdOut);
-        logger.trace("Codex stdErr: " + processOutput.stdErr);
-        logger.trace("Codex exitCode: " + processOutput.exitCode);
-
         logger.trace("Collecting git diff after agent execution");
         
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");

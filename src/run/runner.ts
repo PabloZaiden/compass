@@ -93,7 +93,7 @@ export class Runner {
                 throwIfStopOnError(config.stopOnError, agentOutput);
 
                 const agentOutputJson = JSON.stringify(agentOutput, null, 2);
-                logger.trace(`Agent output: ${agentOutputJson}`);
+                logger.trace(`Agent output: stdOut: ${agentOutput.stdOut.length} chars, stdErr: ${agentOutput.stdErr.length} chars, exitCode: ${agentOutput.exitCode}, gitDiff: ${agentOutput.gitDiff.length} chars`);
 
                 const evalPrompt = evaluator
                     .replaceAll("{{ORIGINAL_PROMPT}}", prompt.prompt)
@@ -105,7 +105,7 @@ export class Runner {
 
                 throwIfStopOnError(config.stopOnError, evalOutput);
 
-                logger.trace(`Evaluation output: ${evalOutput.stdOut}`);
+                logger.trace(`Evaluation output: stdOut: ${evalOutput.stdOut.length} chars, stdErr: ${evalOutput.stdErr.length} chars, exitCode: ${evalOutput.exitCode}, gitDiff: ${evalOutput.gitDiff.length} chars`);
 
                 logger.trace(`Parsing classification from evaluation output`);
                 const classification = this.parseClassification(evalOutput.stdOut);

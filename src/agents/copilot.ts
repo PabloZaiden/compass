@@ -22,10 +22,6 @@ export class Copilot extends Agent {
             "--add-dir", workingDirectory, 
             "-p", prompt);
 
-        logger.trace("Copilot stdOut: " + processOutput.stdOut);
-        logger.trace("Copilot stdErr: " + processOutput.stdErr);
-        logger.trace("Copilot exitCode: " + processOutput.exitCode);
-
         logger.trace("Collecting git diff after agent execution");
         
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
