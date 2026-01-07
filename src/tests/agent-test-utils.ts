@@ -110,7 +110,7 @@ export async function generateFixture(type: AgentTypes) {
     expect(result.fixture).toBeDefined();
     expect(result.fixture!.prompts).toBeDefined();
     expect(Array.isArray(result.fixture!.prompts)).toBe(true);
-    expect(result.fixture!.prompts.length).toBeGreaterThan(0);
+    expect(result.fixture!.prompts.length).toBe(2);
 
     // Validate each prompt has required fields
     for (const p of result.fixture!.prompts) {
