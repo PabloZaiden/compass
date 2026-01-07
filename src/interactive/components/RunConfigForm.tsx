@@ -11,7 +11,6 @@ interface RunConfigFormProps {
     onSelectionChange: (index: number) => void;
     onEditField: (fieldKey: keyof RunConfig) => void;
     onRun: () => void;
-    totalFields: number;
     onCopy: (content: string, label: string) => void;
 }
 

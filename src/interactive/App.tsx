@@ -91,7 +91,6 @@ function AppContent({ onExit }: AppProps) {
     const [configStatus, setConfigStatus] = useState<string | null>(null);
 
     // Computed values
-    const runTotalFields = FieldConfigs.length + 1; // +1 for run button
     const cliCommand = useMemo(() => buildCliCommand(runValues), [runValues]);
     
     // Status message
@@ -376,7 +375,6 @@ function AppContent({ onExit }: AppProps) {
                             onSelectionChange={setSelectedFieldIndex}
                             onEditField={handleEditRunField}
                             onRun={handleRun}
-                            totalFields={runTotalFields}
                             onCopy={handleCopyWithFeedback}
                         />
                     )}
