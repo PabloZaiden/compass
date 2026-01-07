@@ -1,6 +1,9 @@
 name: Release Binaries
 
 on:
+  push:
+    branches:
+      - main
   release:
     types: [published]
   workflow_dispatch:
@@ -8,7 +11,11 @@ on:
       tag:
         description: 'Release tag (e.g., v1.2.3)'
         required: true
-        
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && 'dev-release' || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   determine-tag:
     name: Determine Release Tag
@@ -17,14 +24,24 @@ jobs:
       contents: read
     outputs:
       tag: ${{ steps.set_tag.outputs.tag }}
+      is_dev_release: ${{ steps.set_tag.outputs.is_dev_release }}
+      commit_sha: ${{ steps.set_tag.outputs.commit_sha }}
     steps:
       - name: Set release tag
         id: set_tag
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=v0.0.0-development" >> $GITHUB_OUTPUT
+            echo "is_dev_release=true" >> $GITHUB_OUTPUT
+            echo "commit_sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            echo "is_dev_release=false" >> $GITHUB_OUTPUT
+            echo "commit_sha=" >> $GITHUB_OUTPUT
           else
             echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "is_dev_release=false" >> $GITHUB_OUTPUT
+            echo "commit_sha=" >> $GITHUB_OUTPUT
           fi
 
   build:
@@ -41,7 +58,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.determine-tag.outputs.tag }}
+          ref: ${{ needs.determine-tag.outputs.commit_sha || needs.determine-tag.outputs.tag }}
 
       - name: Set up GitHub CLI
         run: |
@@ -49,6 +66,7 @@ jobs:
           sudo apt install -y gh
 
       - name: Validate there is an existing release with the given tag
+        if: needs.determine-tag.outputs.is_dev_release != 'true'
         id: check_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,6 +130,24 @@ jobs:
 
       - name: Make binaries executable
         run: chmod +x out/*
+
+      - name: Delete existing dev release and tag
+        if: needs.determine-tag.outputs.is_dev_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete "${{ needs.determine-tag.outputs.tag }}" --yes --cleanup-tag || true
+
+      - name: Create dev prerelease
+        if: needs.determine-tag.outputs.is_dev_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ needs.determine-tag.outputs.commit_sha }}
+        run: |
+          gh release create "${{ needs.determine-tag.outputs.tag }}" \
+            --prerelease \
+            --target "$COMMIT_SHA" \
+            --title "Development Build" \
+            --notes "Built from commit [$COMMIT_SHA](${{ github.server_url }}/${{ github.repository }}/commit/$COMMIT_SHA)"
 
       - name: Publish GitHub Release
         env:
