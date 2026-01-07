@@ -5,6 +5,7 @@ export { ConfigForm, type FieldConfig } from "./ConfigForm";
 export { EditorModal } from "./EditorModal";
 export { RunConfigForm, getRunFieldOptions } from "./RunConfigForm";
 export { GenerateConfigForm, getGenerateFieldOptions } from "./GenerateConfigForm";
+export { SettingsConfigForm, getSettingsFieldOptions } from "./SettingsConfigForm";
 export { LogsPanel } from "./LogsPanel";
 export { ResultsPanel } from "./ResultsPanel";
 export { StatusBar } from "./StatusBar";

@@ -12,7 +12,9 @@ import {
     useGenerateConfig,
     useGenerator,
     useChecker,
+    useLoggingConfig,
     GenerateFieldConfigs,
+    LoggingFieldConfigs,
 } from "./hooks";
 import { KeyboardProvider } from "./context";
 import {
@@ -24,13 +26,16 @@ import {
     CliModal,
     CommandSelector,
     GenerateConfigForm,
+    SettingsConfigForm,
     EditorModal,
     type FieldConfig,
     getRunFieldOptions,
     getGenerateFieldOptions,
+    getSettingsFieldOptions,
 } from "./components";
 import type { Command } from "./components/CommandSelector";
 import type { GenerateConfig } from "./hooks/useGenerateConfig";
+import type { LoggingConfig } from "./hooks/useLoggingConfig";
 
 enum Mode {
     CommandSelect,
@@ -74,6 +79,9 @@ function AppContent({ onExit }: AppProps) {
     // Check mode state
     const { isChecking, checkResult, error: checkError, check, reset: resetChecker } = useChecker();
 
+    // Settings/Logging config state
+    const { values: loggingValues, updateValue: updateLoggingValue } = useLoggingConfig();
+
     // Common state
     const { logs, clearLogs } = useLogStream();
     const { copy, lastAction: copyStatus, setLastAction } = useClipboard();
@@ -85,6 +93,7 @@ function AppContent({ onExit }: AppProps) {
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
     const [editingRunField, setEditingRunField] = useState<keyof RunConfig | null>(null);
     const [editingGenerateField, setEditingGenerateField] = useState<keyof GenerateConfig | null>(null);
+    const [editingLoggingField, setEditingLoggingField] = useState<keyof LoggingConfig | null>(null);
     const [focusedSection, setFocusedSection] = useState<FocusedSection>(FocusedSection.Config);
     const [logsVisible, setLogsVisible] = useState(false);
     const [cliOverlayVisible, setCliOverlayVisible] = useState(false);
@@ -113,13 +122,15 @@ function AppContent({ onExit }: AppProps) {
         }
         if (editingRunField) return `Editing: ${editingRunField}. Enter to save, Esc to cancel.`;
         if (editingGenerateField) return `Editing: ${editingGenerateField}. Enter to save, Esc to cancel.`;
+        if (editingLoggingField) return `Editing: ${editingLoggingField}. Enter to save, Esc to cancel.`;
         if (configStatus) return configStatus;
         if (mode === Mode.CommandSelect) return "Select a command to get started.";
         if (selectedCommand === "run") return "Ready. Select [Run] and press Enter to start.";
         if (selectedCommand === "generate") return "Ready. Select [Generate] and press Enter to start.";
+        if (selectedCommand === "settings") return "Configure logging settings. Press [Done] or Esc when finished.";
         return "Ready.";
     }, [
-        mode, isRunning, isGenerating, isChecking, editingRunField, editingGenerateField, 
+        mode, isRunning, isGenerating, isChecking, editingRunField, editingGenerateField, editingLoggingField,
         copyStatus, configStatus, selectedCommand, generatedPath, checkResult
     ]);
 
@@ -217,6 +228,24 @@ function AppContent({ onExit }: AppProps) {
         setEditingGenerateField(null);
     }, []);
 
+    // Handle settings/logging field editing
+    const handleEditLoggingField = useCallback((fieldKey: keyof LoggingConfig) => {
+        setEditingLoggingField(fieldKey);
+    }, []);
+
+    const handleLoggingEditSubmit = useCallback((value: unknown) => {
+        if (editingLoggingField) {
+            updateLoggingValue(editingLoggingField, value);
+            setConfigStatus(`✓ ${editingLoggingField} updated`);
+            setTimeout(() => setConfigStatus(null), 2000);
+        }
+        setEditingLoggingField(null);
+    }, [editingLoggingField, updateLoggingValue]);
+
+    const handleLoggingEditCancel = useCallback(() => {
+        setEditingLoggingField(null);
+    }, []);
+
     // Return to config mode
     const handleReturnToConfig = useCallback(() => {
         setMode(Mode.Config);
@@ -236,6 +265,11 @@ function AppContent({ onExit }: AppProps) {
         resetGenerator();
         resetChecker();
     }, [resetRunner, resetGenerator, resetChecker]);
+
+    // Handle settings done (return to command select)
+    const handleSettingsDone = useCallback(() => {
+        handleReturnToCommandSelect();
+    }, [handleReturnToCommandSelect]);
 
     // Cycle through available panels
     const cycleFocusedSection = useCallback(() => {
@@ -262,7 +296,7 @@ function AppContent({ onExit }: AppProps) {
     }, [copy, setLastAction]);
 
     // Check if we're in a modal
-    const inModal = editingRunField !== null || editingGenerateField !== null || cliOverlayVisible;
+    const inModal = editingRunField !== null || editingGenerateField !== null || editingLoggingField !== null || cliOverlayVisible;
 
     // Global keyboard handler (lowest priority - runs last)
     useKeyboardHandler(
@@ -333,13 +367,14 @@ function AppContent({ onExit }: AppProps) {
     const showCommandSelect = mode === Mode.CommandSelect;
     const showRunConfig = selectedCommand === "run" && mode === Mode.Config && !isProcessing;
     const showGenerateConfig = selectedCommand === "generate" && mode === Mode.Config && !isProcessing;
+    const showSettingsConfig = selectedCommand === "settings" && mode === Mode.Config && !isProcessing;
     const showResults = (mode === Mode.Results || mode === Mode.Error) && !isProcessing;
     
     // Show logs automatically when processing, otherwise respect user toggle
     const showLogs = isProcessing || logsVisible;
     
     // Main content only shown when not processing (unless in command select)
-    const showMainContent = showCommandSelect || showRunConfig || showGenerateConfig || showResults;
+    const showMainContent = showCommandSelect || showRunConfig || showGenerateConfig || showSettingsConfig || showResults;
 
     return (
         <box
@@ -386,6 +421,18 @@ function AppContent({ onExit }: AppProps) {
                             onSelectionChange={setSelectedFieldIndex}
                             onEditField={handleEditGenerateField}
                             onGenerate={handleGenerate}
+                            onCopy={handleCopyWithFeedback}
+                        />
+                    )}
+
+                    {showSettingsConfig && (
+                        <SettingsConfigForm
+                            values={loggingValues}
+                            selectedIndex={selectedFieldIndex}
+                            focused={focusedSection === FocusedSection.Config && editingLoggingField === null}
+                            onSelectionChange={setSelectedFieldIndex}
+                            onEditField={handleEditLoggingField}
+                            onDone={handleSettingsDone}
                             onCopy={handleCopyWithFeedback}
                         />
                     )}
@@ -508,6 +555,17 @@ function AppContent({ onExit }: AppProps) {
                 onCancel={handleGenerateEditCancel}
                 fieldConfigs={GenerateFieldConfigs as FieldConfig<keyof GenerateConfig>[]}
                 getFieldOptions={getGenerateFieldOptions}
+            />
+
+            {/* Settings/Logging Editor modal (overlay) */}
+            <EditorModal<keyof LoggingConfig>
+                fieldKey={editingLoggingField}
+                currentValue={editingLoggingField ? loggingValues[editingLoggingField] : null}
+                visible={editingLoggingField !== null}
+                onSubmit={handleLoggingEditSubmit}
+                onCancel={handleLoggingEditCancel}
+                fieldConfigs={LoggingFieldConfigs as FieldConfig<keyof LoggingConfig>[]}
+                getFieldOptions={getSettingsFieldOptions}
             />
 
             {/* CLI modal */}

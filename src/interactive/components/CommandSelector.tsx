@@ -1,7 +1,7 @@
 import { Theme } from "../utils";
 import { useKeyboardHandler, KeyboardPriority } from "../hooks";
 
-export type Command = "run" | "check" | "generate";
+export type Command = "run" | "check" | "generate" | "settings";
 
 interface CommandOption {
     command: Command;
@@ -24,6 +24,11 @@ const COMMANDS: CommandOption[] = [
         command: "generate",
         label: "Generate Fixture",
         description: "Generate a compass fixture file for a repository",
+    },
+    {
+        command: "settings",
+        label: "Settings",
+        description: "Configure logging level and detailed logs",
     },
 ];
 
