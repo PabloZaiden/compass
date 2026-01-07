@@ -1,7 +1,7 @@
 import type { ProcessOutput } from "./models";
 import { logger } from "./logging";
 
-/// Reads a stream and logs each chunk as it arrives, returning the full content.
+/// Reads a stream and logs each chunk as it arrives, populating the chunks array with the content.
 async function readAndLogStream(
     stream: ReadableStream<Uint8Array>,
     chunks: string[],
