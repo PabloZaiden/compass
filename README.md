@@ -12,24 +12,15 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 
 > **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed, and authenticated with the `read:packages` scope (`gh auth login --scopes read:packages`).
 
-### Install from Sources
+### Install Development Build
 
-You can also build and install Compass directly from the source code. This requires [Bun](https://bun.sh/) and [Git](https://git-scm.com/) to be installed:
+To install the latest development build from the `main` branch:
 
 ```bash
-curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install-from-sources.sh | bash
+curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | COMPASS_VERSION=0.0.0-development bash
 ```
 
-> **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed, and authenticated
-
 > **⚠️ Warning:** This installs a development build from the `main` branch, which may contain unstable or untested features, breaking changes, or bugs not present in official releases. For production use, prefer the standard installation method above.
->
-> **Note:** This installation will place the `compass` binary in your Bun global bin directory (`bun pm bin -g`). This may conflict with or overwrite a version installed via the package registry.
->
-> **To uninstall the source build:**
-> ```bash
-> rm "$(bun pm bin -g)/compass"
-> ```
 
 ## Supported Agents
 

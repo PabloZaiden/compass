@@ -7,7 +7,16 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Installing @pablozaiden/compass...${NC}"
+# Version to install (defaults to latest release)
+VERSION="${COMPASS_VERSION:-latest}"
+
+if [ "$VERSION" = "latest" ]; then
+    echo -e "${GREEN}Installing @pablozaiden/compass (latest)...${NC}"
+    PACKAGE_SPEC="@pablozaiden/compass"
+else
+    echo -e "${GREEN}Installing @pablozaiden/compass@${VERSION}...${NC}"
+    PACKAGE_SPEC="@pablozaiden/compass@${VERSION}"
+fi
 
 # Check if gh CLI is installed
 if ! command -v gh &> /dev/null; then
@@ -53,7 +62,7 @@ $PKG_MANAGER uninstall -g @pablozaiden/compass 2>/dev/null || true
 
 echo -e "${YELLOW}Installing package...${NC}"
 
-NPM_CONFIG_TOKEN="$GH_TOKEN" $PKG_MANAGER install -g @pablozaiden/compass --registry=https://npm.pkg.github.com/
+NPM_CONFIG_TOKEN="$GH_TOKEN" $PKG_MANAGER install -g "$PACKAGE_SPEC" --registry=https://npm.pkg.github.com/
 
 echo -e "${GREEN}✓ @pablozaiden/compass installed successfully!${NC}"
 echo -e "Run ${YELLOW}compass${NC} to get started."
