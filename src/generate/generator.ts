@@ -126,7 +126,7 @@ export class Generator {
             if (!parsed.prompts || !Array.isArray(parsed.prompts)) {
                 logger.warn("Warning: Fixture file does not contain a 'prompts' array");
                 return {
-                    success: true,
+                    success: false,
                     filePath: expectedFilePath,
                     error: "Fixture file does not contain a 'prompts' array",
                 };
@@ -141,7 +141,7 @@ export class Generator {
         } catch {
             logger.warn("Warning: Fixture file is not valid JSON");
             return {
-                success: true,
+                success: false,
                 filePath: expectedFilePath,
                 error: "Fixture file is not valid JSON",
             };
