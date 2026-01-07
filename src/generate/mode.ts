@@ -29,8 +29,8 @@ export const generateMode: ExecutionMode<GenerateOptions> = {
     options: toParseArgsOptions(generateOptionsSchema),
     optionDescriptions: toOptionDescriptions(generateOptionsSchema),
     examples: [
-        "compass generate --repo ./my-repo --agent copilot --count 10",
-        "compass generate --repo ./my-repo --agent opencode --count 5 --model gpt-4",
+        "compass generate --repo ./my-repo --agent opencode --count 5",
+        "compass generate --repo ./my-repo --agent copilot --count 10 --model gpt-5",
         'compass generate --repo ./my-repo --agent gemini --count 10 --steering "Focus on API endpoints"',
     ],
 
