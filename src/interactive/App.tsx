@@ -476,7 +476,7 @@ function AppContent({ onExit }: AppProps) {
                     logs={logs}
                     visible={showLogs}
                     focused={focusedSection === FocusedSection.Logs}
-                    expanded={!showMainContent || showCommandSelect}
+                    expanded={!showMainContent}
                     onCopy={handleCopyWithFeedback}
                 />
             )}
