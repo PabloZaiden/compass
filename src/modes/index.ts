@@ -16,3 +16,4 @@ import "../run/mode";
 import "../check/mode";
 import "../interactive/mode";
 import "../version/mode";
+import "../generate/mode";

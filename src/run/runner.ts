@@ -6,7 +6,7 @@ import { Cache } from "../agents/cache";
 import { evaluator } from "../prompts";
 import { Classification } from "../models";
 import { promises as fsPromises } from "fs";
-import { createAgent } from "../agents/factory";
+import { createAgent, AgentTypes } from "../agents/factory";
 import type { Config } from "../config/config";
 import type { AgentOptions } from "../agents/agent";
 
@@ -96,9 +96,9 @@ export class Runner {
                 logger.trace(`Agent output: ${agentOutputJson}`);
 
                 const evalPrompt = evaluator
-                    .replace("{{ORIGINAL_PROMPT}}", prompt.prompt)
-                    .replace("{{EXPECTED}}", prompt.expected)
-                    .replace("{{RESULT}}", agentOutputJson);
+                    .replaceAll("{{ORIGINAL_PROMPT}}", prompt.prompt)
+                    .replaceAll("{{EXPECTED}}", prompt.expected)
+                    .replaceAll("{{RESULT}}", agentOutputJson);
 
                 logger.trace(`Evaluating agent output for prompt ${prompt.id} with model ${config.evalModel}`);
                 const evalOutput = await evaluationAgent.execute(evalPrompt, config.evalModel, tempPath);
@@ -119,7 +119,7 @@ export class Runner {
                     evaluationOutput: evalOutput,
                     classification: Classification[classification] as keyof typeof Classification,
                     points: points,
-                    agentType: config.agentType,
+                    agentType: AgentTypes[config.agentType],
                     model: config.model,
                     iteration: iterationIndex + 1
                 });

@@ -5,6 +5,8 @@ import {
   basicTestOptions,
   endToEnd,
   endToEndTestOptions,
+  generateFixture,
+  generateTestOptions,
   runAgentTests,
 } from "./agent-test-utils";
 
@@ -16,4 +18,8 @@ describe.if(runAgentTests)("claude-code", () => {
   test.skip("end-to-end", async () => {
     await endToEnd(AgentTypes.ClaudeCode);
   }, endToEndTestOptions);
+
+  test.skip("generate", async () => {
+    await generateFixture(AgentTypes.ClaudeCode);
+  }, generateTestOptions);
 });

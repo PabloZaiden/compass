@@ -1,5 +1,3 @@
-import type { AgentTypes } from "./agents/factory";
-
 export type Fixture = { prompts: PromptSpec[] };
 
 export interface PromptSpec {
@@ -9,7 +7,7 @@ export interface PromptSpec {
 }
 
 export interface IterationResult {
-    agentType: AgentTypes;
+    agentType: string;
     model: string;
     promptId: string;
     iteration: number;
