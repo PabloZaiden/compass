@@ -3,7 +3,6 @@ import { createAgent, AgentTypes, defaultModels } from "../agents/factory";
 import { generator } from "../prompts";
 import { logger } from "../logging";
 import type { Fixture } from "../models";
-import { log } from "node:console";
 
 /**
  * Configuration for fixture generation.
@@ -72,7 +71,7 @@ export class Generator {
         }
 
         logger.trace("Generated prompt for fixture generation: \n" + prompt);
-        
+
         // Create and initialize the agent
         const agent = createAgent(agentType, {
             allowFullAccess: true,

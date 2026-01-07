@@ -14,11 +14,11 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 
 ## Supported Agents
 
-- GitHub Copilot
-- OpenAI Codex
-- OpenCode
-- Google Gemini CLI
-- Claude Code (coming soon)
+- GitHub Copilot (`copilot`)
+- OpenAI Codex (`codex`)
+- OpenCode (`opencode`)
+- Google Gemini CLI (`gemini`)
+- Claude Code (`claudeCode`) — *coming soon*
 
 ## Requirements
 
@@ -36,7 +36,7 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 
 ## Usage
 
-Compass supports four commands:
+Compass supports the following commands:
 
 ### Interactive Mode (default)
 
@@ -82,12 +82,31 @@ compass generate \
   --steering "Focus on API endpoints and error handling"
 ```
 
+### Check Mode
+
+Verify that required agent dependencies are installed:
+
+```bash
+compass check                    # Check all agent dependencies
+compass check --agent copilot    # Check Copilot dependencies only
+```
+
+### Version
+
+Show the application version:
+
+```bash
+compass version
+```
+
 ### Help
 
 Show all available options:
 
 ```bash
 compass help
+compass run help      # Help for run command
+compass generate help # Help for generate command
 ```
 
 ### Options
@@ -100,13 +119,12 @@ Options are specified via command-line arguments with the `--` prefix.
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to evaluate |
 | `--fixture` | Yes | Path to the fixture JSON file |
-| `--agent` | Yes | Agent type (Copilot, Codex, OpenCode, Gemini; ClaudeCode coming soon) |
-| `--iterations` | No | Number of iterations per prompt (default: 1) |
-| `--output-mode` | No | Output format: Detailed, Aggregated (default) |
-| `--log-level` | No | Logging verbosity (default: Info) |
-| `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: false) |
-| `--stop-on-error` / `--no-stop-on-error` | No | Stop on first error or continue (default: true) |
-| `--allow-full-access` / `--no-allow-full-access` | No | Allow/restrict full repository access (default: true) |
+| `--agent` | Yes | Agent type: `Copilot`, `Codex`, `OpenCode`, `Gemini` |
+| `--iterations` | No | Number of iterations per prompt (default: `1`) |
+| `--output-mode` | No | Output format: `Detailed`, `Aggregated` (default) |
+| `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: `false`) |
+| `--stop-on-error` / `--no-stop-on-error` | No | Stop on first error or continue (default: `true`) |
+| `--allow-full-access` / `--no-allow-full-access` | No | Allow/restrict full repository access (default: `true`) |
 | `--model` | No | Model to use for the agent |
 | `--eval-model` | No | Model to use for evaluation |
 
@@ -115,10 +133,25 @@ Options are specified via command-line arguments with the `--` prefix.
 | Option | Required | Description |
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to analyze |
-| `--agent` | Yes | Agent type (Copilot, Codex, OpenCode, Gemini; ClaudeCode coming soon) |
+| `--agent` | Yes | Agent type: `Copilot`, `Codex`, `OpenCode`, `Gemini` |
 | `--count` | Yes | Number of prompts to generate |
 | `--model` | No | Model to use for the agent |
 | `--steering` | No | Additional instructions to steer generation |
+
+#### Check Options
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `--agent` | No | Check dependencies for a specific agent only |
+
+#### Common Options
+
+These options are available for all commands:
+
+| Option | Description |
+|--------|-------------|
+| `--log-level` | Logging verbosity: `Trace`, `Debug`, `Info`, `Warn`, `Error` (default: `Info`) |
+| `--detailed-logs` / `--no-detailed-logs` | Show detailed logs with timestamp and level (default: `false`) |
 
 ## Terminal UI
 
@@ -164,4 +197,16 @@ docker run --rm -ti \
 
 ## Fixture File
 
-See `src/sample-fixture.json` for structure.
+A fixture file defines the prompts and expected outcomes for benchmarking. See [src/sample-fixture.json](src/sample-fixture.json) for an example:
+
+```json
+{
+  "prompts": [
+    {
+      "id": "explain_repo",
+      "prompt": "Describe this repo.",
+      "expected": "This repo is a console tool to benchmark coding agents..."
+    }
+  ]
+}
+```
