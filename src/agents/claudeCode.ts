@@ -22,10 +22,6 @@ export class ClaudeCode extends Agent {
             prompt
         );
 
-        logger.trace("ClaudeCode stdOut: " + processOutput.stdOut);
-        logger.trace("ClaudeCode stdErr: " + processOutput.stdErr);
-        logger.trace("ClaudeCode exitCode: " + processOutput.exitCode);
-
         logger.trace("Collecting git diff after agent execution");
 
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");

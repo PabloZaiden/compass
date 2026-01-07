@@ -20,10 +20,6 @@ export class Gemini extends Agent {
             "--output-format", "text",
             ...yoloParameters);
 
-        logger.trace("Gemini CLI stdOut: " + processOutput.stdOut);
-        logger.trace("Gemini CLI stdErr: " + processOutput.stdErr);
-        logger.trace("Gemini CLI exitCode: " + processOutput.exitCode);
-
         logger.trace("Collecting git diff after agent execution");
         
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
