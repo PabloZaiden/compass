@@ -242,7 +242,7 @@ describe("Application", () => {
 
     test("calls buildConfig before executeCli", async () => {
       let buildConfigCalled = false;
-      let receivedConfig: ParsedConfig | null = null;
+      let receivedConfig: ParsedConfig | null = null as ParsedConfig | null;
 
       class ConfigCommand extends Command<typeof configOptions, ParsedConfig> {
         readonly name = "config-cmd";
@@ -278,7 +278,7 @@ describe("Application", () => {
     });
 
     test("passes raw options when buildConfig is not defined", async () => {
-      let receivedOpts: Record<string, unknown> | null = null;
+      let receivedOpts: Record<string, unknown> | null = null as Record<string, unknown> | null;
 
       class NoConfigCommand extends Command<typeof testOptions> {
         readonly name = "no-config-cmd";

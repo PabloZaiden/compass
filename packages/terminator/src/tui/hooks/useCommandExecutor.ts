@@ -1,6 +1,15 @@
 import { useState, useCallback } from "react";
 import type { CommandResult } from "../../core/command.ts";
 
+/**
+ * Outcome of command execution.
+ */
+export interface ExecutionOutcome<TResult = CommandResult> {
+    success: boolean;
+    result?: TResult;
+    error?: Error;
+}
+
 export interface UseCommandExecutorResult<TResult = CommandResult> {
     /** Whether the command is currently executing */
     isExecuting: boolean;
@@ -8,8 +17,8 @@ export interface UseCommandExecutorResult<TResult = CommandResult> {
     result: TResult | null;
     /** Error from the last execution, if any */
     error: Error | null;
-    /** Execute the command */
-    execute: (...args: unknown[]) => Promise<void>;
+    /** Execute the command - returns outcome when complete */
+    execute: (...args: unknown[]) => Promise<ExecutionOutcome<TResult>>;
     /** Reset the state */
     reset: () => void;
 }
@@ -27,6 +36,9 @@ export interface UseCommandExecutorResult<TResult = CommandResult> {
  *         return await runCommand(config);
  *     }
  * );
+ * 
+ * const outcome = await execute(config);
+ * if (outcome.success) { ... }
  * ```
  */
 export function useCommandExecutor<TResult = CommandResult>(
@@ -36,7 +48,7 @@ export function useCommandExecutor<TResult = CommandResult>(
     const [result, setResult] = useState<TResult | null>(null);
     const [error, setError] = useState<Error | null>(null);
 
-    const execute = useCallback(async (...args: unknown[]) => {
+    const execute = useCallback(async (...args: unknown[]): Promise<ExecutionOutcome<TResult>> => {
         setIsExecuting(true);
         setError(null);
         setResult(null);
@@ -45,9 +57,13 @@ export function useCommandExecutor<TResult = CommandResult>(
             const res = await executeFn(...args);
             if (res !== undefined) {
                 setResult(res);
+                return { success: true, result: res };
             }
+            return { success: true };
         } catch (e) {
-            setError(e instanceof Error ? e : new Error(String(e)));
+            const err = e instanceof Error ? e : new Error(String(e));
+            setError(err);
+            return { success: false, error: err };
         } finally {
             setIsExecuting(false);
         }

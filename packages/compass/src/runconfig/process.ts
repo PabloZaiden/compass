@@ -57,11 +57,11 @@ export async function runConfigFromParsedOptions(options: RunOptions): Promise<R
     let model = getStringOption(options, schema, "model");
     let evalModel = getStringOption(options, schema, "eval-model");
 
-    if (model === undefined || model === "based on --agent") {
+    if (model === undefined || model.trim() === "") {
         model = defaultModels[agentType];
     }
 
-    if (evalModel === undefined || evalModel === "based on --agent") {
+    if (evalModel === undefined || evalModel.trim() === "") {
         evalModel = defaultModels[agentType];
     }
 

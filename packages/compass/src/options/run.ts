@@ -72,13 +72,13 @@ export const runOptionsSchema = {
         type: "string",
         description: "Model to use for the agent",
         placeholder: "name",
-        default: "based on --agent",
+        default: "",
     },
     "eval-model": {
         type: "string",
         description: "Model to use for evaluation",
         placeholder: "name",
-        default: "based on --agent",
+        default: "",
     },
 } as const satisfies OptionSchema;
 

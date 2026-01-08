@@ -20,7 +20,7 @@ import {
     useCommandExecutor,
     type LogSource,
 } from "./hooks/index.ts";
-import { schemaToFieldConfigs, getFieldDisplayValue, buildCliCommand } from "./utils/index.ts";
+import { schemaToFieldConfigs, getFieldDisplayValue, buildCliCommand, loadPersistedParameters, savePersistedParameters } from "./utils/index.ts";
 import type { AnyCommand, CommandResult } from "../core/command.ts";
 import type { AppContext } from "../core/context.ts";
 import type { OptionValues, OptionSchema, OptionDef } from "../types/command.ts";
@@ -175,8 +175,13 @@ function TuiAppContent({
                 }
             }
         }
-        setConfigValues(defaults);
-    }, [customFields]);
+        
+        // Load persisted parameters and merge with defaults
+        const persisted = loadPersistedParameters(name, cmd.name);
+        const merged = { ...defaults, ...persisted };
+        
+        setConfigValues(merged);
+    }, [customFields, name]);
 
     // Handlers
     const handleCommandSelect = useCallback((cmd: AnyCommand) => {
@@ -227,21 +232,26 @@ function TuiAppContent({
         const cmdToRun = cmd ?? selectedCommand;
         if (!cmdToRun) return;
 
+        // Save parameters before running
+        savePersistedParameters(name, cmdToRun.name, configValues);
+
+        // Set up for running
         setMode(Mode.Running);
         clearLogs();
         setLogsVisible(true);
         setFocusedSection(FocusedSection.Logs);
 
-        await execute(cmdToRun, configValues);
+        // Execute and wait for result
+        const outcome = await execute(cmdToRun, configValues);
 
-        // Check result
-        if (error) {
-            setMode(Mode.Error);
-        } else {
+        // Transition based on outcome
+        if (outcome.success) {
             setMode(Mode.Results);
+        } else {
+            setMode(Mode.Error);
         }
         setFocusedSection(FocusedSection.Results);
-    }, [selectedCommand, configValues, clearLogs, execute, error]);
+    }, [selectedCommand, configValues, clearLogs, execute, name]);
 
     const handleEditField = useCallback((fieldKey: string) => {
         setEditingField(fieldKey);
@@ -250,7 +260,16 @@ function TuiAppContent({
     const handleFieldSubmit = useCallback((value: unknown) => {
         if (editingField) {
             setConfigValues((prev) => {
-                const newValues = { ...prev, [editingField]: value };
+                let newValues = { ...prev, [editingField]: value };
+                
+                // Call command's onConfigChange if available
+                if (selectedCommand?.onConfigChange) {
+                    const updates = selectedCommand.onConfigChange(editingField, value, newValues);
+                    if (updates) {
+                        newValues = { ...newValues, ...updates };
+                    }
+                }
+                
                 // Call custom field onChange if applicable
                 const customField = customFields?.find((f) => f.key === editingField);
                 if (customField?.onChange) {
@@ -260,7 +279,7 @@ function TuiAppContent({
             });
         }
         setEditingField(null);
-    }, [editingField, customFields]);
+    }, [editingField, customFields, selectedCommand]);
 
     const handleCopy = useCallback((content: string, label: string) => {
         copyWithMessage(content, label);
@@ -369,24 +388,25 @@ function TuiAppContent({
         return String(value ?? "");
     }, [fieldConfigs]);
 
-    return (
-        <box flexDirection="column" flexGrow={1} padding={1}>
-            <Header name={name} version={version} breadcrumb={breadcrumb} />
+    // Render the main content based on current mode
+    const renderContent = () => {
+        switch (mode) {
+            case Mode.CommandSelect:
+                return (
+                    <CommandSelector
+                        commands={currentCommands.map((cmd) => ({ command: cmd }))}
+                        selectedIndex={commandSelectorIndex}
+                        onSelectionChange={setCommandSelectorIndex}
+                        onSelect={handleCommandSelect}
+                        onExit={handleBack}
+                        breadcrumb={commandPath.length > 0 ? commandPath : undefined}
+                    />
+                );
 
-            {mode === Mode.CommandSelect && (
-                <CommandSelector
-                    commands={currentCommands.map((cmd) => ({ command: cmd }))}
-                    selectedIndex={commandSelectorIndex}
-                    onSelectionChange={setCommandSelectorIndex}
-                    onSelect={handleCommandSelect}
-                    onExit={handleBack}
-                    breadcrumb={commandPath.length > 0 ? commandPath : undefined}
-                />
-            )}
-
-            {mode === Mode.Config && selectedCommand && (
-                <box flexDirection="column" flexGrow={1}>
-                    <box flexDirection="row" flexGrow={1} gap={1}>
+            case Mode.Config:
+                if (!selectedCommand) return null;
+                return (
+                    <box flexDirection="column" flexGrow={1}>
                         <ConfigForm
                             title={`Configure: ${selectedCommand.name}`}
                             fieldConfigs={fieldConfigs}
@@ -406,49 +426,62 @@ function TuiAppContent({
                                 />
                             }
                         />
+                        {logsVisible && (
+                            <LogsPanel
+                                logs={logs}
+                                visible={true}
+                                focused={focusedSection === FocusedSection.Logs}
+                                onCopy={handleCopy}
+                            />
+                        )}
                     </box>
+                );
 
-                    {logsVisible && (
-                        <LogsPanel
-                            logs={logs}
-                            visible={true}
-                            focused={focusedSection === FocusedSection.Logs}
-                            onCopy={handleCopy}
-                        />
-                    )}
-                </box>
-            )}
-
-            {mode === Mode.Running && (
-                <LogsPanel
-                    logs={logs}
-                    visible={true}
-                    focused={true}
-                    expanded={true}
-                    onCopy={handleCopy}
-                />
-            )}
-
-            {(mode === Mode.Results || mode === Mode.Error) && (
-                <box flexDirection="column" flexGrow={1}>
-                    <ResultsPanel
-                        result={result}
-                        error={error}
-                        focused={focusedSection === FocusedSection.Results}
-                        renderResult={selectedCommand?.renderResult}
+            case Mode.Running:
+                return (
+                    <LogsPanel
+                        logs={logs}
+                        visible={true}
+                        focused={true}
+                        expanded={true}
                         onCopy={handleCopy}
                     />
+                );
 
-                    {logsVisible && (
-                        <LogsPanel
-                            logs={logs}
-                            visible={true}
-                            focused={focusedSection === FocusedSection.Logs}
+            case Mode.Results:
+            case Mode.Error:
+                return (
+                    <box flexDirection="column" flexGrow={1}>
+                        <ResultsPanel
+                            result={result}
+                            error={error}
+                            focused={focusedSection === FocusedSection.Results}
+                            renderResult={selectedCommand?.renderResult}
                             onCopy={handleCopy}
                         />
-                    )}
-                </box>
-            )}
+                        {logsVisible && (
+                            <LogsPanel
+                                logs={logs}
+                                visible={true}
+                                focused={focusedSection === FocusedSection.Logs}
+                                onCopy={handleCopy}
+                            />
+                        )}
+                    </box>
+                );
+
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <box flexDirection="column" flexGrow={1} padding={1}>
+            <Header name={name} version={version} breadcrumb={breadcrumb} />
+
+            <box key={`content-${mode}-${isExecuting}`} flexDirection="column" flexGrow={1}>
+                {renderContent()}
+            </box>
 
             <StatusBar message={statusMessage} shortcuts={shortcuts} />
 

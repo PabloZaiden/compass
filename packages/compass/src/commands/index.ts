@@ -1,5 +1,5 @@
 export { RunCommand } from "./run.ts";
 export { CheckCommand } from "./check.ts";
 export { GenerateCommand } from "./generate.ts";
-export { SettingsCommand } from "./settings.ts";
+// SettingsCommand is now provided by the terminator framework
 // InteractiveCommand is no longer needed - TuiApplication provides built-in TUI

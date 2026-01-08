@@ -29,7 +29,7 @@ export type {
 export { ExecutionMode } from "./types/execution.ts";
 
 // Built-in Commands (new)
-export { HelpCommand, VersionCommand, formatVersion } from "./builtins/index.ts";
+export { HelpCommand, VersionCommand, SettingsCommand, formatVersion } from "./builtins/index.ts";
 export type { VersionConfig } from "./builtins/index.ts";
 
 // TUI Framework (new)

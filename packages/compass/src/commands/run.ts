@@ -3,6 +3,7 @@ import { Runner } from "../run/runner";
 import { runConfigFromParsedOptions } from "../runconfig/process";
 import type { RunConfig } from "../runconfig/runconfig";
 import { runOptionsSchema, type RunOptions } from "../options";
+import { AgentTypes, defaultModels } from "../agents/factory";
 
 /**
  * TUI metadata for each option - labels, ordering, and groups.
@@ -166,5 +167,27 @@ Results will be output as JSON to stdout.
       return JSON.stringify(result.data, null, 2);
     }
     return result.message ?? "";
+  }
+
+  /**
+   * Handle config value changes in the TUI.
+   * When agent type changes, update model and eval-model to agent defaults.
+   */
+  override onConfigChange(
+    key: string,
+    value: unknown,
+    _allValues: Record<string, unknown>
+  ): Record<string, unknown> | undefined {
+    if (key === "agent" && typeof value === "string") {
+      const agentType = AgentTypes[value as keyof typeof AgentTypes];
+      if (agentType !== undefined) {
+        const defaultModel = defaultModels[agentType];
+        return {
+          model: defaultModel,
+          "eval-model": defaultModel,
+        };
+      }
+    }
+    return undefined;
   }
 }

@@ -1,5 +1,5 @@
 import { TuiApplication } from "@pablozaiden/terminator";
-import { RunCommand, CheckCommand, GenerateCommand, SettingsCommand } from "./commands/index.ts";
+import { RunCommand, CheckCommand, GenerateCommand } from "./commands/index.ts";
 import pkg from "../package.json";
 
 /**
@@ -8,6 +8,9 @@ import pkg from "../package.json";
  * Extends the Terminator TuiApplication class with Compass-specific
  * commands and configuration. TuiApplication provides built-in TUI
  * support that auto-generates UI from command definitions.
+ * 
+ * The SettingsCommand (log level, detailed logs) is automatically
+ * provided by the framework.
  */
 export class CompassApp extends TuiApplication {
   constructor() {
@@ -19,7 +22,7 @@ export class CompassApp extends TuiApplication {
         new RunCommand(),
         new CheckCommand(),
         new GenerateCommand(),
-        new SettingsCommand(),
+        // SettingsCommand is automatically added by TuiApplication
       ],
       // Enable built-in TUI (default when no args)
       enableTui: true,

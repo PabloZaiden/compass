@@ -221,4 +221,22 @@ The fixture file contains prompts that can be used to test AI coding agents.
       };
     }
   }
+
+  /**
+   * Handle config value changes in the TUI.
+   * When agent type changes, update model to agent default.
+   */
+  override onConfigChange(
+    key: string,
+    value: unknown,
+    _allValues: Record<string, unknown>
+  ): Record<string, unknown> | undefined {
+    if (key === "agent" && typeof value === "string") {
+      const agentType = AgentTypes[value as keyof typeof AgentTypes];
+      if (agentType !== undefined) {
+        return { model: defaultModels[agentType] };
+      }
+    }
+    return undefined;
+  }
 }

@@ -4,8 +4,11 @@ import { Application, type ApplicationConfig } from "../core/application.ts";
 import type { AnyCommand } from "../core/command.ts";
 import { TuiApp } from "./TuiApp.tsx";
 import { Theme } from "./theme.ts";
-import type { LogSource } from "./hooks/index.ts";
+import type { LogSource, LogEvent } from "./hooks/index.ts";
+import { LogLevel as TuiLogLevel } from "./hooks/index.ts";
+import { LogLevel as CoreLogLevel, type LogEvent as CoreLogEvent } from "../core/logger.ts";
 import type { FieldConfig } from "./components/types.ts";
+import { createSettingsCommand } from "../builtins/settings.ts";
 
 /**
  * Custom field configuration for TUI forms.
@@ -94,6 +97,13 @@ export class TuiApplication extends Application {
         // Get all commands that support TUI or have options
         const commands = this.getExecutableCommands();
 
+        // Enable TUI mode on the logger so logs go to the event emitter
+        // instead of stderr (which would corrupt the TUI display)
+        this.context.logger.setTuiMode(true);
+
+        // Create a log source from the logger if one wasn't provided
+        const logSource = this.logSource ?? this.createLogSourceFromLogger();
+
         const renderer = await createCliRenderer({
             useAlternateScreen: true,
             useConsole: false,
@@ -106,6 +116,8 @@ export class TuiApplication extends Application {
 
         return new Promise<void>((resolve) => {
             const handleExit = () => {
+                // Restore CLI mode on exit
+                this.context.logger.setTuiMode(false);
                 renderer.destroy();
                 resolve();
             };
@@ -117,7 +129,7 @@ export class TuiApplication extends Application {
                     version={this.version}
                     commands={commands}
                     context={this.context}
-                    logSource={this.logSource}
+                    logSource={logSource}
                     customFields={this.customFields}
                     onExit={handleExit}
                 />
@@ -128,19 +140,58 @@ export class TuiApplication extends Application {
     }
 
     /**
+     * Create a LogSource adapter from the application logger.
+     */
+    private createLogSourceFromLogger(): LogSource {
+        const logger = this.context.logger;
+        
+        // Map core log levels to TUI log levels
+        const mapLogLevel = (level: CoreLogLevel): TuiLogLevel => {
+            switch (level) {
+                case CoreLogLevel.Silly: return TuiLogLevel.Silly;
+                case CoreLogLevel.Trace: return TuiLogLevel.Trace;
+                case CoreLogLevel.Debug: return TuiLogLevel.Debug;
+                case CoreLogLevel.Info: return TuiLogLevel.Info;
+                case CoreLogLevel.Warn: return TuiLogLevel.Warn;
+                case CoreLogLevel.Error: return TuiLogLevel.Error;
+                case CoreLogLevel.Fatal: return TuiLogLevel.Fatal;
+                default: return TuiLogLevel.Info;
+            }
+        };
+
+        return {
+            subscribe: (callback: (event: LogEvent) => void) => {
+                return logger.onLogEvent((coreEvent: CoreLogEvent) => {
+                    callback({
+                        level: mapLogLevel(coreEvent.level),
+                        message: coreEvent.message,
+                    });
+                });
+            },
+        };
+    }
+
+    /**
      * Get commands that can be used in TUI.
-     * Filters out internal commands like version/help.
+     * Filters out internal commands like version/help, and adds built-in settings.
      */
     private getExecutableCommands(): AnyCommand[] {
-        return this.registry
+        const userCommands = this.registry
             .list()
             .filter((cmd) => {
                 // Exclude version and help from main menu
                 if (cmd.name === "version" || cmd.name === "help") {
                     return false;
                 }
+                // Exclude settings if already defined by user (they shouldn't)
+                if (cmd.name === "settings") {
+                    return false;
+                }
                 // Include commands that have options or execute methods
                 return true;
             });
+
+        // Add built-in settings command at the end
+        return [...userCommands, createSettingsCommand()];
     }
 }

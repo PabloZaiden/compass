@@ -1,5 +1,12 @@
-import { Command, ConfigValidationError, LogLevel, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
+import { Command } from "../core/command.ts";
+import type { AppContext } from "../core/context.ts";
+import { LogLevel } from "../core/logger.ts";
+import type { OptionSchema, OptionValues } from "../types/command.ts";
+import type { CommandResult } from "../core/command.ts";
 
+/**
+ * Options schema for the settings command.
+ */
 const settingsOptions = {
   "log-level": {
     type: "string",
@@ -20,11 +27,17 @@ const settingsOptions = {
 
 type SettingsOptions = OptionValues<typeof settingsOptions>;
 
+/**
+ * Parsed settings configuration.
+ */
 interface SettingsConfig {
   logLevel: LogLevel;
   detailedLogs: boolean;
 }
 
+/**
+ * Map of string log level names to LogLevel enum values.
+ */
 const logLevelMap: Record<string, LogLevel> = {
   silly: LogLevel.Silly,
   trace: LogLevel.Trace,
@@ -35,18 +48,29 @@ const logLevelMap: Record<string, LogLevel> = {
   fatal: LogLevel.Fatal,
 };
 
+/**
+ * Parse a string log level to the LogLevel enum.
+ */
 function parseLogLevel(value?: string): LogLevel {
   if (!value) return LogLevel.Info;
   const level = logLevelMap[value.toLowerCase()];
-  if (level === undefined) {
-    throw new ConfigValidationError(`Invalid log level: ${value}`, "log-level");
-  }
-  return level;
+  return level ?? LogLevel.Info;
 }
 
+/**
+ * Built-in settings command for configuring logging.
+ * 
+ * This command allows users to configure the log level and detailed logging
+ * format at runtime. It's automatically registered by TuiApplication.
+ * 
+ * In CLI mode, these settings are typically passed as global options:
+ * --log-level <level> and --detailed-logs
+ * 
+ * In TUI mode, this command provides a UI for configuring these settings.
+ */
 export class SettingsCommand extends Command<typeof settingsOptions, SettingsConfig> {
   readonly name = "settings";
-  readonly description = "Configure logging level and detailed logs";
+  readonly description = "Configure logging level and output format";
   readonly options = settingsOptions;
 
   override readonly actionLabel = "Save Settings";
@@ -76,4 +100,11 @@ export class SettingsCommand extends Command<typeof settingsOptions, SettingsCon
     ctx.logger.setMinLevel(config.logLevel);
     ctx.logger.setDetailed(config.detailedLogs);
   }
+}
+
+/**
+ * Create the built-in settings command.
+ */
+export function createSettingsCommand(): SettingsCommand {
+  return new SettingsCommand();
 }

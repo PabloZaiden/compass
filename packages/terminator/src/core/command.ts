@@ -182,6 +182,34 @@ export abstract class Command<
   getClipboardContent?(result: CommandResult): string | undefined;
 
   /**
+   * Called when a config value changes in the TUI.
+   * 
+   * Override this to update related fields when one field changes.
+   * For example, changing "agent" could automatically update "model"
+   * to the default model for that agent.
+   * 
+   * @param key - The key of the field that changed
+   * @param value - The new value
+   * @param allValues - All current config values (including the new value)
+   * @returns Updated values to merge, or undefined if no changes needed
+   * 
+   * @example
+   * ```typescript
+   * onConfigChange(key: string, value: unknown, allValues: Record<string, unknown>) {
+   *   if (key === "agent") {
+   *     return { model: getDefaultModelForAgent(value as string) };
+   *   }
+   *   return undefined;
+   * }
+   * ```
+   */
+  onConfigChange?(
+    key: string,
+    value: unknown,
+    allValues: Record<string, unknown>
+  ): Record<string, unknown> | undefined;
+
+  /**
    * Check if this command supports CLI mode.
    */
   supportsCli(): boolean {
