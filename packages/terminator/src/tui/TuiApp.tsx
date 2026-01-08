@@ -452,7 +452,7 @@ function TuiAppContent({
             case Mode.Results:
             case Mode.Error:
                 return (
-                    <box flexDirection="column" flexGrow={1}>
+                    <box flexDirection="column" flexGrow={1} gap={1}>
                         <ResultsPanel
                             result={result}
                             error={error}
