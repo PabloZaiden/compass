@@ -369,9 +369,9 @@ function TuiAppContent({
     const shortcuts = useMemo(() => {
         const parts: string[] = [];
         if (mode === Mode.Config) {
-            parts.push("↑↓ Navigate", "Enter Edit", "C CLI", "L Logs", "Esc Back");
+            parts.push("↑↓ Navigate", "Enter Edit", "Ctrl+Y Copy", "C CLI", "L Logs", "Esc Back");
         } else if (mode === Mode.Running) {
-            parts.push("L Logs");
+            parts.push("Ctrl+Y Copy");
         } else if (mode === Mode.Results || mode === Mode.Error) {
             parts.push("Tab Focus", "Ctrl+Y Copy", "Esc Back");
         } else {
