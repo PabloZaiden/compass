@@ -20,9 +20,9 @@ Use `bun test` to run all the tests that don't require agent interaction.
 
 Always run `bun test` when you think you are done making changes.
 
-Use `bun test:agents src/tests/<agent>.test.ts` to run tests for a specific agent (e.g., `bun test:agents src/tests/copilot.test.ts`, `bun test:agents src/tests/gemini.test.ts`).
+Use `bun test:agents src/__tests__/<agent>.test.ts` to run tests for a specific agent (e.g., `bun test:agents src/__tests__/copilot.test.ts`, `bun test:agents src/__tests__/gemini.test.ts`).
 
-Use `bun test:agents src/tests/opencode.test.ts` to run tests for an agent that won't require authentication.
+Use `bun test:agents src/__tests__/opencode.test.ts` to run tests for an agent that won't require authentication.
 
 Only run `bun test:agents <...>` after user confirmation.
 
