@@ -338,4 +338,88 @@ describe("Application", () => {
       expect(errorCaught?.message).toBe("Config validation failed");
     });
   });
+
+  describe("global options", () => {
+    test("parses --log-level before command", async () => {
+      const cmd = new TestCliCommand();
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [cmd],
+      });
+      
+      // Should not throw - global option should be parsed and removed
+      await app.run(["--log-level", "debug", "test", "--value", "hello"]);
+      expect(cmd.executedWith?.["value"]).toBe("hello");
+    });
+
+    test("parses --log-level after command", async () => {
+      const cmd = new TestCliCommand();
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [cmd],
+      });
+      
+      await app.run(["test", "--log-level", "debug", "--value", "hello"]);
+      expect(cmd.executedWith?.["value"]).toBe("hello");
+    });
+
+    test("applies log-level case-insensitively", async () => {
+      const cmd = new TestCliCommand();
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [cmd],
+      });
+      
+      // All of these should work (case-insensitive)
+      await app.run(["--log-level", "debug", "test"]);
+      expect(app.context.logger.getMinLevel()).toBe(2); // Debug = 2
+      
+      await app.run(["--log-level", "Debug", "test"]);
+      expect(app.context.logger.getMinLevel()).toBe(2);
+      
+      await app.run(["--log-level", "DEBUG", "test"]);
+      expect(app.context.logger.getMinLevel()).toBe(2);
+    });
+
+    test("parses --detailed-logs flag", async () => {
+      const cmd = new TestCliCommand();
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [cmd],
+      });
+      
+      await app.run(["--detailed-logs", "test"]);
+      // Should not throw - flag is recognized
+      expect(cmd.executedWith).not.toBeNull();
+    });
+
+    test("parses --no-detailed-logs flag", async () => {
+      const cmd = new TestCliCommand();
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [cmd],
+      });
+      
+      await app.run(["--no-detailed-logs", "test"]);
+      // Should not throw - flag is recognized
+      expect(cmd.executedWith).not.toBeNull();
+    });
+
+    test("parses --log-level=value format", async () => {
+      const cmd = new TestCliCommand();
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [cmd],
+      });
+      
+      await app.run(["--log-level=warn", "test"]);
+      expect(app.context.logger.getMinLevel()).toBe(4); // Warn = 4
+    });
+  });
 });

@@ -414,10 +414,13 @@ export class Application {
       logger.setDetailed(options["detailed-logs"]);
     }
 
-    // Apply log-level
+    // Apply log-level (case-insensitive)
     if (options["log-level"] !== undefined) {
-      const levelStr = options["log-level"];
-      const level = LogLevel[levelStr as keyof typeof LogLevel];
+      const levelStr = options["log-level"].toLowerCase();
+      // Find the matching log level (case-insensitive)
+      const level = Object.entries(LogLevel).find(
+        ([key, val]) => typeof val === "number" && key.toLowerCase() === levelStr
+      )?.[1] as LogLevel | undefined;
       if (level !== undefined) {
         logger.setMinLevel(level);
       }

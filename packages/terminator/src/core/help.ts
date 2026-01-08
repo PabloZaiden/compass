@@ -81,6 +81,19 @@ export function formatOptions(command: AnyCommand): string {
 }
 
 /**
+ * Format global options section (available on all commands).
+ */
+export function formatGlobalOptions(): string {
+  const entries = [
+    `  ${colors.yellow("    --log-level")}${colors.dim(" <string>")}\n      Set minimum log level${colors.dim(" [silly | trace | debug | info | warn | error | fatal]")}`,
+    `  ${colors.yellow("    --detailed-logs")}\n      Include timestamp and level prefix in log output`,
+    `  ${colors.yellow("    --no-detailed-logs")}\n      Disable detailed log format`,
+  ];
+
+  return [colors.bold("Global Options:"), ...entries].join("\n");
+}
+
+/**
  * Format examples list.
  */
 export function formatExamples(command: AnyCommand): string {
@@ -139,6 +152,9 @@ export function generateCommandHelp(command: AnyCommand, options: HelpOptions = 
   if (optionsSection) {
     sections.push(`\n${optionsSection}`);
   }
+
+  // Global options (available on all commands)
+  sections.push(`\n${formatGlobalOptions()}`);
 
   // Examples
   const examplesSection = formatExamples(command);

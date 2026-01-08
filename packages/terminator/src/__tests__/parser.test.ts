@@ -53,7 +53,7 @@ describe("schemaToParseArgsOptions", () => {
       name: { type: "string", description: "Name" },
     };
     const result = schemaToParseArgsOptions(schema);
-    expect(result.options["name"]?.type).toBe("string");
+    expect(result.options!["name"]?.type).toBe("string");
   });
 
   test("converts boolean option", () => {
@@ -61,7 +61,7 @@ describe("schemaToParseArgsOptions", () => {
       verbose: { type: "boolean", description: "Verbose" },
     };
     const result = schemaToParseArgsOptions(schema);
-    expect(result.options["verbose"]?.type).toBe("boolean");
+    expect(result.options!["verbose"]?.type).toBe("boolean");
   });
 
   test("converts alias to short", () => {
@@ -69,7 +69,7 @@ describe("schemaToParseArgsOptions", () => {
       verbose: { type: "boolean", alias: "v", description: "Verbose" },
     };
     const result = schemaToParseArgsOptions(schema);
-    expect(result.options["verbose"]?.short).toBe("v");
+    expect(result.options!["verbose"]?.short).toBe("v");
   });
 
   test("converts array option to multiple", () => {
@@ -77,7 +77,7 @@ describe("schemaToParseArgsOptions", () => {
       files: { type: "array", description: "Files" },
     };
     const result = schemaToParseArgsOptions(schema);
-    expect(result.options["files"]?.multiple).toBe(true);
+    expect(result.options!["files"]?.multiple).toBe(true);
   });
 
   test("includes default values", () => {
@@ -86,7 +86,7 @@ describe("schemaToParseArgsOptions", () => {
     };
     const result = schemaToParseArgsOptions(schema);
     // parseArgs expects string defaults for non-boolean types
-    expect(result.options["count"]?.default).toBe("10");
+    expect(result.options!["count"]?.default).toBe("10");
   });
 
   test("includes default values for boolean", () => {
@@ -95,7 +95,7 @@ describe("schemaToParseArgsOptions", () => {
     };
     const result = schemaToParseArgsOptions(schema);
     // Boolean defaults remain as boolean
-    expect(result.options["verbose"]?.default).toBe(false);
+    expect(result.options!["verbose"]?.default).toBe(false);
   });
 });
 

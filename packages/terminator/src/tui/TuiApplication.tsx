@@ -9,6 +9,7 @@ import { LogLevel as TuiLogLevel } from "./hooks/index.ts";
 import { LogLevel as CoreLogLevel, type LogEvent as CoreLogEvent } from "../core/logger.ts";
 import type { FieldConfig } from "./components/types.ts";
 import { createSettingsCommand } from "../builtins/settings.ts";
+import { loadPersistedParameters } from "./utils/parameterPersistence.ts";
 
 /**
  * Custom field configuration for TUI forms.
@@ -97,6 +98,9 @@ export class TuiApplication extends Application {
         // Get all commands that support TUI or have options
         const commands = this.getExecutableCommands();
 
+        // Load and apply persisted settings (log-level, detailed-logs)
+        this.loadPersistedSettings();
+
         // Enable TUI mode on the logger so logs go to the event emitter
         // instead of stderr (which would corrupt the TUI display)
         this.context.logger.setTuiMode(true);
@@ -170,6 +174,34 @@ export class TuiApplication extends Application {
                 });
             },
         };
+    }
+
+    /**
+     * Load persisted settings and apply them to the logger.
+     * Settings are saved when the user uses the Settings command.
+     */
+    private loadPersistedSettings(): void {
+        try {
+            const settings = loadPersistedParameters(this.name, "settings");
+            
+            // Apply log-level if set
+            if (settings["log-level"]) {
+                const levelStr = String(settings["log-level"]).toLowerCase();
+                const level = Object.entries(CoreLogLevel).find(
+                    ([key, val]) => typeof val === "number" && key.toLowerCase() === levelStr
+                )?.[1] as CoreLogLevel | undefined;
+                if (level !== undefined) {
+                    this.context.logger.setMinLevel(level);
+                }
+            }
+            
+            // Apply detailed-logs if set
+            if (settings["detailed-logs"] !== undefined) {
+                this.context.logger.setDetailed(Boolean(settings["detailed-logs"]));
+            }
+        } catch {
+            // Silently ignore errors loading settings
+        }
     }
 
     /**

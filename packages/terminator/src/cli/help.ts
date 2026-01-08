@@ -78,6 +78,19 @@ export function formatExamples(command: AnyCommand): string {
 }
 
 /**
+ * Format global options (log-level, detailed-logs)
+ */
+export function formatGlobalOptions(): string {
+  const entries = [
+    `  ${colors.yellow("--log-level")} <level>  Set log level [silly|trace|debug|info|warn|error|fatal]`,
+    `  ${colors.yellow("--detailed-logs")}      Enable detailed log output`,
+    `  ${colors.yellow("--no-detailed-logs")}   Disable detailed log output`,
+  ];
+
+  return ["Global Options:", ...entries].join("\n");
+}
+
+/**
  * Get command summary line
  */
 export function getCommandSummary(command: AnyCommand): string {
@@ -117,6 +130,39 @@ export function generateHelp(
   if (optionsSection) {
     sections.push(`\n${optionsSection}`);
   }
+
+  // Examples
+  const examplesSection = formatExamples(command);
+  if (examplesSection) {
+    sections.push(`\n${examplesSection}`);
+  }
+
+  return sections.join("\n");
+}
+
+/**
+ * Generate help text for a specific command (includes global options)
+ */
+export function generateCommandHelp(
+  command: AnyCommand,
+  appName = "cli"
+): string {
+  const sections: string[] = [];
+
+  // Description
+  sections.push(command.description);
+
+  // Usage
+  sections.push(`\n${colors.bold("Usage:")}\n  ${formatUsage(command, appName)}`);
+
+  // Options
+  const optionsSection = formatOptions(command);
+  if (optionsSection) {
+    sections.push(`\n${optionsSection}`);
+  }
+
+  // Global Options
+  sections.push(`\n${formatGlobalOptions()}`);
 
   // Examples
   const examplesSection = formatExamples(command);

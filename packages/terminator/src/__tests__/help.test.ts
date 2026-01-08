@@ -6,6 +6,8 @@ import {
   formatOptions,
   formatExamples,
   getCommandSummary,
+  formatGlobalOptions,
+  generateCommandHelp,
 } from "../cli/help.ts";
 import { defineCommand } from "../types/command.ts";
 
@@ -343,6 +345,68 @@ describe("Help Generation", () => {
 
       const summary = getCommandSummary(cmd);
       expect(summary).toContain("ls");
+    });
+  });
+
+  describe("formatGlobalOptions", () => {
+    test("includes --log-level option", () => {
+      const result = formatGlobalOptions();
+      expect(result).toContain("--log-level");
+      expect(result).toContain("Set log level");
+    });
+
+    test("includes log level choices", () => {
+      const result = formatGlobalOptions();
+      expect(result).toContain("silly");
+      expect(result).toContain("trace");
+      expect(result).toContain("debug");
+      expect(result).toContain("info");
+      expect(result).toContain("warn");
+      expect(result).toContain("error");
+      expect(result).toContain("fatal");
+    });
+
+    test("includes --detailed-logs option", () => {
+      const result = formatGlobalOptions();
+      expect(result).toContain("--detailed-logs");
+    });
+
+    test("includes --no-detailed-logs option", () => {
+      const result = formatGlobalOptions();
+      expect(result).toContain("--no-detailed-logs");
+    });
+  });
+
+  describe("generateCommandHelp with global options", () => {
+    test("includes Global Options section", () => {
+      const cmd = defineCommand({
+        name: "test",
+        description: "Test command",
+        execute: () => {},
+      });
+
+      const help = generateCommandHelp(cmd, "myapp");
+      expect(help).toContain("Global Options:");
+      expect(help).toContain("--log-level");
+      expect(help).toContain("--detailed-logs");
+    });
+
+    test("global options appear after command options", () => {
+      const cmd = defineCommand({
+        name: "test",
+        description: "Test command",
+        options: {
+          verbose: { type: "boolean", description: "Verbose output" },
+        },
+        execute: () => {},
+      });
+
+      const help = generateCommandHelp(cmd, "myapp");
+      const optionsIndex = help.indexOf("Options:");
+      const globalOptionsIndex = help.indexOf("Global Options:");
+      
+      expect(optionsIndex).toBeGreaterThan(-1);
+      expect(globalOptionsIndex).toBeGreaterThan(optionsIndex);
     });
   });
 });
