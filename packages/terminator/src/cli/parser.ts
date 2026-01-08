@@ -221,7 +221,7 @@ export function parseCliArgs<T extends OptionSchema>(
     const { values } = require("util").parseArgs({
       args: remaining,
       ...parseArgsConfig,
-      allowPositionals: true,
+      allowPositionals: false,
     });
     parsedValues = values;
   } catch {

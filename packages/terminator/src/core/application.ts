@@ -3,7 +3,7 @@ import { type AnyCommand, ConfigValidationError } from "./command.ts";
 import { CommandRegistry } from "./registry.ts";
 import { ExecutionMode } from "../types/execution.ts";
 import { LogLevel, type LoggerConfig } from "./logger.ts";
-import { generateAppHelp } from "./help.ts";
+import { generateAppHelp, generateCommandHelp } from "./help.ts";
 import {
   createVersionCommand,
   createHelpCommandForParent,
@@ -226,7 +226,7 @@ export class Application {
   private async executeCommand(
     command: AnyCommand,
     flagArgs: string[],
-    _commandPath: string[]
+    commandPath: string[]
   ): Promise<void> {
     // Determine execution mode
     const mode = this.detectExecutionMode(command, flagArgs);
@@ -236,27 +236,58 @@ export class Application {
     const parseArgsConfig = schemaToParseArgsOptions(schema);
 
     let parsedValues: Record<string, unknown> = {};
+    let parseError: string | undefined;
+    
     try {
       const parseArgsOptions = {
         args: flagArgs,
         options: parseArgsConfig.options as import("util").ParseArgsConfig["options"],
-        allowPositionals: true,
-        strict: false,
+        allowPositionals: false,
+        strict: true, // Enable strict mode to catch unknown options
       };
       const result = parseArgs(parseArgsOptions);
       parsedValues = result.values;
-    } catch {
-      // Ignore parse errors - validation will catch issues
+    } catch (err) {
+      // Capture parse error (e.g., unknown option)
+      parseError = (err as Error).message;
     }
 
-    const options = parseOptionValues(schema, parsedValues);
+    // If there was a parse error, show it and help
+    if (parseError) {
+      console.error(`Error: ${parseError}\n`);
+      console.log(generateCommandHelp(command, {
+        appName: this.name,
+        commandPath: commandPath.length > 0 ? commandPath : [command.name],
+      }));
+      process.exitCode = 1;
+      return;
+    }
 
-    // Validate options
+    let options;
+    try {
+      options = parseOptionValues(schema, parsedValues);
+    } catch (err) {
+      // Enum validation error from parseOptionValues
+      console.error(`Error: ${(err as Error).message}\n`);
+      console.log(generateCommandHelp(command, {
+        appName: this.name,
+        commandPath: commandPath.length > 0 ? commandPath : [command.name],
+      }));
+      process.exitCode = 1;
+      return;
+    }
+
+    // Validate options (required, min/max, etc.)
     const errors = validateOptions(schema, options);
     if (errors.length > 0) {
       for (const error of errors) {
         console.error(`Error: ${error.message}`);
       }
+      console.log(); // Blank line
+      console.log(generateCommandHelp(command, {
+        appName: this.name,
+        commandPath: commandPath.length > 0 ? commandPath : [command.name],
+      }));
       process.exitCode = 1;
       return;
     }
