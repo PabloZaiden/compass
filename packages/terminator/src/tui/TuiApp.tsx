@@ -15,7 +15,6 @@ import {
     useKeyboardHandler,
     KeyboardPriority,
     useClipboard,
-    useSpinner,
     useLogStream,
     useCommandExecutor,
     type LogSource,
@@ -123,8 +122,6 @@ function TuiAppContent({
     const { isExecuting, result, error, execute, reset: resetExecutor } = useCommandExecutor(
         (cmd: unknown, values: unknown) => executeCommand(cmd as AnyCommand, values as Record<string, unknown>)
     );
-
-    const { frameIndex: spinnerFrameIndex } = useSpinner(isExecuting);
 
     // Computed values
     const fieldConfigs = useMemo(() => {
@@ -490,7 +487,6 @@ function TuiAppContent({
             <StatusBar 
                 status={statusMessage} 
                 isRunning={isExecuting}
-                spinnerFrame={spinnerFrameIndex}
                 shortcuts={shortcuts} 
             />
 

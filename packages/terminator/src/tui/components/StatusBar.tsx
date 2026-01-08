@@ -1,14 +1,11 @@
 import { Theme } from "../theme.ts";
-
-const SpinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+import { useSpinner } from "../hooks/useSpinner.ts";
 
 interface StatusBarProps {
     /** Status message to display */
     status: string;
     /** Whether the app is currently running a command */
     isRunning?: boolean;
-    /** Current spinner frame index (for animation) */
-    spinnerFrame?: number;
     /** Whether to show keyboard shortcuts */
     showShortcuts?: boolean;
     /** Custom shortcuts string (defaults to standard shortcuts) */
@@ -21,11 +18,11 @@ interface StatusBarProps {
 export function StatusBar({ 
     status, 
     isRunning = false, 
-    spinnerFrame = 0, 
     showShortcuts = true,
-    shortcuts = "Ctrl+L toggle logs • Ctrl+F CLI flags • Tab switch panels • Ctrl+Y copy • Esc back/exit"
+    shortcuts = "L Logs • C CLI • Tab Switch • Ctrl+Y Copy • Esc Back"
 }: StatusBarProps) {
-    const spinner = isRunning ? `${SpinnerFrames[spinnerFrame % SpinnerFrames.length] ?? SpinnerFrames[0]} ` : "";
+    const { frame } = useSpinner(isRunning);
+    const spinner = isRunning ? `${frame} ` : "";
     
     return (
         <box

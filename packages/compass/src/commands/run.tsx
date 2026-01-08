@@ -155,8 +155,8 @@ Results will be output as JSON to stdout.
       const result = await runner.run(config);
       return { success: true, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error instanceof Error ? error.message : String(error),
         message: error instanceof Error ? error.message : String(error)
       };
@@ -210,8 +210,8 @@ Results will be output as JSON to stdout.
       <box flexDirection="column" gap={1}>
         {/* Summary Section */}
         <box flexDirection="column" border={true} borderStyle="single" borderColor={Theme.border} padding={1}>
-          <text fg={Theme.header}>─ Summary ─</text>
-          
+          <text fg={Theme.overlayTitle}>── Summary ───────────────────────────</text>
+
           {/* Iteration Results */}
           <box flexDirection="column" marginTop={1}>
             <text fg={Theme.warning}>📋 Iteration Results ({iterationResults.length})</text>
@@ -220,7 +220,7 @@ Results will be output as JSON to stdout.
               const color = ir.classification === "SUCCESS" ? Theme.success : ir.classification === "PARTIAL" ? Theme.warning : Theme.error;
               return (
                 <text key={i} fg={color}>
-                  {icon} {ir.promptId} #{ir.iteration}: {ir.classification} ({ir.points} pts)
+                  {"   "}{icon} {ir.promptId} #{ir.iteration}: {ir.classification} ({ir.points} pts)
                 </text>
               );
             })}
@@ -229,17 +229,23 @@ Results will be output as JSON to stdout.
           {/* Aggregated Results */}
           <box flexDirection="column" marginTop={1}>
             <text fg={Theme.borderFocused}>📊 Aggregated Results ({aggregatedResults.length})</text>
-            {aggregatedResults.map((ar: AggregatedResult, i: number) => (
-              <text key={i} fg={Theme.label}>
-                • {ar.promptId}: {ar.averagePoints.toFixed(2)} pts ({ar.iterations} iterations)
-              </text>
-            ))}
+            {aggregatedResults.map((ar: AggregatedResult, i: number) => {
+              const color = 
+                ar.averagePoints > 0.7 ? Theme.success : 
+                ar.averagePoints >= 0.4 ? Theme.warning : 
+                Theme.error;
+
+              return (<text key={i}>
+                {"   "}• {ar.promptId}: <span fg={color}>{ar.averagePoints.toFixed(2)}</span> pts ({ar.iterations} iterations)
+              </text>);
+            }
+            )}
           </box>
         </box>
 
         {/* Raw JSON Section */}
         <box flexDirection="column" border={true} borderStyle="single" borderColor={Theme.border} padding={1}>
-          <text fg={Theme.overlayTitle}>─ Raw JSON ─</text>
+          <text fg={Theme.overlayTitle}>── Raw JSON ───────────────────────────</text>
           <box marginTop={1}>
             <JsonHighlight value={data} />
           </box>
