@@ -46,9 +46,11 @@ export {
     EditorModal,
     CliModal,
     CommandSelector,
+    JsonHighlight,
     type FieldType,
     type FieldOption,
     type FieldConfig,
+    type JsonHighlightProps,
 } from "./components/index.ts";
 
 // Utilities

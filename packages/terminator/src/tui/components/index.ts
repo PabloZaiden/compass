@@ -8,5 +8,6 @@ export { ConfigForm } from "./ConfigForm.tsx";
 export { EditorModal } from "./EditorModal.tsx";
 export { CliModal } from "./CliModal.tsx";
 export { CommandSelector } from "./CommandSelector.tsx";
+export { JsonHighlight, type JsonHighlightProps } from "./JsonHighlight.tsx";
 
 export type { FieldType, FieldOption, FieldConfig } from "./types.ts";

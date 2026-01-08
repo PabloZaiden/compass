@@ -56,6 +56,7 @@ export {
   EditorModal,
   CliModal,
   CommandSelector,
+  JsonHighlight,
   schemaToFieldConfigs,
   groupFieldConfigs,
   getFieldDisplayValue,

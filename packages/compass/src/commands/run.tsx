@@ -1,9 +1,12 @@
-import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
+import React from "react";
+import { Command, ConfigValidationError, Theme, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
 import { Runner } from "../run/runner";
 import { runConfigFromParsedOptions } from "../runconfig/process";
 import type { RunConfig } from "../runconfig/runconfig";
 import { runOptionsSchema, type RunOptions } from "../options";
 import { AgentTypes, defaultModels } from "../agents/factory";
+import type { RunnerResult, IterationResult, AggregatedResult } from "../models";
+import { JsonHighlight } from "@pablozaiden/terminator";
 
 /**
  * TUI metadata for each option - labels, ordering, and groups.
@@ -190,5 +193,58 @@ Results will be output as JSON to stdout.
       }
     }
     return undefined;
+  }
+
+  /**
+   * Custom result rendering for TUI with colored summary and syntax-highlighted JSON.
+   */
+  override renderResult(result: CommandResult): React.ReactNode {
+    if (!result.data) {
+      return result.message ?? "No data";
+    }
+
+    const data = result.data as RunnerResult;
+    const { iterationResults, aggregatedResults } = data;
+
+    return (
+      <box flexDirection="column" gap={1}>
+        {/* Summary Section */}
+        <box flexDirection="column" border={true} borderStyle="single" borderColor={Theme.border} padding={1}>
+          <text fg={Theme.header}>─ Summary ─</text>
+          
+          {/* Iteration Results */}
+          <box flexDirection="column" marginTop={1}>
+            <text fg={Theme.warning}>📋 Iteration Results ({iterationResults.length})</text>
+            {iterationResults.map((ir: IterationResult, i: number) => {
+              const icon = ir.classification === "SUCCESS" ? "✓" : ir.classification === "PARTIAL" ? "◐" : "✗";
+              const color = ir.classification === "SUCCESS" ? Theme.success : ir.classification === "PARTIAL" ? Theme.warning : Theme.error;
+              return (
+                <text key={i} fg={color}>
+                  {icon} {ir.promptId} #{ir.iteration}: {ir.classification} ({ir.points} pts)
+                </text>
+              );
+            })}
+          </box>
+
+          {/* Aggregated Results */}
+          <box flexDirection="column" marginTop={1}>
+            <text fg={Theme.borderFocused}>📊 Aggregated Results ({aggregatedResults.length})</text>
+            {aggregatedResults.map((ar: AggregatedResult, i: number) => (
+              <text key={i} fg={Theme.label}>
+                • {ar.promptId}: {ar.averagePoints.toFixed(2)} pts ({ar.iterations} iterations)
+              </text>
+            ))}
+          </box>
+        </box>
+
+        {/* Raw JSON Section */}
+        <box flexDirection="column" border={true} borderStyle="single" borderColor={Theme.border} padding={1}>
+          <text fg={Theme.overlayTitle}>─ Raw JSON ─</text>
+          <box marginTop={1}>
+            <JsonHighlight value={data} />
+          </box>
+        </box>
+      </box>
+    );
   }
 }
