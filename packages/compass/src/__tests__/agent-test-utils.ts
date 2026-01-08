@@ -3,7 +3,7 @@ import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
 import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
 import { Runner } from "../run/runner";
-import type { RunConfig } from "../runconfig/runconfig";
+import type { RunConfig } from "../commands/run";
 import { Generator } from "../generate/generator";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";

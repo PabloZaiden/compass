@@ -14,7 +14,7 @@ import { evaluator } from "../prompts";
 import { Classification } from "../models";
 import { promises as fsPromises } from "fs";
 import { createAgent, AgentTypes } from "../agents/factory";
-import type { RunConfig } from "../runconfig/runconfig";
+import type { RunConfig } from "../commands/run";
 import type { AgentOptions } from "../agents/agent";
 
 function validateConfig(config: RunConfig): void {
