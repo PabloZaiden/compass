@@ -1,4 +1,4 @@
-export { RunCommand } from "./run.tsx";
+export { RunCommand } from "./run.ts";
 export { CheckCommand } from "./check.ts";
 export { GenerateCommand } from "./generate.ts";
 // SettingsCommand is now provided by the terminator framework
