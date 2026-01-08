@@ -212,8 +212,18 @@ function TuiAppContent({
             setFocusedSection(FocusedSection.Config);
             setLogsVisible(false);
         } else if (mode === Mode.Results || mode === Mode.Error) {
-            setMode(Mode.Config);
-            setFocusedSection(FocusedSection.Config);
+            // If command was immediate execution, go back to command select
+            if (selectedCommand?.immediateExecution) {
+                setMode(Mode.CommandSelect);
+                setSelectedCommand(null);
+                setCommandPath((prev) => prev.slice(0, -1));
+                setSelectedFieldIndex(0);
+                setFocusedSection(FocusedSection.Config);
+                setLogsVisible(false);
+            } else {
+                setMode(Mode.Config);
+                setFocusedSection(FocusedSection.Config);
+            }
             resetExecutor();
         } else if (mode === Mode.CommandSelect && commandPath.length > 0) {
             setCommandPath((prev) => prev.slice(0, -1));
@@ -221,7 +231,7 @@ function TuiAppContent({
         } else {
             onExit();
         }
-    }, [mode, commandPath, onExit, resetExecutor]);
+    }, [mode, commandPath, selectedCommand, onExit, resetExecutor]);
 
     const handleRunCommand = useCallback(async (cmd?: AnyCommand) => {
         const cmdToRun = cmd ?? selectedCommand;
