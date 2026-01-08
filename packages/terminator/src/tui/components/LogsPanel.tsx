@@ -88,10 +88,10 @@ export function LogsPanel({
                 <box flexDirection="column" gap={0}>
                     {logs.map((log, idx) => {
                         const color = LogColors[log.level] ?? Theme.statusText;
-                        // Strip ANSI codes if Bun is available
+                        // Strip ANSI codes but preserve line breaks
                         const sanitized = typeof Bun !== "undefined"
-                            ? Bun.stripANSI(log.message).replaceAll("\n", " ").trim()
-                            : log.message.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "").replaceAll("\n", " ").trim();
+                            ? Bun.stripANSI(log.message).trim()
+                            : log.message.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "").trim();
 
                         return (
                             <text key={`${log.timestamp.getTime()}-${idx}`} fg={color}>
