@@ -15,21 +15,18 @@ export class Gemini extends Agent {
         super("Gemini CLI", options);
     }
 
-    override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
+    override async execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput> {
         getLogger().trace(`Executing Gemini CLI with model ${model} on prompt ${prompt}`);
         
         const yoloParameters = this.options.allowFullAccess ? ["--yolo"] : [];
         const processOutput = await run(
             workingDirectory,
-            "gemini",
-            prompt,
-            "--model", model,
-            "--output-format", "text",
-            ...yoloParameters);
+            ["gemini", prompt, "--model", model, "--output-format", "text", ...yoloParameters],
+            signal);
 
         getLogger().trace("Collecting git diff after agent execution");
         
-        const diff = await run(workingDirectory, "git", "--no-pager", "diff");
+        const diff = await run(workingDirectory, ["git", "--no-pager", "diff"], signal);
 
         return {
             stdOut: Bun.stripANSI(processOutput.stdOut.trim()),

@@ -1,5 +1,5 @@
 import React from "react";
-import { Command, ConfigValidationError, Theme, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
+import { Command, ConfigValidationError, Theme, type AppContext, type OptionSchema, type OptionValues, type CommandResult, type CommandExecutionContext } from "@pablozaiden/terminator";
 import { Runner } from "../run/runner";
 import { runConfigFromParsedOptions } from "../runconfig/process";
 import type { RunConfig } from "../runconfig/runconfig";
@@ -137,13 +137,18 @@ Results will be output as JSON to stdout.
    * Execute the run command.
    * Returns CommandResult for both CLI and TUI modes.
    */
-  override async execute(ctx: AppContext, config: RunConfig): Promise<CommandResult> {
+  override async execute(ctx: AppContext, config: RunConfig, execCtx?: CommandExecutionContext): Promise<CommandResult> {
     try {
       const runner = new Runner();
-      const result = await runner.run(config);
+      const result = await runner.run(config, execCtx?.signal);
       ctx.logger.info("Run completed successfully");
       return { success: true, data: result };
     } catch (error) {
+      // Check if this was a cancellation
+      if (error instanceof Error && error.name === "AbortError") {
+        ctx.logger.info("Run was cancelled");
+        throw error; // Re-throw to let framework handle it
+      }
       const message = error instanceof Error ? error.message : String(error);
       ctx.logger.error("Run failed:", message);
       return {

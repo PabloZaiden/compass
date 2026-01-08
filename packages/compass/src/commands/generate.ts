@@ -1,6 +1,6 @@
 import path from "node:path";
 import { existsSync } from "node:fs";
-import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
+import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult, type CommandExecutionContext } from "@pablozaiden/terminator";
 import { Generator } from "../generate/generator";
 import { generateOptionsSchema } from "../options";
 import { AgentTypes, defaultModels } from "../agents/factory";
@@ -185,10 +185,10 @@ The fixture file contains prompts that can be used to test AI coding agents.
   /**
    * Execute the generate command.
    */
-  override async execute(ctx: AppContext, config: GenerateConfig): Promise<CommandResult> {
+  override async execute(ctx: AppContext, config: GenerateConfig, execCtx?: CommandExecutionContext): Promise<CommandResult> {
     try {
       const generator = new Generator();
-      const result = await generator.generate(config);
+      const result = await generator.generate(config, execCtx?.signal);
 
       if (result.success) {
         return { 
@@ -204,6 +204,11 @@ The fixture file contains prompts that can be used to test AI coding agents.
         };
       }
     } catch (error) {
+      // Check if this was a cancellation
+      if (error instanceof Error && error.name === "AbortError") {
+        ctx.logger.info("Generation was cancelled");
+        throw error; // Re-throw to let framework handle it
+      }
       const message = error instanceof Error ? error.message : String(error);
       ctx.logger.error(message);
       return { 

@@ -15,23 +15,19 @@ export class ClaudeCode extends Agent {
         super("ClaudeCode", options);
     }
 
-    override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
+    override async execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput> {
         getLogger().trace(`Executing ClaudeCode with model ${model} on prompt ${prompt}`);
 
         const allowAllParameters = this.options.allowFullAccess ? ["--dangerously-skip-permissions"] : [];
         const processOutput = await run(
             workingDirectory,
-            "claude",
-            ...allowAllParameters,
-            "--model",
-            model,
-            "-p",
-            prompt
+            ["claude", ...allowAllParameters, "--model", model, "-p", prompt],
+            signal
         );
 
         getLogger().trace("Collecting git diff after agent execution");
 
-        const diff = await run(workingDirectory, "git", "--no-pager", "diff");
+        const diff = await run(workingDirectory, ["git", "--no-pager", "diff"], signal);
 
         return {
             stdOut: Bun.stripANSI(processOutput.stdOut.trim()),

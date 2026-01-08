@@ -103,18 +103,18 @@ function TuiAppContent({
     const { copyWithMessage, lastAction } = useClipboard();
     
     // Command executor
-    const executeCommand = useCallback(async (cmd: AnyCommand, values: Record<string, unknown>) => {
+    const executeCommand = useCallback(async (cmd: AnyCommand, values: Record<string, unknown>, signal: AbortSignal) => {
         // If the command provides buildConfig, build and validate before executing
         let configOrValues: unknown = values;
         if (cmd.buildConfig) {
             configOrValues = await cmd.buildConfig(context, values as OptionValues<OptionSchema>);
         }
 
-        return await cmd.execute(context, configOrValues as OptionValues<OptionSchema>);
+        return await cmd.execute(context, configOrValues as OptionValues<OptionSchema>, { signal });
     }, [context]);
 
-    const { isExecuting, result, error, execute, reset: resetExecutor } = useCommandExecutor(
-        (cmd: unknown, values: unknown) => executeCommand(cmd as AnyCommand, values as Record<string, unknown>)
+    const { isExecuting, result, error, execute, cancel, reset: resetExecutor } = useCommandExecutor(
+        (cmd: unknown, values: unknown, signal: unknown) => executeCommand(cmd as AnyCommand, values as Record<string, unknown>, signal as AbortSignal)
     );
 
     // Computed values
@@ -204,7 +204,23 @@ function TuiAppContent({
     }, [initializeConfigValues]);
 
     const handleBack = useCallback(() => {
-        if (mode === Mode.Config) {
+        if (mode === Mode.Running) {
+            // Cancel the running command and go back
+            cancel();
+            // If command was immediate execution, go back to command select
+            if (selectedCommand?.immediateExecution) {
+                setMode(Mode.CommandSelect);
+                setSelectedCommand(null);
+                setCommandPath((prev) => prev.slice(0, -1));
+                setSelectedFieldIndex(0);
+                setFocusedSection(FocusedSection.Config);
+                setLogsVisible(false);
+            } else {
+                setMode(Mode.Config);
+                setFocusedSection(FocusedSection.Config);
+            }
+            resetExecutor();
+        } else if (mode === Mode.Config) {
             setMode(Mode.CommandSelect);
             setSelectedCommand(null);
             setCommandPath((prev) => prev.slice(0, -1));
@@ -231,7 +247,7 @@ function TuiAppContent({
         } else {
             onExit();
         }
-    }, [mode, commandPath, selectedCommand, onExit, resetExecutor]);
+    }, [mode, commandPath, selectedCommand, cancel, onExit, resetExecutor]);
 
     const handleRunCommand = useCallback(async (cmd?: AnyCommand) => {
         const cmdToRun = cmd ?? selectedCommand;
@@ -248,6 +264,11 @@ function TuiAppContent({
 
         // Execute and wait for result
         const outcome = await execute(cmdToRun, configValues);
+
+        // If cancelled, don't transition - handleBack already handled it
+        if (outcome.cancelled) {
+            return;
+        }
 
         // Transition based on outcome
         if (outcome.success) {
@@ -375,7 +396,7 @@ function TuiAppContent({
         if (mode === Mode.Config) {
             parts.push("↑↓ Navigate", "Enter Edit", "Ctrl+Y Copy", "C CLI", "L Logs", "Esc Back");
         } else if (mode === Mode.Running) {
-            parts.push("Ctrl+Y Copy");
+            parts.push("Ctrl+Y Copy", "Esc Cancel");
         } else if (mode === Mode.Results || mode === Mode.Error) {
             parts.push("Tab Focus", "Ctrl+Y Copy", "Esc Back");
         } else {

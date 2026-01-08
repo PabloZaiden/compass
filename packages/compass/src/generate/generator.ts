@@ -51,7 +51,7 @@ export class Generator {
     /**
      * Generate a fixture file for a repository.
      */
-    async generate(config: GeneratorConfig): Promise<GeneratorResult> {
+    async generate(config: GeneratorConfig, signal?: AbortSignal): Promise<GeneratorResult> {
         const { repoPath, agentType, count, steering, useCache } = config;
         const model = config.model ?? defaultModels[agentType];
 
@@ -95,6 +95,13 @@ export class Generator {
             agent = new Cache(agent, agentOptions, repoPath, "generate");
         }
 
+        // Check for cancellation before init
+        if (signal?.aborted) {
+            const abortError = new Error("Generation was cancelled");
+            abortError.name = "AbortError";
+            throw abortError;
+        }
+
         try {
             await agent.init();
         } catch (error) {
@@ -109,8 +116,15 @@ export class Generator {
 
         // Execute the agent
         try {
+            // Check for cancellation before execute
+            if (signal?.aborted) {
+                const abortError = new Error("Generation was cancelled");
+                abortError.name = "AbortError";
+                throw abortError;
+            }
+
             getLogger().trace("Running agent to generate fixture...");
-            await agent.execute(prompt, model, repoPath);
+            await agent.execute(prompt, model, repoPath, signal);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             getLogger().error("Agent execution failed:", error);

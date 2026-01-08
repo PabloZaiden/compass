@@ -27,6 +27,25 @@ export interface CommandResult {
 }
 
 /**
+ * Context passed to command execute methods.
+ * Includes the abort signal for cancellation support.
+ */
+export interface CommandExecutionContext {
+  /** Signal to check for cancellation */
+  signal: AbortSignal;
+}
+
+/**
+ * Error thrown when a command is aborted/cancelled.
+ */
+export class AbortError extends Error {
+  constructor(message = "Command was cancelled") {
+    super(message);
+    this.name = "AbortError";
+  }
+}
+
+/**
  * Error thrown when configuration validation fails in buildConfig.
  * This provides a structured way to report validation errors.
  */
@@ -142,9 +161,10 @@ export abstract class Command<
    * 
    * @param ctx - Application context
    * @param config - The configuration object (from buildConfig, or raw options if buildConfig is not implemented)
+   * @param execCtx - Execution context with abort signal for cancellation support
    * @returns Optional result for display in TUI results panel
    */
-  abstract execute(ctx: AppContext, config: TConfig): Promise<CommandResult | void> | CommandResult | void;
+  abstract execute(ctx: AppContext, config: TConfig, execCtx?: CommandExecutionContext): Promise<CommandResult | void> | CommandResult | void;
 
   /**
    * Called before buildConfig. Use for early validation, resource acquisition, etc.

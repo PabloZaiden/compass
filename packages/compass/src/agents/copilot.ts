@@ -15,23 +15,18 @@ export class Copilot extends Agent {
         super("Copilot", options);
     }
 
-    override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
+    override async execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput> {
         getLogger().trace(`Executing Copilot with model ${model} on prompt ${prompt}`);
         
         const allowAllParameters = this.options.allowFullAccess ? ["--allow-all-tools", "--allow-all-paths"] : [];
         const processOutput = await run(
             workingDirectory,
-            "copilot",
-            "--silent", 
-            "--no-color", 
-            "--model", model, 
-            ...allowAllParameters,
-            "--add-dir", workingDirectory, 
-            "-p", prompt);
+            ["copilot", "--silent", "--no-color", "--model", model, ...allowAllParameters, "--add-dir", workingDirectory, "-p", prompt],
+            signal);
 
         getLogger().trace("Collecting git diff after agent execution");
         
-        const diff = await run(workingDirectory, "git", "--no-pager", "diff");
+        const diff = await run(workingDirectory, ["git", "--no-pager", "diff"], signal);
 
         return {
             stdOut: Bun.stripANSI(processOutput.stdOut.trim()),

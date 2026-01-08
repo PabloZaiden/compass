@@ -49,7 +49,7 @@ export class Cache extends Agent {
         return hash;
     }
 
-    override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
+    override async execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput> {
         const cacheKey = this.getCacheKey(prompt, model);
 
         const cacheFile = path.join(this.cacheDirectory, `${cacheKey}.json`);
@@ -72,7 +72,7 @@ export class Cache extends Agent {
                     await Bun.write(tempFileName, diffContent);
 
                     getLogger().trace(`Re-applying git diff from cache for key: ${cacheKey}`);
-                    await run(workingDirectory, "git", "apply", tempFileName);
+                    await run(workingDirectory, ["git", "apply", tempFileName], signal);
                     await Bun.file(tempFileName).delete();
                 }
 
@@ -83,7 +83,7 @@ export class Cache extends Agent {
 
         getLogger().trace(`Cache miss for key: ${cacheKey}`);
 
-        const output = await this.innerAgent.execute(prompt, model, workingDirectory);
+        const output = await this.innerAgent.execute(prompt, model, workingDirectory, signal);
 
         getLogger().trace(`Caching output for key: ${cacheKey}`);
         const outputJson = JSON.stringify(output, null, 2);

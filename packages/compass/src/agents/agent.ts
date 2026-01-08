@@ -9,7 +9,7 @@ export const defaultAgentOptions: AgentOptions = {
 };
 
 export abstract class Agent {
-    abstract execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput>;
+    abstract execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput>;
     abstract init(): Promise<void>;
     abstract requiredBinaries(): string[];
 

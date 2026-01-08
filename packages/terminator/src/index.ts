@@ -5,6 +5,7 @@ export {
   Command,
   CommandRegistry,
   ConfigValidationError,
+  AbortError,
   Logger,
   createLogger,
   LogLevel,
@@ -19,6 +20,7 @@ export type {
   AnyCommand,
   CommandExample,
   CommandResult,
+  CommandExecutionContext,
   ResolveResult,
   LoggerConfig,
   LogEvent,
@@ -106,18 +108,6 @@ export type { ParseResult, ParseError } from "./cli/parser.ts";
 // Registry (legacy)
 export { createCommandRegistry } from "./registry/commandRegistry.ts";
 export type { CommandRegistry as LegacyCommandRegistry } from "./registry/commandRegistry.ts";
-
-// Middleware
-export {
-  createMiddlewareStack,
-  executeCommand,
-  createExecutionContext,
-} from "./registry/middleware.ts";
-export type {
-  Middleware,
-  MiddlewareStack,
-  ExecutionContext,
-} from "./registry/middleware.ts";
 
 // Built-in Commands (legacy)
 export { createHelpCommand } from "./commands/help.ts";

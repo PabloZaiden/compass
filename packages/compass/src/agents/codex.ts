@@ -15,21 +15,18 @@ export class Codex extends Agent {
         super("Codex", options);
     }
 
-    override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
+    override async execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput> {
         getLogger().trace(`Executing Codex with model ${model} on prompt ${prompt}`);
         
         const sandboxParameters = this.options.allowFullAccess ? ["--sandbox", "danger-full-access"] : [];
         const processOutput = await run(
             workingDirectory,
-            "codex",
-            "exec",
-            "--model", model, 
-            ...sandboxParameters,
-            prompt);
+            ["codex", "exec", "--model", model, ...sandboxParameters, prompt],
+            signal);
 
         getLogger().trace("Collecting git diff after agent execution");
         
-        const diff = await run(workingDirectory, "git", "--no-pager", "diff");
+        const diff = await run(workingDirectory, ["git", "--no-pager", "diff"], signal);
 
         return {
             stdOut: Bun.stripANSI(processOutput.stdOut.trim()),
@@ -40,7 +37,7 @@ export class Codex extends Agent {
     }
 
     override async init(): Promise<void> {
-        const checkLogin = await run(".", "codex", "login", "status");
+        const checkLogin = await run(".", ["codex", "login", "status"]);
 
         if (checkLogin.exitCode !== 0) {
             const loginProcess = Bun.spawn(

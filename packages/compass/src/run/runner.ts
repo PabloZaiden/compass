@@ -48,7 +48,7 @@ function validateConfig(config: RunConfig): void {
 }
 
 export class Runner {
-    async run(config: RunConfig): Promise<RunnerResult> {
+    async run(config: RunConfig, signal?: AbortSignal): Promise<RunnerResult> {
         validateConfig(config);
 
         getLogger().trace(`Running Compass with config: ${JSON.stringify(config, null, 2)}`);
@@ -75,10 +75,26 @@ export class Runner {
         const promptCount = fixture.prompts.length;
         let currentPromptIndex = 0;
         for (const prompt of fixture.prompts) {
+            // Check for cancellation before each prompt
+            if (signal?.aborted) {
+                getLogger().info("Run cancelled by user");
+                const abortError = new Error("Run was cancelled");
+                abortError.name = "AbortError";
+                throw abortError;
+            }
+
             currentPromptIndex++;
             getLogger().info(`[${currentPromptIndex} / ${promptCount}] Running prompt ${prompt.id}`);
 
             for (let iterationIndex = 0; iterationIndex < config.iterationCount; iterationIndex++) {
+                // Check for cancellation before each iteration
+                if (signal?.aborted) {
+                    getLogger().info("Run cancelled by user");
+                    const abortError = new Error("Run was cancelled");
+                    abortError.name = "AbortError";
+                    throw abortError;
+                }
+
                 const iterationId = crypto.randomUUID();
 
                 getLogger().info(`Iteration ${iterationIndex + 1} of ${config.iterationCount} for prompt ${prompt.id}`);
@@ -91,11 +107,11 @@ export class Runner {
                 const iterationAgent = config.useCache ? new Cache(agent, agentOptions, config.repoPath, iterationIndex.toString()) : agent;
 
                 getLogger().trace(`Resetting repository to initial state`);
-                throwIfStopOnError(config.stopOnError, await run(tempPath, "git", "reset", "--hard"));
-                throwIfStopOnError(config.stopOnError, await run(tempPath, "git", "clean", "-fd"));
+                throwIfStopOnError(config.stopOnError, await run(tempPath, ["git", "reset", "--hard"], signal));
+                throwIfStopOnError(config.stopOnError, await run(tempPath, ["git", "clean", "-fd"], signal));
 
                 getLogger().trace(`Executing agent for prompt ${prompt.id}`);
-                const agentOutput = await iterationAgent.execute(prompt.prompt, config.model, tempPath);
+                const agentOutput = await iterationAgent.execute(prompt.prompt, config.model, tempPath, signal);
 
                 throwIfStopOnError(config.stopOnError, agentOutput);
 
@@ -108,7 +124,7 @@ export class Runner {
                     .replaceAll("{{RESULT}}", agentOutputJson);
 
                 getLogger().trace(`Evaluating agent output for prompt ${prompt.id} with model ${config.evalModel}`);
-                const evalOutput = await evaluationAgent.execute(evalPrompt, config.evalModel, tempPath);
+                const evalOutput = await evaluationAgent.execute(evalPrompt, config.evalModel, tempPath, signal);
 
                 throwIfStopOnError(config.stopOnError, evalOutput);
 
