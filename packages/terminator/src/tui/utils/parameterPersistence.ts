@@ -1,6 +1,6 @@
 import { homedir } from "os";
 import { join } from "path";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from "fs";
 
 /**
  * Get the directory path for storing app configuration.
@@ -87,7 +87,6 @@ export function clearPersistedParameters(
     try {
         const filePath = getParametersFilePath(appName, commandName);
         if (existsSync(filePath)) {
-            const { unlinkSync } = require("fs");
             unlinkSync(filePath);
         }
     } catch (error) {

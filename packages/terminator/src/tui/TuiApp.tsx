@@ -24,6 +24,7 @@ import { schemaToFieldConfigs, getFieldDisplayValue, buildCliCommand, loadPersis
 import type { AnyCommand, CommandResult } from "../core/command.ts";
 import type { AppContext } from "../core/context.ts";
 import type { OptionValues, OptionSchema, OptionDef } from "../types/command.ts";
+import type { CustomField } from "./TuiApplication.tsx";
 
 /**
  * TUI application mode.
@@ -57,7 +58,7 @@ interface TuiAppProps {
     /** Log source for log panel */
     logSource?: LogSource;
     /** Custom fields to add to the TUI form */
-    customFields?: import("./TuiApplication.tsx").CustomField[];
+    customFields?: CustomField[];
     /** Called when user wants to exit */
     onExit: () => void;
 }

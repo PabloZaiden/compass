@@ -15,7 +15,7 @@ import {
   parseOptionValues,
   validateOptions,
 } from "../cli/parser.ts";
-import { parseArgs } from "util";
+import { parseArgs, type ParseArgsConfig } from "util";
 
 /**
  * Global options available on all commands.
@@ -241,7 +241,7 @@ export class Application {
     try {
       const parseArgsOptions = {
         args: flagArgs,
-        options: parseArgsConfig.options as import("util").ParseArgsConfig["options"],
+        options: parseArgsConfig.options as ParseArgsConfig["options"],
         allowPositionals: false,
         strict: true, // Enable strict mode to catch unknown options
       };

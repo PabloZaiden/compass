@@ -1,4 +1,5 @@
 import type { Command, OptionSchema, OptionValues } from "../types/command.ts";
+import { parseArgs, type ParseArgsConfig } from "util";
 
 /**
  * Result of parsing CLI arguments
@@ -51,14 +52,14 @@ export function extractCommandChain(args: string[]): {
  * Convert option schema to parseArgs config
  */
 export function schemaToParseArgsOptions(schema: OptionSchema): {
-  options: Record<string, { type: "string" | "boolean"; short?: string; multiple?: boolean; default?: unknown }>;
+  options: ParseArgsConfig["options"];
 } {
-  const options: Record<string, { type: "string" | "boolean"; short?: string; multiple?: boolean; default?: unknown }> = {};
+  const options: NonNullable<ParseArgsConfig["options"]> = {};
 
   for (const [name, def] of Object.entries(schema)) {
     const parseArgsType = def.type === "boolean" ? "boolean" : "string";
     
-    const opt: { type: "string" | "boolean"; short?: string; multiple?: boolean; default?: unknown } = {
+    const opt: NonNullable<ParseArgsConfig["options"]>[string] = {
       type: parseArgsType,
       multiple: def.type === "array",
     };
@@ -74,7 +75,7 @@ export function schemaToParseArgsOptions(schema: OptionSchema): {
       if (parseArgsType === "string" && typeof def.default !== "string") {
         opt.default = String(def.default);
       } else {
-        opt.default = def.default;
+        opt.default = def.default as string | boolean | string[] | boolean[];
       }
     }
     
@@ -218,7 +219,7 @@ export function parseCliArgs<T extends OptionSchema>(
 
   let parsedValues: Record<string, unknown> = {};
   try {
-    const { values } = require("util").parseArgs({
+    const { values } = parseArgs({
       args: remaining,
       ...parseArgsConfig,
       allowPositionals: false,
