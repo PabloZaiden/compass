@@ -1,8 +1,6 @@
 #!/usr/bin/env bun
 
-// Import modes first to trigger self-registration
-import "./modes";
+import { CompassApp } from "./app.ts";
 
-import { runCli } from "./cli";
-
-await runCli(Bun.argv.slice(2));
+const app = new CompassApp();
+await app.run(Bun.argv.slice(2));

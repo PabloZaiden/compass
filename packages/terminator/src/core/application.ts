@@ -1,0 +1,329 @@
+import { AppContext, type AppConfig } from "./context.ts";
+import { Command } from "./command.ts";
+import { CommandRegistry } from "./registry.ts";
+import { ExecutionMode } from "../types/execution.ts";
+import type { LoggerConfig } from "./logger.ts";
+import { generateAppHelp } from "./help.ts";
+import {
+  createVersionCommand,
+  createHelpCommandForParent,
+  createRootHelpCommand,
+} from "../builtins/index.ts";
+import {
+  extractCommandChain,
+  schemaToParseArgsOptions,
+  parseOptionValues,
+  validateOptions,
+} from "../cli/parser.ts";
+import { parseArgs } from "util";
+
+/**
+ * Application configuration options.
+ */
+export interface ApplicationConfig {
+  /** Application name (used in help, version) */
+  name: string;
+  /** Application version */
+  version: string;
+  /** Commands to register */
+  commands: Command[];
+  /** Default command when no args provided (by name) */
+  defaultCommand?: string;
+  /** Logger configuration */
+  logger?: LoggerConfig;
+  /** Additional config values */
+  config?: Record<string, unknown>;
+}
+
+/**
+ * Application lifecycle hooks.
+ */
+export interface ApplicationHooks {
+  /** Called before running any command */
+  onBeforeRun?: (ctx: AppContext, commandName: string) => Promise<void> | void;
+  /** Called after command completes (success or failure) */
+  onAfterRun?: (ctx: AppContext, commandName: string, error?: Error) => Promise<void> | void;
+  /** Called when an error occurs */
+  onError?: (ctx: AppContext, error: Error) => Promise<void> | void;
+}
+
+/**
+ * Main application class.
+ * 
+ * The Application is the entry point for a Terminator-based CLI/TUI app.
+ * It manages the command registry, context, lifecycle, and execution flow.
+ * 
+ * @example
+ * ```typescript
+ * const app = new Application({
+ *   name: "myapp",
+ *   version: "1.0.0",
+ *   commands: [new RunCommand(), new CheckCommand()],
+ *   defaultCommand: "interactive",
+ * });
+ * 
+ * await app.run(process.argv.slice(2));
+ * ```
+ */
+export class Application {
+  readonly name: string;
+  readonly version: string;
+  readonly registry: CommandRegistry;
+  readonly context: AppContext;
+
+  private readonly defaultCommandName?: string;
+  private hooks: ApplicationHooks = {};
+
+  constructor(config: ApplicationConfig) {
+    this.name = config.name;
+    this.version = config.version;
+    this.defaultCommandName = config.defaultCommand;
+
+    // Create context
+    const appConfig: AppConfig = {
+      name: config.name,
+      version: config.version,
+      ...config.config,
+    };
+    this.context = new AppContext(appConfig, config.logger);
+    AppContext.setCurrent(this.context);
+
+    // Create registry and register commands
+    this.registry = new CommandRegistry();
+    this.registerCommands(config.commands);
+  }
+
+  /**
+   * Register commands and inject help subcommands.
+   */
+  private registerCommands(commands: Command[]): void {
+    // Register version command at top level
+    this.registry.register(createVersionCommand(this.name, this.version));
+
+    // Register user commands with help injected
+    for (const command of commands) {
+      this.injectHelpCommand(command);
+      this.registry.register(command);
+    }
+
+    // Register root help command
+    this.registry.register(createRootHelpCommand(commands, this.name, this.version));
+  }
+
+  /**
+   * Recursively inject help subcommand into a command and its subcommands.
+   */
+  private injectHelpCommand(command: Command): void {
+    // Create help subcommand for this command
+    const helpCmd = createHelpCommandForParent(command, this.name, this.version);
+
+    // Initialize subCommands array if needed
+    if (!command.subCommands) {
+      command.subCommands = [];
+    }
+
+    // Add help as subcommand
+    command.subCommands.push(helpCmd);
+
+    // Recursively inject into subcommands
+    for (const subCommand of command.subCommands) {
+      if (subCommand.name !== "help") {
+        this.injectHelpCommand(subCommand);
+      }
+    }
+  }
+
+  /**
+   * Set lifecycle hooks.
+   */
+  setHooks(hooks: ApplicationHooks): void {
+    this.hooks = { ...this.hooks, ...hooks };
+  }
+
+  /**
+   * Run the application with the given arguments.
+   * 
+   * @param argv Command-line arguments (typically process.argv.slice(2))
+   */
+  async run(argv: string[]): Promise<void> {
+    try {
+      // Extract command path from args
+      const { commands: commandPath, remaining: flagArgs } = extractCommandChain(argv);
+
+      // Resolve command
+      const { command, remainingPath } = this.resolveCommand(commandPath);
+
+      if (!command) {
+        // No command found - show help or run default
+        if (this.defaultCommandName && commandPath.length === 0) {
+          const defaultCmd = this.registry.get(this.defaultCommandName);
+          if (defaultCmd) {
+            await this.executeCommand(defaultCmd, flagArgs, []);
+            return;
+          }
+        }
+
+        // Show help
+        console.log(generateAppHelp(this.registry.list(), {
+          appName: this.name,
+          version: this.version,
+        }));
+        return;
+      }
+
+      // Check for unknown command in path
+      if (remainingPath.length > 0 && remainingPath[0] !== "help") {
+        console.error(`Unknown command: ${remainingPath.join(" ")}`);
+        process.exitCode = 1;
+        return;
+      }
+
+      // Execute the command
+      await this.executeCommand(command, flagArgs, commandPath);
+    } catch (error) {
+      await this.handleError(error as Error);
+    }
+  }
+
+  /**
+   * Resolve a command from the path.
+   */
+  private resolveCommand(commandPath: string[]): {
+    command: Command | undefined;
+    remainingPath: string[];
+  } {
+    if (commandPath.length === 0) {
+      return { command: undefined, remainingPath: [] };
+    }
+
+    const result = this.registry.resolve(commandPath);
+    return {
+      command: result.command,
+      remainingPath: result.remainingPath,
+    };
+  }
+
+  /**
+   * Execute a command with full lifecycle.
+   */
+  private async executeCommand(
+    command: Command,
+    flagArgs: string[],
+    _commandPath: string[]
+  ): Promise<void> {
+    // Determine execution mode
+    const mode = this.detectExecutionMode(command, flagArgs);
+
+    // Parse options
+    const schema = command.options ?? {};
+    const parseArgsConfig = schemaToParseArgsOptions(schema);
+
+    let parsedValues: Record<string, unknown> = {};
+    try {
+      const parseArgsOptions = {
+        args: flagArgs,
+        options: parseArgsConfig.options as import("util").ParseArgsConfig["options"],
+        allowPositionals: true,
+        strict: false,
+      };
+      const result = parseArgs(parseArgsOptions);
+      parsedValues = result.values;
+    } catch {
+      // Ignore parse errors - validation will catch issues
+    }
+
+    const options = parseOptionValues(schema, parsedValues);
+
+    // Validate options
+    const errors = validateOptions(schema, options);
+    if (errors.length > 0) {
+      for (const error of errors) {
+        console.error(`Error: ${error.message}`);
+      }
+      process.exitCode = 1;
+      return;
+    }
+
+    // Call onBeforeRun hook
+    if (this.hooks.onBeforeRun) {
+      await this.hooks.onBeforeRun(this.context, command.name);
+    }
+
+    let error: Error | undefined;
+
+    try {
+      // Call beforeExecute hook on command
+      if (command.beforeExecute) {
+        await command.beforeExecute(this.context, options);
+      }
+
+      // Execute the command
+      if (mode === ExecutionMode.Tui && command.executeTui) {
+        await command.executeTui(this.context, options);
+      } else if (command.executeCli) {
+        await command.executeCli(this.context, options);
+      } else {
+        throw new Error(
+          `Command '${command.name}' does not support ${mode} mode`
+        );
+      }
+    } catch (e) {
+      error = e as Error;
+    } finally {
+      // Always call afterExecute hook
+      if (command.afterExecute) {
+        try {
+          await command.afterExecute(this.context, options, error);
+        } catch (afterError) {
+          // afterExecute error takes precedence if no prior error
+          if (!error) {
+            error = afterError as Error;
+          }
+        }
+      }
+    }
+
+    // Call onAfterRun hook
+    if (this.hooks.onAfterRun) {
+      await this.hooks.onAfterRun(this.context, command.name, error);
+    }
+
+    // Re-throw if there was an error
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Detect the execution mode based on command and args.
+   */
+  private detectExecutionMode(command: Command, args: string[]): ExecutionMode {
+    // If no args and command supports TUI, use TUI mode
+    if (args.length === 0 && command.supportsTui()) {
+      return ExecutionMode.Tui;
+    }
+
+    // Otherwise use CLI mode
+    return ExecutionMode.Cli;
+  }
+
+  /**
+   * Handle an error during execution.
+   */
+  private async handleError(error: Error): Promise<void> {
+    if (this.hooks.onError) {
+      await this.hooks.onError(this.context, error);
+    } else {
+      // Default error handling
+      console.error(`Error: ${error.message}`);
+      process.exitCode = 1;
+    }
+  }
+
+  /**
+   * Get the application context.
+   */
+  getContext(): AppContext {
+    return this.context;
+  }
+}

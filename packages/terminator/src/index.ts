@@ -1,7 +1,36 @@
-// Types
+// Core - New OOP Architecture
+export {
+  Application,
+  AppContext,
+  Command,
+  CommandRegistry,
+  Logger,
+  createLogger,
+  LogLevel,
+  generateCommandHelp,
+  generateAppHelp,
+} from "./core/index.ts";
+export type {
+  ApplicationConfig,
+  ApplicationHooks,
+  AppConfig,
+  CommandExample,
+  ResolveResult,
+  LoggerConfig,
+  LogEvent,
+  HelpOptions,
+} from "./core/index.ts";
+
+// Execution Mode
+export { ExecutionMode } from "./types/execution.ts";
+
+// Built-in Commands (new)
+export { HelpCommand, VersionCommand } from "./builtins/index.ts";
+
+// Types (legacy, for backwards compatibility)
 export { defineCommand, defineTuiCommand } from "./types/command.ts";
 export type {
-  Command,
+  Command as LegacyCommand,
   TuiCommand,
   OptionDef,
   OptionSchema,
@@ -20,9 +49,9 @@ export {
 } from "./cli/parser.ts";
 export type { ParseResult, ParseError } from "./cli/parser.ts";
 
-// Registry
+// Registry (legacy)
 export { createCommandRegistry } from "./registry/commandRegistry.ts";
-export type { CommandRegistry } from "./registry/commandRegistry.ts";
+export type { CommandRegistry as LegacyCommandRegistry } from "./registry/commandRegistry.ts";
 
 // Middleware
 export {
@@ -36,7 +65,7 @@ export type {
   ExecutionContext,
 } from "./registry/middleware.ts";
 
-// Built-in Commands
+// Built-in Commands (legacy)
 export { createVersionCommand } from "./commands/version.ts";
 export { createHelpCommand } from "./commands/help.ts";
 
@@ -44,19 +73,19 @@ export { createHelpCommand } from "./commands/help.ts";
 export { colors, supportsColors } from "./cli/output/colors.ts";
 export { table, keyValueList, bulletList, numberedList } from "./cli/output/table.ts";
 
-// Help Generation
+// Help Generation (legacy)
 export {
   generateHelp,
   formatCommands,
-  formatOptions,
-  formatUsage,
-  formatExamples,
+  formatOptions as formatOptionsLegacy,
+  formatUsage as formatUsageLegacy,
+  formatExamples as formatExamplesLegacy,
   getCommandSummary,
 } from "./cli/help.ts";
 
 // TUI
 export { createApp } from "./tui/app.ts";
-export type { AppConfig, AppState } from "./tui/app.ts";
+export type { AppConfig as TuiAppConfig, AppState } from "./tui/app.ts";
 
 // Components
 export { Box, Text, Input, Select, Button, Modal, Spinner } from "./components/index.ts";

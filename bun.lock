@@ -33,6 +33,7 @@
         "@opentui/core": "0.1.68",
         "@opentui/react": "^0.1.68",
         "react": "19",
+        "tslog": "^4.9.3",
       },
       "devDependencies": {
         "@types/bun": "latest",
