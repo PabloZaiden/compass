@@ -32,8 +32,8 @@ export function CliModal({
                 return;
             }
 
-            // C to copy
-            if (key.name === "c") {
+            // Y to copy
+            if (key.name === "y") {
                 onCopy?.(command, "CLI command");
                 event.stopPropagation();
                 return;

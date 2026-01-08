@@ -378,8 +378,8 @@ function TuiAppContent({
                 return;
             }
 
-            // C to copy content based on current mode and focus
-            if ((key.name === "c")) {
+            // Y to copy content based on current mode and focus
+            if ((key.name === "y")) {
                 const clipboardData = getClipboardContent();
                 if (clipboardData) {
                     handleCopy(clipboardData.content, clipboardData.label);
@@ -446,11 +446,11 @@ function TuiAppContent({
     const shortcuts = useMemo(() => {
         const parts: string[] = [];
         if (mode === Mode.Config) {
-            parts.push("↑↓ Navigate", "Enter Edit", "Ctrl+Y Copy", "C CLI", "L Logs", "Esc Back");
+            parts.push("↑↓ Navigate", "Enter Edit", "Y Copy", "C CLI", "L Logs", "Esc Back");
         } else if (mode === Mode.Running) {
-            parts.push("Ctrl+Y Copy", "Esc Cancel");
+            parts.push("Y Copy", "Esc Cancel");
         } else if (mode === Mode.Results || mode === Mode.Error) {
-            parts.push("Tab Focus", "Ctrl+Y Copy", "Esc Back");
+            parts.push("Tab Focus", "Y Copy", "Esc Back");
         } else {
             parts.push("↑↓ Navigate", "Enter Select", "Esc Exit");
         }
