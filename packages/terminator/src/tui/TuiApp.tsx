@@ -124,7 +124,7 @@ function TuiAppContent({
         (cmd: unknown, values: unknown) => executeCommand(cmd as AnyCommand, values as Record<string, unknown>)
     );
 
-    const { frame: spinnerFrame } = useSpinner(isExecuting);
+    const { frameIndex: spinnerFrameIndex } = useSpinner(isExecuting);
 
     // Computed values
     const fieldConfigs = useMemo(() => {
@@ -359,15 +359,15 @@ function TuiAppContent({
     // Status message
     const statusMessage = useMemo(() => {
         if (lastAction) return lastAction;
-        if (isExecuting) return `${spinnerFrame} Running...`;
+        if (isExecuting) return "Running benchmark...";
         if (mode === Mode.Error) return "Error occurred. Press Esc to go back.";
-        if (mode === Mode.Results) return "Completed. Press Esc to return.";
+        if (mode === Mode.Results) return "Run completed. Press Esc to return to config.";
         if (mode === Mode.CommandSelect) return "Select a command to get started.";
         if (mode === Mode.Config) {
             return `Ready. Select [${selectedCommand?.actionLabel ?? "Run"}] and press Enter.`;
         }
         return "";
-    }, [lastAction, isExecuting, spinnerFrame, mode, selectedCommand]);
+    }, [lastAction, isExecuting, mode, selectedCommand]);
 
     const shortcuts = useMemo(() => {
         const parts: string[] = [];
@@ -487,7 +487,12 @@ function TuiAppContent({
                 {renderContent()}
             </box>
 
-            <StatusBar message={statusMessage} shortcuts={shortcuts} />
+            <StatusBar 
+                status={statusMessage} 
+                isRunning={isExecuting}
+                spinnerFrame={spinnerFrameIndex}
+                shortcuts={shortcuts} 
+            />
 
             {/* Modals */}
             <EditorModal
