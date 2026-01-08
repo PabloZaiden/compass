@@ -4,6 +4,7 @@ export {
   AppContext,
   Command,
   CommandRegistry,
+  ConfigValidationError,
   Logger,
   createLogger,
   LogLevel,
@@ -13,8 +14,11 @@ export {
 export type {
   ApplicationConfig,
   ApplicationHooks,
+  GlobalOptions,
   AppConfig,
+  AnyCommand,
   CommandExample,
+  CommandResult,
   ResolveResult,
   LoggerConfig,
   LogEvent,
@@ -25,7 +29,56 @@ export type {
 export { ExecutionMode } from "./types/execution.ts";
 
 // Built-in Commands (new)
-export { HelpCommand, VersionCommand } from "./builtins/index.ts";
+export { HelpCommand, VersionCommand, formatVersion } from "./builtins/index.ts";
+export type { VersionConfig } from "./builtins/index.ts";
+
+// TUI Framework (new)
+export {
+  TuiApp,
+  TuiApplication,
+  Theme,
+  KeyboardProvider,
+  KeyboardPriority,
+  useKeyboardHandler,
+  useClipboard,
+  useSpinner,
+  useConfigState,
+  useCommandExecutor,
+  useLogStream,
+  LogLevel as TuiLogLevel,
+  FieldRow,
+  ActionButton,
+  Header,
+  StatusBar,
+  LogsPanel,
+  ResultsPanel,
+  ConfigForm,
+  EditorModal,
+  CliModal,
+  CommandSelector,
+  schemaToFieldConfigs,
+  groupFieldConfigs,
+  getFieldDisplayValue,
+  buildCliCommand,
+} from "./tui/index.ts";
+export type {
+  TuiApplicationConfig,
+  ThemeColors,
+  KeyboardEvent as TuiKeyboardEvent,
+  KeyboardHandler,
+  UseClipboardResult,
+  UseSpinnerResult,
+  UseConfigStateOptions,
+  UseConfigStateResult,
+  UseCommandExecutorResult,
+  LogEntry,
+  LogEvent as TuiLogEvent,
+  LogSource,
+  UseLogStreamResult,
+  FieldType,
+  FieldOption,
+  FieldConfig,
+} from "./tui/index.ts";
 
 // Types (legacy, for backwards compatibility)
 export { defineCommand, defineTuiCommand } from "./types/command.ts";
@@ -66,7 +119,6 @@ export type {
 } from "./registry/middleware.ts";
 
 // Built-in Commands (legacy)
-export { createVersionCommand } from "./commands/version.ts";
 export { createHelpCommand } from "./commands/help.ts";
 
 // CLI Output

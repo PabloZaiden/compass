@@ -1,8 +1,7 @@
 import { AgentTypes, defaultModels } from "../agents/factory";
-import { OutputMode, parseEnum, values } from "../models";
+import { OutputMode, parseEnum } from "../models";
 import type { RunConfig } from "./runconfig";
 import { defaultRunConfigValues } from "./default";
-import { LogLevel } from "../logging";
 import { existsSync } from "node:fs";
 import {
     runOptionsSchema,
@@ -16,6 +15,9 @@ import {
 /**
  * Converts parsed CLI options to a validated RunConfig object.
  * Uses the runOptionsSchema as the single source of truth for defaults.
+ * 
+ * Note: Logging options (--log-level, --detailed-logs) are handled
+ * automatically by the terminator framework at the application level.
  */
 export async function runConfigFromParsedOptions(options: RunOptions): Promise<RunConfig> {
     const schema = runOptionsSchema;
@@ -38,20 +40,12 @@ export async function runConfigFromParsedOptions(options: RunOptions): Promise<R
     // Parse enums
     const outputModeStr = getStringOption(options, schema, "output-mode")
         ?? OutputMode[defaultConfig.outputMode];
-    const logLevelStr = getStringOption(options, schema, "log-level")
-        ?? LogLevel[defaultConfig.logLevel];
 
     const agentType = parseEnumOption(agentTypeStr, AgentTypes, "agent");
 
     const outputMode = parseEnum(OutputMode, outputModeStr);
     if (outputMode === undefined) {
         throw new Error(`Invalid output mode: ${outputModeStr}`);
-    }
-
-    const logLevel = parseEnum(LogLevel, logLevelStr);
-    if (logLevel === undefined) {
-        const validLevels = values(LogLevel).join(", ");
-        throw new Error(`Invalid log level: ${logLevelStr}. Valid levels are: ${validLevels}`);
     }
 
     // Boolean options (use schema defaults)
@@ -92,6 +86,5 @@ export async function runConfigFromParsedOptions(options: RunOptions): Promise<R
         agentType,
         stopOnError,
         allowFullAccess,
-        logLevel,
     };
 }

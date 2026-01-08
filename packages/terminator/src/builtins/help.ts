@@ -1,4 +1,4 @@
-import { Command } from "../core/command.ts";
+import { Command, type AnyCommand } from "../core/command.ts";
 import type { AppContext } from "../core/context.ts";
 import { generateCommandHelp, generateAppHelp } from "../core/help.ts";
 import type { OptionSchema } from "../types/command.ts";
@@ -15,14 +15,14 @@ export class HelpCommand extends Command<OptionSchema> {
   readonly description = "Show help for this command";
   readonly options = {} as const;
 
-  private parentCommand: Command | null = null;
-  private allCommands: Command[] = [];
+  private parentCommand: AnyCommand | null = null;
+  private allCommands: AnyCommand[] = [];
   private appName: string;
   private appVersion: string;
 
   constructor(config: {
-    parentCommand?: Command;
-    allCommands?: Command[];
+    parentCommand?: AnyCommand;
+    allCommands?: AnyCommand[];
     appName: string;
     appVersion: string;
   }) {
@@ -58,7 +58,7 @@ export class HelpCommand extends Command<OptionSchema> {
  * Create a help command for a specific parent command.
  */
 export function createHelpCommandForParent(
-  parentCommand: Command,
+  parentCommand: AnyCommand,
   appName: string,
   appVersion: string
 ): HelpCommand {
@@ -73,7 +73,7 @@ export function createHelpCommandForParent(
  * Create a help command for the application root.
  */
 export function createRootHelpCommand(
-  allCommands: Command[],
+  allCommands: AnyCommand[],
   appName: string,
   appVersion: string
 ): HelpCommand {

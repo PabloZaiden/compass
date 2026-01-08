@@ -227,4 +227,115 @@ describe("Application", () => {
       expect(errorCaught?.message).toBe("Test error");
     });
   });
+
+  describe("buildConfig", () => {
+    // Config type for testing
+    interface ParsedConfig {
+      value: string;
+      count: number;
+    }
+
+    const configOptions = {
+      value: { type: "string" as const, description: "A value" },
+      count: { type: "string" as const, description: "A count" },
+    } as const satisfies OptionSchema;
+
+    test("calls buildConfig before executeCli", async () => {
+      let buildConfigCalled = false;
+      let receivedConfig: ParsedConfig | null = null;
+
+      class ConfigCommand extends Command<typeof configOptions, ParsedConfig> {
+        readonly name = "config-cmd";
+        readonly description = "A command with buildConfig";
+        readonly options = configOptions;
+
+        override buildConfig(
+          _ctx: AppContext,
+          opts: OptionValues<typeof configOptions>
+        ): ParsedConfig {
+          buildConfigCalled = true;
+          return {
+            value: opts.value as string,
+            count: parseInt(opts.count as string, 10),
+          };
+        }
+
+        override async executeCli(_ctx: AppContext, config: ParsedConfig): Promise<void> {
+          receivedConfig = config;
+        }
+      }
+
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [new ConfigCommand()],
+      });
+
+      await app.run(["config-cmd", "--value", "test", "--count", "42"]);
+      
+      expect(buildConfigCalled).toBe(true);
+      expect(receivedConfig).toEqual({ value: "test", count: 42 });
+    });
+
+    test("passes raw options when buildConfig is not defined", async () => {
+      let receivedOpts: Record<string, unknown> | null = null;
+
+      class NoConfigCommand extends Command<typeof testOptions> {
+        readonly name = "no-config-cmd";
+        readonly description = "A command without buildConfig";
+        readonly options = testOptions;
+
+        override async executeCli(
+          _ctx: AppContext,
+          opts: OptionValues<typeof testOptions>
+        ): Promise<void> {
+          receivedOpts = opts as Record<string, unknown>;
+        }
+      }
+
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [new NoConfigCommand()],
+      });
+
+      await app.run(["no-config-cmd", "--value", "hello"]);
+      
+      expect(receivedOpts).toEqual({ value: "hello" });
+    });
+
+    test("buildConfig errors are caught and handled", async () => {
+      let errorCaught: Error | undefined;
+
+      class FailConfigCommand extends Command<typeof testOptions, never> {
+        readonly name = "fail-config";
+        readonly description = "A command that fails buildConfig";
+        readonly options = testOptions;
+
+        override buildConfig(): never {
+          throw new Error("Config validation failed");
+        }
+
+        override async executeCli(): Promise<void> {
+          // Should never be called
+        }
+      }
+
+      const app = new Application({
+        name: "test-app",
+        version: "1.0.0",
+        commands: [new FailConfigCommand()],
+      });
+      
+      app.setHooks({
+        onError: async (_ctx, error) => {
+          errorCaught = error;
+        },
+      });
+
+      await app.run(["fail-config", "--value", "test"]);
+      
+      expect(errorCaught?.message).toBe("Config validation failed");
+    });
+  });
 });

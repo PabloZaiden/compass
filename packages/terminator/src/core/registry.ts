@@ -1,18 +1,18 @@
-import { Command } from "./command.ts";
+import { type AnyCommand } from "./command.ts";
 
 /**
  * Registry for managing commands.
  * Provides registration, lookup, and resolution of command paths.
  */
 export class CommandRegistry {
-  private readonly commands = new Map<string, Command>();
+  private readonly commands = new Map<string, AnyCommand>();
 
   /**
    * Register a command.
    * @param command The command to register
    * @throws If a command with the same name is already registered
    */
-  register(command: Command): void {
+  register(command: AnyCommand): void {
     command.validate();
 
     if (this.commands.has(command.name)) {
@@ -26,7 +26,7 @@ export class CommandRegistry {
    * Register multiple commands.
    * @param commands Array of commands to register
    */
-  registerAll(commands: Command[]): void {
+  registerAll(commands: AnyCommand[]): void {
     for (const command of commands) {
       this.register(command);
     }
@@ -37,7 +37,7 @@ export class CommandRegistry {
    * @param name Command name
    * @returns The command or undefined if not found
    */
-  get(name: string): Command | undefined {
+  get(name: string): AnyCommand | undefined {
     return this.commands.get(name);
   }
 
@@ -53,7 +53,7 @@ export class CommandRegistry {
    * Get all registered commands.
    * @returns Array of all commands
    */
-  list(): Command[] {
+  list(): AnyCommand[] {
     return Array.from(this.commands.values());
   }
 
@@ -132,7 +132,7 @@ export class CommandRegistry {
  */
 export interface ResolveResult {
   /** The resolved command, or undefined if not found */
-  command: Command | undefined;
+  command: AnyCommand | undefined;
   /** Path elements that couldn't be resolved (remaining after last matched command) */
   remainingPath: string[];
   /** Path elements that were successfully resolved */

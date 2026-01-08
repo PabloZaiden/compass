@@ -227,20 +227,146 @@ myapp version        # Shows version
 
 ## TUI Mode
 
-Commands that support TUI mode implement `executeTui()`:
+Terminator provides built-in TUI (Terminal User Interface) support that automatically generates interactive UIs from your command definitions.
+
+### TuiApplication
+
+Extend `TuiApplication` instead of `Application` to get automatic TUI support:
 
 ```typescript
-class InteractiveCommand extends Command {
-  name = "interactive";
-  description = "Interactive mode";
-  
-  // Only TUI, no CLI
-  override async executeTui(): Promise<void> {
-    // Launch your TUI (e.g., with Ink, blessed, etc.)
-    const { render } = await import("ink");
-    render(<App />);
+import { TuiApplication, Command, type OptionSchema } from "@pablozaiden/terminator";
+
+class MyApp extends TuiApplication {
+  constructor() {
+    super({
+      name: "myapp",
+      version: "1.0.0",
+      commands: [new RunCommand(), new ConfigCommand()],
+      enableTui: true, // default: true
+    });
   }
 }
+```
+
+When run with no arguments (or `--interactive`), the app launches an interactive TUI instead of showing help:
+
+```bash
+myapp              # Launches TUI
+myapp --interactive # Same as above
+myapp run --verbose # Runs in CLI mode
+```
+
+### TUI Metadata
+
+Add TUI-specific metadata to your option schemas to customize the UI:
+
+```typescript
+const myOptions = {
+  repo: {
+    type: "string",
+    description: "Repository path",
+    required: true,
+    // TUI metadata
+    label: "Repository",    // Custom label in form
+    order: 1,               // Field ordering
+    group: "Required",      // Group fields together
+    placeholder: "path",    // Placeholder text
+    tuiHidden: false,       // Hide from TUI form
+  },
+  verbose: {
+    type: "boolean",
+    description: "Verbose output",
+    label: "Verbose Mode",
+    order: 10,
+    group: "Options",
+  },
+} satisfies OptionSchema;
+```
+
+### Command TUI Properties
+
+Commands can customize their TUI behavior:
+
+```typescript
+class RunCommand extends Command {
+  name = "run";
+  description = "Run the task";
+  options = runOptions;
+
+  // TUI customization
+  override readonly actionLabel = "Start Run";      // Button text
+  override readonly immediateExecution = false;     // Run immediately on selection
+
+  // Return structured results for TUI display
+  override async executeTui(ctx, opts): Promise<CommandResult> {
+    const result = await runTask(opts);
+    return { 
+      success: true, 
+      data: result,
+      message: "Task completed"
+    };
+  }
+
+  // Custom result rendering
+  override renderResult(result: CommandResult): string {
+    return JSON.stringify(result.data, null, 2);
+  }
+
+  // Content for clipboard (Ctrl+C in results view)
+  override getClipboardContent(result: CommandResult): string | undefined {
+    return JSON.stringify(result.data, null, 2);
+  }
+}
+```
+
+### CommandResult Interface
+
+TUI commands should return a `CommandResult` from `executeTui()`:
+
+```typescript
+interface CommandResult {
+  success: boolean;
+  data?: unknown;         // Result data
+  error?: Error;          // Error object if failed
+  message?: string;       // User-friendly message
+}
+```
+
+### TUI Features
+
+The built-in TUI provides:
+
+- **Command Selector** - Navigate and select commands with arrow keys
+- **Config Form** - Auto-generated forms from option schemas
+- **Field Editor** - Edit field values (text, number, boolean, enum)
+- **CLI Modal** - View equivalent CLI command (press `C`)
+- **Results Panel** - Display command results with custom rendering
+- **Logs Panel** - View application logs in real-time
+- **Clipboard Support** - Copy results with Ctrl+C
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| ↑/↓ | Navigate fields |
+| Enter | Edit field / Execute command |
+| C | Show CLI command |
+| Esc | Back / Cancel |
+| Q | Quit |
+
+### TUI Utilities
+
+The package exports utilities for building custom TUI components:
+
+```typescript
+import { 
+  schemaToFieldConfigs,  // Convert OptionSchema to form fields
+  buildCliCommand,       // Build CLI command from config
+  KeyboardProvider,      // Keyboard context provider
+  useKeyboardHandler,    // Register keyboard handlers
+  useSpinner,            // Animated spinner hook
+  useClipboard,          // Clipboard operations
+} from "@pablozaiden/terminator";
 ```
 
 ## Examples

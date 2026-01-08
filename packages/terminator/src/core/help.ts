@@ -1,4 +1,4 @@
-import { Command } from "./command.ts";
+import { type AnyCommand } from "./command.ts";
 import type { OptionDef } from "../types/command.ts";
 import { colors } from "../cli/output/colors.ts";
 
@@ -17,7 +17,7 @@ export interface HelpOptions {
 /**
  * Format the usage line for a command.
  */
-export function formatUsage(command: Command, options: HelpOptions = {}): string {
+export function formatUsage(command: AnyCommand, options: HelpOptions = {}): string {
   const { appName = "cli", commandPath = [] } = options;
 
   const parts = [appName, ...commandPath];
@@ -41,7 +41,7 @@ export function formatUsage(command: Command, options: HelpOptions = {}): string
 /**
  * Format subcommands list.
  */
-export function formatSubCommands(command: Command): string {
+export function formatSubCommands(command: AnyCommand): string {
   if (!command.subCommands?.length) return "";
 
   const entries = command.subCommands.map((cmd) => {
@@ -61,7 +61,7 @@ export function formatSubCommands(command: Command): string {
 /**
  * Format options list.
  */
-export function formatOptions(command: Command): string {
+export function formatOptions(command: AnyCommand): string {
   if (!command.options || Object.keys(command.options).length === 0) return "";
 
   const entries = Object.entries(command.options).map(([name, defUntyped]) => {
@@ -83,7 +83,7 @@ export function formatOptions(command: Command): string {
 /**
  * Format examples list.
  */
-export function formatExamples(command: Command): string {
+export function formatExamples(command: AnyCommand): string {
   if (!command.examples?.length) return "";
 
   const entries = command.examples.map(
@@ -100,7 +100,7 @@ export function formatExamples(command: Command): string {
  * @param options Help generation options
  * @returns Formatted help text
  */
-export function generateCommandHelp(command: Command, options: HelpOptions = {}): string {
+export function generateCommandHelp(command: AnyCommand, options: HelpOptions = {}): string {
   const { appName = "cli", version } = options;
   const sections: string[] = [];
 
@@ -163,7 +163,7 @@ export function generateCommandHelp(command: Command, options: HelpOptions = {})
  * @param options Help generation options
  * @returns Formatted help text
  */
-export function generateAppHelp(commands: Command[], options: HelpOptions = {}): string {
+export function generateAppHelp(commands: AnyCommand[], options: HelpOptions = {}): string {
   const { appName = "cli", version } = options;
   const sections: string[] = [];
 

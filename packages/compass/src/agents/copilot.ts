@@ -1,7 +1,14 @@
 import type { AgentOutput } from "../models";
 import { run } from "../utils";
-import { logger } from "../logging";
+import { AppContext, type Logger } from "@pablozaiden/terminator";
 import { Agent, type AgentOptions } from "./agent";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 
 export class Copilot extends Agent {
     constructor(options: AgentOptions) {
@@ -9,7 +16,7 @@ export class Copilot extends Agent {
     }
 
     override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.trace(`Executing Copilot with model ${model} on prompt ${prompt}`);
+        getLogger().trace(`Executing Copilot with model ${model} on prompt ${prompt}`);
         
         const allowAllParameters = this.options.allowFullAccess ? ["--allow-all-tools", "--allow-all-paths"] : [];
         const processOutput = await run(
@@ -22,7 +29,7 @@ export class Copilot extends Agent {
             "--add-dir", workingDirectory, 
             "-p", prompt);
 
-        logger.trace("Collecting git diff after agent execution");
+        getLogger().trace("Collecting git diff after agent execution");
         
         const diff = await run(workingDirectory, "git", "--no-pager", "diff");
 

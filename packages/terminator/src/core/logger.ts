@@ -40,18 +40,24 @@ export interface LoggerConfig {
  * Can be instantiated multiple times for different contexts.
  */
 export class Logger {
-  private readonly tsLogger: TsLogger<unknown>;
+  private tsLogger: TsLogger<unknown>;
   private readonly eventEmitter = new EventEmitter();
   private tuiMode: boolean;
   private detailed: boolean;
+  private minLevel: LogLevel;
 
   constructor(config: LoggerConfig = {}) {
     this.tuiMode = config.tuiMode ?? false;
     this.detailed = config.detailed ?? false;
+    this.minLevel = config.minLevel ?? LogLevel.Info;
 
-    this.tsLogger = new TsLogger({
+    this.tsLogger = this.createTsLogger(this.minLevel);
+  }
+
+  private createTsLogger(minLevel: LogLevel): TsLogger<unknown> {
+    return new TsLogger({
       type: "pretty",
-      minLevel: config.minLevel ?? LogLevel.Info,
+      minLevel,
       overwrite: {
         transportFormatted: (
           logMetaMarkup: string,
@@ -103,6 +109,21 @@ export class Logger {
    */
   setDetailed(enabled: boolean): void {
     this.detailed = enabled;
+  }
+
+  /**
+   * Set the minimum log level.
+   */
+  setMinLevel(level: LogLevel): void {
+    this.minLevel = level;
+    this.tsLogger = this.createTsLogger(level);
+  }
+
+  /**
+   * Get the current minimum log level.
+   */
+  getMinLevel(): LogLevel {
+    return this.minLevel;
   }
 
   // Logging methods

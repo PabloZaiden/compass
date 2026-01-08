@@ -85,7 +85,17 @@ describe("schemaToParseArgsOptions", () => {
       count: { type: "number", default: 10, description: "Count" },
     };
     const result = schemaToParseArgsOptions(schema);
-    expect(result.options["count"]?.default).toBe(10);
+    // parseArgs expects string defaults for non-boolean types
+    expect(result.options["count"]?.default).toBe("10");
+  });
+
+  test("includes default values for boolean", () => {
+    const schema: OptionSchema = {
+      verbose: { type: "boolean", default: false, description: "Verbose" },
+    };
+    const result = schemaToParseArgsOptions(schema);
+    // Boolean defaults remain as boolean
+    expect(result.options["verbose"]?.default).toBe(false);
   });
 });
 

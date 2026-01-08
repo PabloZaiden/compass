@@ -2,6 +2,21 @@
 
 Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes.
 
+## Monorepo Structure
+
+This repository is organized as a monorepo with the following packages:
+
+| Package | Description |
+|---------|-------------|
+| [compass](packages/compass/README.md) | Main CLI/TUI application for benchmarking AI coding agents |
+| [terminator](packages/terminator/README.md) | CLI/TUI application framework with auto-generated terminal UIs |
+
+```
+packages/
+├── compass/     # Benchmarking tool (uses terminator)
+└── terminator/  # CLI/TUI framework library
+```
+
 ## Installation
 
 This package is hosted on GitHub Package Registry. To install, you need to be authenticated with GitHub CLI:

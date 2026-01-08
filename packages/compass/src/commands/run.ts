@@ -1,10 +1,28 @@
-import { Command, type AppContext, type OptionSchema, type OptionValues } from "@pablozaiden/terminator";
+import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
 import { Runner } from "../run/runner";
 import { runConfigFromParsedOptions } from "../runconfig/process";
+import type { RunConfig } from "../runconfig/runconfig";
 import { runOptionsSchema, type RunOptions } from "../options";
 
 /**
- * Convert compass option schema to terminator option schema.
+ * TUI metadata for each option - labels, ordering, and groups.
+ */
+const tuiMetadata: Record<string, { label?: string; order?: number; group?: string; tuiHidden?: boolean }> = {
+  repo: { label: "Repository Path", order: 1, group: "Required" },
+  fixture: { label: "Fixture File", order: 2, group: "Required" },
+  agent: { label: "Agent Type", order: 3, group: "Required" },
+  iterations: { label: "Iterations", order: 10, group: "Execution" },
+  "output-mode": { label: "Output Mode", order: 11, group: "Execution" },
+  model: { label: "Agent Model", order: 20, group: "Models" },
+  "eval-model": { label: "Evaluation Model", order: 21, group: "Models" },
+  "use-cache": { label: "Use Cache", order: 30, group: "Options" },
+  "stop-on-error": { label: "Stop on Error", order: 31, group: "Options" },
+  "allow-full-access": { label: "Allow Full Access", order: 32, group: "Options" },
+  "log-level": { label: "Log Level", order: 40, group: "Debug" },
+};
+
+/**
+ * Convert compass option schema to terminator option schema with TUI metadata.
  */
 function convertOptions(compassSchema: Record<string, unknown>): OptionSchema {
   const result: OptionSchema = {};
@@ -16,6 +34,7 @@ function convertOptions(compassSchema: Record<string, unknown>): OptionSchema {
       required?: boolean;
       default?: unknown;
       validValues?: string | (() => string);
+      placeholder?: string;
     };
 
     // Get valid values if it's a function
@@ -27,12 +46,21 @@ function convertOptions(compassSchema: Record<string, unknown>): OptionSchema {
       enumValues = compassDef.validValues.split(", ");
     }
 
+    // Get TUI metadata for this option
+    const tui = tuiMetadata[name] ?? {};
+
     result[name] = {
       type: compassDef.type as "string" | "boolean",
       description: compassDef.description,
       required: compassDef.required,
       default: compassDef.default,
       enum: enumValues,
+      // TUI metadata
+      label: tui.label,
+      order: tui.order,
+      group: tui.group,
+      placeholder: compassDef.placeholder,
+      tuiHidden: tui.tuiHidden,
     };
   }
 
@@ -43,11 +71,17 @@ const runOptions = convertOptions(runOptionsSchema);
 
 /**
  * Run command - executes evaluation runs against a repository.
+ * 
+ * This command uses buildConfig to transform parsed CLI options into a
+ * validated RunConfig, then passes that to the execute methods.
  */
-export class RunCommand extends Command<typeof runOptions> {
+export class RunCommand extends Command<typeof runOptions, RunConfig> {
   readonly name = "run";
   readonly description = "Run the evaluation with the specified configuration";
   readonly options = runOptions;
+
+  // TUI customization
+  override readonly actionLabel = "Start Run";
 
   override readonly examples = [
     {
@@ -66,13 +100,11 @@ The fixture file should be a JSON file containing evaluation prompts.
 Results will be output as JSON to stdout.
 `.trim();
 
-  override async executeCli(ctx: AppContext, opts: OptionValues<typeof runOptions>): Promise<void> {
-    // Apply common options
-    const logLevel = opts["log-level"];
-    if (logLevel === "debug") {
-      ctx.logger.setDetailed(true);
-    }
-
+  /**
+   * Build and validate the RunConfig from parsed options.
+   * This is called before executeCli/executeTui.
+   */
+  override async buildConfig(_ctx: AppContext, opts: OptionValues<typeof runOptions>): Promise<RunConfig> {
     // Convert options to the format expected by runConfigFromParsedOptions
     const runOpts: RunOptions = {
       repo: opts["repo"] as string | undefined,
@@ -85,11 +117,18 @@ Results will be output as JSON to stdout.
       "allow-full-access": opts["allow-full-access"] as boolean | undefined,
       model: opts["model"] as string | undefined,
       "eval-model": opts["eval-model"] as string | undefined,
-      "log-level": logLevel as string | undefined,
     };
 
-    const config = await runConfigFromParsedOptions(runOpts);
+    try {
+      return await runConfigFromParsedOptions(runOpts);
+    } catch (error) {
+      // Wrap errors in ConfigValidationError for better error messages
+      const message = error instanceof Error ? error.message : String(error);
+      throw new ConfigValidationError(message);
+    }
+  }
 
+  override async executeCli(ctx: AppContext, config: RunConfig): Promise<void> {
     const runner = new Runner();
 
     try {
@@ -100,5 +139,32 @@ Results will be output as JSON to stdout.
       ctx.logger.error("Run failed:", error);
       process.exitCode = 1;
     }
+  }
+
+  /**
+   * Execute in TUI mode - returns CommandResult for display.
+   */
+  override async executeTui(_ctx: AppContext, config: RunConfig): Promise<CommandResult> {
+    try {
+      const runner = new Runner();
+      const result = await runner.run(config);
+      return { success: true, data: result };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error),
+        message: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
+  /**
+   * Get content for clipboard from TUI result.
+   */
+  override getClipboardContent(result: CommandResult): string {
+    if (result.success && result.data) {
+      return JSON.stringify(result.data, null, 2);
+    }
+    return result.message ?? "";
   }
 }

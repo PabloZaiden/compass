@@ -1,7 +1,6 @@
 import type { OptionSchema } from "./schema";
 import { AgentTypes } from "../agents/factory";
 import { values } from "../models";
-import { commonOptionsSchema, type CommonOptions } from "./common";
 
 /**
  * Lazy evaluation helper for dynamic agent types.
@@ -16,6 +15,9 @@ const getAgentTypes = () => values(AgentTypes).join(", ");
  * - Help text descriptions
  * - Default values
  * - Required/optional status
+ * 
+ * Note: Logging options (--log-level, --detailed-logs) are handled
+ * automatically by the terminator framework at the application level.
  */
 export const generateOptionsSchema = {
     repo: {
@@ -52,13 +54,12 @@ export const generateOptionsSchema = {
         description: "Enable/disable caching of agent responses",
         default: false,
     },
-    ...commonOptionsSchema,
 } as const satisfies OptionSchema;
 
 /**
  * Type derived from the generate options schema.
  */
-export type GenerateOptions = CommonOptions & {
+export type GenerateOptions = {
     repo: string;
     agent: string;
     count: string;

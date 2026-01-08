@@ -1,5 +1,12 @@
 import type { ProcessOutput } from "./models";
-import { logger } from "./logging";
+import { AppContext, type Logger } from "@pablozaiden/terminator";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 
 /// Reads a stream and logs each chunk as it arrives, populating the chunks array with the content.
 async function readAndLogStream(
@@ -24,14 +31,14 @@ async function readAndLogStream(
         buffer = lines.pop() ?? "";
         for (const line of lines) {
             if (line.trim()) {
-                logger.trace(`${prefix}: ${line}`);
+                getLogger().trace(`${prefix}: ${line}`);
             }
         }
     }
 
     // Log any remaining content in the buffer
     if (buffer.trim()) {
-        logger.trace(`${prefix}: ${buffer}`);
+        getLogger().trace(`${prefix}: ${buffer}`);
     }
 }
 
@@ -39,7 +46,7 @@ async function readAndLogStream(
 /// Streams stdout and stderr to the logger as the command executes.
 export async function run(workingDirectory: string, ...commandWithArgs: string[]): Promise<ProcessOutput> {
     const commandForLogging = commandWithArgs[0] + " " + commandWithArgs.slice(1).map(arg => escapeArg(arg)).join(" ");
-    logger.trace(`Running command: ${commandForLogging} in directory: ${workingDirectory}`);
+    getLogger().trace(`Running command: ${commandForLogging} in directory: ${workingDirectory}`);
 
     const process = Bun.spawn({
         cmd: commandWithArgs,
@@ -59,7 +66,7 @@ export async function run(workingDirectory: string, ...commandWithArgs: string[]
 
     const exitCode = await process.exited;
 
-    logger.trace(`Command exited with code: ${exitCode}`);
+    getLogger().trace(`Command exited with code: ${exitCode}`);
 
     return {
         stdOut: stdOutChunks.join(""),

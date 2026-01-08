@@ -1,3 +1,2 @@
-// Generate mode exports
-export { generateMode, type GenerateOptions } from "./mode";
+// Generate exports
 export { Generator, type GeneratorConfig, type GeneratorResult } from "./generator";

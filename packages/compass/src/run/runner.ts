@@ -1,5 +1,12 @@
 import { copyDirectory, run } from "../utils";
-import { logger } from "../logging";
+import { AppContext, type Logger } from "@pablozaiden/terminator";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 import type { Fixture, IterationResult, ProcessOutput, RunnerResult } from "../models";
 import { tmpdir } from "os";
 import { Cache } from "../agents/cache";
@@ -44,12 +51,12 @@ export class Runner {
     async run(config: RunConfig): Promise<RunnerResult> {
         validateConfig(config);
 
-        logger.trace(`Running Compass with config: ${JSON.stringify(config, null, 2)}`);
+        getLogger().trace(`Running Compass with config: ${JSON.stringify(config, null, 2)}`);
 
         const fixtureContent = await Bun.file(config.fixture).text();
         const fixture = JSON.parse(fixtureContent) as Fixture;
 
-        logger.trace(`Loaded fixture with ${fixture.prompts.length} prompts from ${config.fixture}`);
+        getLogger().trace(`Loaded fixture with ${fixture.prompts.length} prompts from ${config.fixture}`);
 
         const iterationResults: IterationResult[] = [];
 
@@ -63,54 +70,54 @@ export class Runner {
         const agent = createAgent(config.agentType, agentOptions);
         agent.init();
 
-        logger.info(`Starting iterations for ${fixture.prompts.length} prompts, ${config.iterationCount} times each`);
+        getLogger().info(`Starting iterations for ${fixture.prompts.length} prompts, ${config.iterationCount} times each`);
 
         const promptCount = fixture.prompts.length;
         let currentPromptIndex = 0;
         for (const prompt of fixture.prompts) {
             currentPromptIndex++;
-            logger.info(`[${currentPromptIndex} / ${promptCount}] Running prompt ${prompt.id}`);
+            getLogger().info(`[${currentPromptIndex} / ${promptCount}] Running prompt ${prompt.id}`);
 
             for (let iterationIndex = 0; iterationIndex < config.iterationCount; iterationIndex++) {
                 const iterationId = crypto.randomUUID();
 
-                logger.info(`Iteration ${iterationIndex + 1} of ${config.iterationCount} for prompt ${prompt.id}`);
+                getLogger().info(`Iteration ${iterationIndex + 1} of ${config.iterationCount} for prompt ${prompt.id}`);
 
                 const tempPath = `${tmpdir()}/compass-iteration-${iterationId}`;
 
-                logger.trace(`Creating temporary working directory at ${tempPath}`);
+                getLogger().trace(`Creating temporary working directory at ${tempPath}`);
                 await copyDirectory(config.repoPath, tempPath);
 
                 const iterationAgent = config.useCache ? new Cache(agent, agentOptions, config.repoPath, iterationIndex.toString()) : agent;
 
-                logger.trace(`Resetting repository to initial state`);
+                getLogger().trace(`Resetting repository to initial state`);
                 throwIfStopOnError(config.stopOnError, await run(tempPath, "git", "reset", "--hard"));
                 throwIfStopOnError(config.stopOnError, await run(tempPath, "git", "clean", "-fd"));
 
-                logger.trace(`Executing agent for prompt ${prompt.id}`);
+                getLogger().trace(`Executing agent for prompt ${prompt.id}`);
                 const agentOutput = await iterationAgent.execute(prompt.prompt, config.model, tempPath);
 
                 throwIfStopOnError(config.stopOnError, agentOutput);
 
                 const agentOutputJson = JSON.stringify(agentOutput, null, 2);
-                logger.trace(`Agent output: stdOut: ${agentOutput.stdOut.length} chars, stdErr: ${agentOutput.stdErr.length} chars, exitCode: ${agentOutput.exitCode}, gitDiff: ${agentOutput.gitDiff.length} chars`);
+                getLogger().trace(`Agent output: stdOut: ${agentOutput.stdOut.length} chars, stdErr: ${agentOutput.stdErr.length} chars, exitCode: ${agentOutput.exitCode}, gitDiff: ${agentOutput.gitDiff.length} chars`);
 
                 const evalPrompt = evaluator
                     .replaceAll("{{ORIGINAL_PROMPT}}", prompt.prompt)
                     .replaceAll("{{EXPECTED}}", prompt.expected)
                     .replaceAll("{{RESULT}}", agentOutputJson);
 
-                logger.trace(`Evaluating agent output for prompt ${prompt.id} with model ${config.evalModel}`);
+                getLogger().trace(`Evaluating agent output for prompt ${prompt.id} with model ${config.evalModel}`);
                 const evalOutput = await evaluationAgent.execute(evalPrompt, config.evalModel, tempPath);
 
                 throwIfStopOnError(config.stopOnError, evalOutput);
 
-                logger.trace(`Evaluation output: stdOut: ${evalOutput.stdOut.length} chars, stdErr: ${evalOutput.stdErr.length} chars, exitCode: ${evalOutput.exitCode}, gitDiff: ${evalOutput.gitDiff.length} chars`);
+                getLogger().trace(`Evaluation output: stdOut: ${evalOutput.stdOut.length} chars, stdErr: ${evalOutput.stdErr.length} chars, exitCode: ${evalOutput.exitCode}, gitDiff: ${evalOutput.gitDiff.length} chars`);
 
-                logger.trace(`Parsing classification from evaluation output`);
+                getLogger().trace(`Parsing classification from evaluation output`);
                 const classification = this.parseClassification(evalOutput.stdOut);
 
-                logger.info(`Iteration ${iterationIndex + 1} for prompt ${prompt.id} classified as ${Classification[classification]}`);
+                getLogger().info(`Iteration ${iterationIndex + 1} for prompt ${prompt.id} classified as ${Classification[classification]}`);
                 const points = this.classificationToPoints(classification);
 
                 iterationResults.push({
@@ -125,16 +132,16 @@ export class Runner {
                 });
 
                 try {
-                    logger.trace(`Cleaning up temporary directory at ${tempPath}`);
+                    getLogger().trace(`Cleaning up temporary directory at ${tempPath}`);
                     await fsPromises.rm(tempPath, { recursive: true, force: true });
                 }
                 catch (err) {
-                    logger.error(`Failed to delete temporary directory at ${tempPath}: ${(err as Error).message}`);
+                    getLogger().error(`Failed to delete temporary directory at ${tempPath}: ${(err as Error).message}`);
                 }
             }
         }
 
-        logger.trace(`Aggregating results from all iterations`);
+        getLogger().trace(`Aggregating results from all iterations`);
 
         // Here we group by promptId and return the amount of iterations per prompt and the average points
         const aggregatedResults = fixture.prompts.map(prompt => {
@@ -149,9 +156,9 @@ export class Runner {
             };
         });
 
-        logger.info(`Completed all iterations.`);
+        getLogger().info(`Completed all iterations.`);
         for (const aggResult of aggregatedResults) {
-            logger.info(`Average Points for prompt "${aggResult.promptId}": ${aggResult.averagePoints.toFixed(2)}`);
+            getLogger().info(`Average Points for prompt "${aggResult.promptId}": ${aggResult.averagePoints.toFixed(2)}`);
         }
 
         return {

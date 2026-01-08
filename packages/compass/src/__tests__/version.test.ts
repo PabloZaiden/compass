@@ -1,71 +1,58 @@
 import { describe, test, expect } from "bun:test";
-import { getVersion } from "../version";
-import { parseCliArgs } from "../cli/parser";
-import { modeRegistry } from "../modes";
+import { formatVersion } from "@pablozaiden/terminator";
+import { CompassApp } from "../app";
 import pkg from "../../package.json";
 
 describe("version", () => {
-    describe("getVersion", () => {
-        test("returns a string that contains the version from package.json", () => {
-            const version = getVersion();
-            expect(version).toContain(pkg.version);
+    describe("formatVersion (from terminator)", () => {
+        test("formats version correctly with commit hash", () => {
+            const result = formatVersion("1.0.0", "abc1234567890");
+            expect(result).toBe("1.0.0 - abc1234");
         });
 
-        test("contains (dev) when commit hash is empty, otherwise short hash", () => {
-            const version = getVersion();
-            const commitHash = pkg.config?.commitHash;
-            if (commitHash) {
-                expect(version).toContain(commitHash.substring(0, 7));
-            } else {
-                expect(version).toContain("(dev)");
-            }
+        test("shows (dev) when commit hash is empty", () => {
+            const result = formatVersion("1.0.0", "");
+            expect(result).toBe("1.0.0 - (dev)");
         });
 
-        test("returns a non-empty string", () => {
-            const version = getVersion();
-            expect(typeof version).toBe("string");
-            expect(version.length).toBeGreaterThan(0);
+        test("shows (dev) when commit hash is undefined", () => {
+            const result = formatVersion("1.0.0");
+            expect(result).toBe("1.0.0 - (dev)");
         });
     });
 
-    describe("version command", () => {
-        test("version command is registered in mode registry", () => {
-            expect(modeRegistry["version"]).toBeDefined();
+    describe("CompassApp", () => {
+        test("CompassApp has correct name", () => {
+            const app = new CompassApp();
+            expect(app.name).toBe("compass");
         });
 
-        test("version mode has correct name", () => {
-            const versionMode = modeRegistry["version"];
-            expect(versionMode).toBeDefined();
-            expect(versionMode!.name).toBe("version");
+        test("CompassApp has version from package.json", () => {
+            const app = new CompassApp();
+            expect(app.version).toBe(pkg.version);
         });
 
-        test("version mode has a description", () => {
-            const versionMode = modeRegistry["version"];
-            expect(versionMode).toBeDefined();
-            expect(versionMode!.description).toBeDefined();
-            expect(versionMode!.description.length).toBeGreaterThan(0);
+        test("CompassApp has commitHash from package.json config", () => {
+            const app = new CompassApp();
+            expect(app.commitHash).toBe(pkg.config?.commitHash);
         });
 
-        test("version mode has no required options", () => {
-            const versionMode = modeRegistry["version"];
-            expect(versionMode).toBeDefined();
-            const options = versionMode!.options;
-            expect(options).toBeDefined();
-            expect(Object.keys(options!)).toHaveLength(0);
-        });
-    });
-
-    describe("CLI parsing", () => {
-        test("parses version command", () => {
-            const result = parseCliArgs(["version"]);
-            expect(result.command).toBe("version");
-            expect(result.commandPath).toEqual(["version"]);
+        test("CompassApp has run, check, and generate commands", () => {
+            const app = new CompassApp();
+            const registry = app.registry;
+            expect(registry.has("run")).toBe(true);
+            expect(registry.has("check")).toBe(true);
+            expect(registry.has("generate")).toBe(true);
         });
 
-        test("version help is parsed correctly", () => {
-            const result = parseCliArgs(["version", "help"]);
-            expect(result.command).toBe("help");
-            expect(result.commandPath).toEqual(["version", "help"]);
+        test("CompassApp has built-in version command", () => {
+            const app = new CompassApp();
+            expect(app.registry.has("version")).toBe(true);
+        });
+
+        test("CompassApp has built-in help command", () => {
+            const app = new CompassApp();
+            expect(app.registry.has("help")).toBe(true);
         });
     });
 });

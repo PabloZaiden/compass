@@ -1,4 +1,7 @@
-import { setDetailedLogs } from "../logging";
+import { createLogger } from "@pablozaiden/terminator";
 
-// Enable detailed logging for all tests
-setDetailedLogs(true);
+// Create a test logger with detailed logging enabled
+const testLogger = createLogger({ detailed: true });
+
+// Export for use in tests if needed
+export { testLogger };

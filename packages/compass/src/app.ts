@@ -1,25 +1,27 @@
-import { Application } from "@pablozaiden/terminator";
-import { RunCommand, CheckCommand, GenerateCommand, InteractiveCommand } from "./commands/index.ts";
-import { getVersion } from "./version/index.ts";
+import { TuiApplication } from "@pablozaiden/terminator";
+import { RunCommand, CheckCommand, GenerateCommand } from "./commands/index.ts";
+import pkg from "../package.json";
 
 /**
  * CompassApp - Main application class for Compass.
  * 
- * Extends the Terminator Application class with Compass-specific
- * commands and configuration.
+ * Extends the Terminator TuiApplication class with Compass-specific
+ * commands and configuration. TuiApplication provides built-in TUI
+ * support that auto-generates UI from command definitions.
  */
-export class CompassApp extends Application {
+export class CompassApp extends TuiApplication {
   constructor() {
     super({
       name: "compass",
-      version: getVersion(),
+      version: pkg.version,
+      commitHash: pkg.config?.commitHash,
       commands: [
         new RunCommand(),
         new CheckCommand(),
         new GenerateCommand(),
-        new InteractiveCommand(),
       ],
-      defaultCommand: "interactive",
+      // Enable built-in TUI (default when no args)
+      enableTui: true,
       logger: {
         detailed: false,
       },

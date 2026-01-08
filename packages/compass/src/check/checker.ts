@@ -1,7 +1,14 @@
 import { AgentTypes, createAgent } from "../agents/factory";
 import { defaultAgentOptions } from "../agents/agent";
 import { parseEnum } from "../models";
-import { logger } from "../logging";
+import { AppContext, type Logger } from "@pablozaiden/terminator";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 
 /**
  * Get all numeric values from a numeric enum.
@@ -136,33 +143,33 @@ export class Checker {
      */
     logResults(result: CheckerResult): void {
         if (result.error) {
-            logger.error(result.error);
+            getLogger().error(result.error);
             return;
         }
 
-        logger.info("Checking agent dependencies...");
+        getLogger().info("Checking agent dependencies...");
 
         for (const agentResult of result.agents) {
             if (agentResult.skipped) {
-                logger.warn(`\n${agentResult.agentName}: (skipped - ${agentResult.skipReason})`);
+                getLogger().warn(`\n${agentResult.agentName}: (skipped - ${agentResult.skipReason})`);
                 continue;
             }
 
-            logger.info(`\n${agentResult.agentName}:`);
+            getLogger().info(`\n${agentResult.agentName}:`);
 
             for (const binary of agentResult.binaries) {
                 if (binary.found) {
-                    logger.info(`  ✓ ${binary.binary} found at ${binary.path}`);
+                    getLogger().info(`  ✓ ${binary.binary} found at ${binary.path}`);
                 } else {
-                    logger.error(`  ✗ ${binary.binary} not found in PATH`);
+                    getLogger().error(`  ✗ ${binary.binary} not found in PATH`);
                 }
             }
         }
 
         if (result.success) {
-            logger.info("\nAll dependencies are available.");
+            getLogger().info("\nAll dependencies are available.");
         } else {
-            logger.error("\nSome dependencies are missing. Please install them and try again.");
+            getLogger().error("\nSome dependencies are missing. Please install them and try again.");
         }
     }
 }

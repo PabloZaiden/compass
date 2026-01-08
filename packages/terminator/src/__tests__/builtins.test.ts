@@ -1,5 +1,5 @@
 import { test, expect, describe, mock, beforeEach, afterEach } from "bun:test";
-import { createVersionCommand } from "../commands/version.ts";
+import { createVersionCommand, formatVersion } from "../builtins/version.ts";
 import { createHelpCommand } from "../commands/help.ts";
 import { defineCommand } from "../types/command.ts";
 
@@ -19,32 +19,54 @@ describe("Built-in Commands", () => {
     console.log = originalLog;
   });
 
-  describe("createVersionCommand", () => {
+  describe("formatVersion", () => {
+    test("formats version with commit hash", () => {
+      const result = formatVersion("1.0.0", "abc1234567890");
+      expect(result).toBe("1.0.0 - abc1234");
+    });
+
+    test("formats version with short commit hash", () => {
+      const result = formatVersion("1.0.0", "abc1234");
+      expect(result).toBe("1.0.0 - abc1234");
+    });
+
+    test("shows (dev) when no commit hash", () => {
+      const result = formatVersion("1.0.0");
+      expect(result).toBe("1.0.0 - (dev)");
+    });
+
+    test("shows (dev) when commit hash is empty", () => {
+      const result = formatVersion("1.0.0", "");
+      expect(result).toBe("1.0.0 - (dev)");
+    });
+  });
+
+  describe("VersionCommand", () => {
     test("creates command with name 'version'", () => {
-      const cmd = createVersionCommand("1.0.0");
+      const cmd = createVersionCommand("myapp", "1.0.0");
       expect(cmd.name).toBe("version");
     });
 
     test("has description", () => {
-      const cmd = createVersionCommand("1.0.0");
+      const cmd = createVersionCommand("myapp", "1.0.0");
       expect(cmd.description).toBeDefined();
       expect(cmd.description.length).toBeGreaterThan(0);
     });
 
     test("has aliases including --version", () => {
-      const cmd = createVersionCommand("1.0.0");
+      const cmd = createVersionCommand("myapp", "1.0.0");
       expect(cmd.aliases).toContain("--version");
+      expect(cmd.aliases).toContain("-v");
     });
 
-    test("is not hidden", () => {
-      const cmd = createVersionCommand("1.0.0");
-      expect(cmd.hidden).toBeFalsy();
+    test("getFormattedVersion returns version with dev", () => {
+      const cmd = createVersionCommand("myapp", "1.2.3");
+      expect(cmd.getFormattedVersion()).toBe("1.2.3 - (dev)");
     });
 
-    test("execute logs version", () => {
-      const cmd = createVersionCommand("1.2.3");
-      cmd.execute({ options: {}, args: [], commandPath: ["version"] });
-      expect(logOutput.join("")).toContain("1.2.3");
+    test("getFormattedVersion returns version with commit hash", () => {
+      const cmd = createVersionCommand("myapp", "1.2.3", "abc1234567890");
+      expect(cmd.getFormattedVersion()).toBe("1.2.3 - abc1234");
     });
   });
 

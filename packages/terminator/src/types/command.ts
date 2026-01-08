@@ -11,6 +11,18 @@ export interface OptionDef {
   enum?: readonly string[];
   min?: number;
   max?: number;
+
+  // TUI-specific properties
+  /** Display label in TUI form (defaults to key name) */
+  label?: string;
+  /** Display order in TUI form (lower = first) */
+  order?: number;
+  /** Group name for organizing fields in TUI */
+  group?: string;
+  /** Placeholder text for input fields */
+  placeholder?: string;
+  /** Hide this field from TUI (still available in CLI) */
+  tuiHidden?: boolean;
 }
 
 /**

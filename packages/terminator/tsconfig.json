@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleDetection": "force",
     "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/react",
     "allowJs": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -17,7 +18,8 @@
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["bun"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "examples/**/*"]
 }

@@ -56,8 +56,10 @@ export function schemaToParseArgsOptions(schema: OptionSchema): {
   const options: Record<string, { type: "string" | "boolean"; short?: string; multiple?: boolean; default?: unknown }> = {};
 
   for (const [name, def] of Object.entries(schema)) {
+    const parseArgsType = def.type === "boolean" ? "boolean" : "string";
+    
     const opt: { type: "string" | "boolean"; short?: string; multiple?: boolean; default?: unknown } = {
-      type: def.type === "boolean" ? "boolean" : "string",
+      type: parseArgsType,
       multiple: def.type === "array",
     };
     
@@ -67,8 +69,13 @@ export function schemaToParseArgsOptions(schema: OptionSchema): {
     }
     
     // Only include default if defined
+    // For non-boolean types, parseArgs expects string defaults
     if (def.default !== undefined) {
-      opt.default = def.default;
+      if (parseArgsType === "string" && typeof def.default !== "string") {
+        opt.default = String(def.default);
+      } else {
+        opt.default = def.default;
+      }
     }
     
     options[name] = opt;
