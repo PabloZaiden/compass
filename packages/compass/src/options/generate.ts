@@ -36,7 +36,7 @@ export const generateOptionsSchema = {
     count: {
         type: "string",
         description: "Number of prompts to generate",
-        placeholder: "n",
+        placeholder: "",
         required: true,
     },
     model: {

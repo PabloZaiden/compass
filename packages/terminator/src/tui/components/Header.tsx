@@ -21,7 +21,7 @@ export function Header({ name, version, breadcrumb }: HeaderProps) {
         <box flexDirection="row" justifyContent="space-between" marginBottom={1}>
             <text fg={Theme.header}>
                 <strong>{name}</strong>
-                <dim>{breadcrumbStr}</dim>
+                {breadcrumbStr}
             </text>
             <text fg={Theme.label}>
                 v{version}

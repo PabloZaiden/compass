@@ -21,9 +21,9 @@ import {
     type LogSource,
 } from "./hooks/index.ts";
 import { schemaToFieldConfigs, getFieldDisplayValue, buildCliCommand } from "./utils/index.ts";
-import type { Command, CommandResult } from "../core/command.ts";
+import type { AnyCommand, CommandResult } from "../core/command.ts";
 import type { AppContext } from "../core/context.ts";
-import type { OptionValues, OptionSchema } from "../types/command.ts";
+import type { OptionValues, OptionSchema, OptionDef } from "../types/command.ts";
 
 /**
  * TUI application mode.
@@ -51,7 +51,7 @@ interface TuiAppProps {
     /** Application version */
     version: string;
     /** Available commands */
-    commands: Command[];
+    commands: AnyCommand[];
     /** Application context */
     context: AppContext;
     /** Log source for log panel */
@@ -85,7 +85,7 @@ function TuiAppContent({
 }: TuiAppProps) {
     // State
     const [mode, setMode] = useState<Mode>(Mode.CommandSelect);
-    const [selectedCommand, setSelectedCommand] = useState<Command | null>(null);
+    const [selectedCommand, setSelectedCommand] = useState<AnyCommand | null>(null);
     const [commandPath, setCommandPath] = useState<string[]>([]);
     const [commandSelectorIndex, setCommandSelectorIndex] = useState(0);
     const [selectedFieldIndex, setSelectedFieldIndex] = useState(0);
@@ -100,18 +100,24 @@ function TuiAppContent({
     const { copyWithMessage, lastAction } = useClipboard();
     
     // Command executor
-    const executeCommand = useCallback(async (cmd: Command, values: Record<string, unknown>) => {
+    const executeCommand = useCallback(async (cmd: AnyCommand, values: Record<string, unknown>) => {
+        // If the command provides buildConfig, build and validate before executing
+        let configOrValues: unknown = values;
+        if (cmd.buildConfig) {
+            configOrValues = await cmd.buildConfig(context, values as OptionValues<OptionSchema>);
+        }
+
         if (cmd.executeTui) {
-            return await cmd.executeTui(context, values as OptionValues<OptionSchema>);
+            return await cmd.executeTui(context, configOrValues as OptionValues<OptionSchema>);
         } else if (cmd.executeCli) {
-            await cmd.executeCli(context, values as OptionValues<OptionSchema>);
+            await cmd.executeCli(context, configOrValues as OptionValues<OptionSchema>);
             return { success: true, message: "Command completed" } as CommandResult;
         }
         return { success: false, error: "Command has no execute method" } as CommandResult;
     }, [context]);
 
     const { isExecuting, result, error, execute, reset: resetExecutor } = useCommandExecutor(
-        (cmd: unknown, values: unknown) => executeCommand(cmd as Command, values as Record<string, unknown>)
+        (cmd: unknown, values: unknown) => executeCommand(cmd as AnyCommand, values as Record<string, unknown>)
     );
 
     const { frame: spinnerFrame } = useSpinner(isExecuting);
@@ -137,18 +143,20 @@ function TuiAppContent({
     }, [commandPath]);
 
     // Initialize config values when command changes
-    const initializeConfigValues = useCallback((cmd: Command) => {
+    const initializeConfigValues = useCallback((cmd: AnyCommand) => {
         const defaults: Record<string, unknown> = {};
-        for (const [key, def] of Object.entries(cmd.options)) {
-            if (def.default !== undefined) {
-                defaults[key] = def.default;
+        const optionDefs = cmd.options as OptionSchema;
+        for (const [key, def] of Object.entries(optionDefs)) {
+            const typedDef = def as OptionDef;
+            if (typedDef.default !== undefined) {
+                defaults[key] = typedDef.default;
             } else {
-                switch (def.type) {
+                switch (typedDef.type) {
                     case "string":
-                        defaults[key] = def.enum?.[0] ?? "";
+                        defaults[key] = typedDef.enum?.[0] ?? "";
                         break;
                     case "number":
-                        defaults[key] = def.min ?? 0;
+                        defaults[key] = typedDef.min ?? 0;
                         break;
                     case "boolean":
                         defaults[key] = false;
@@ -171,7 +179,7 @@ function TuiAppContent({
     }, [customFields]);
 
     // Handlers
-    const handleCommandSelect = useCallback((cmd: Command) => {
+    const handleCommandSelect = useCallback((cmd: AnyCommand) => {
         // Check if command has subcommands to navigate into
         if (cmd.subCommands && cmd.subCommands.length > 0 && !cmd.supportsTui() && !cmd.supportsCli()) {
             // Navigate into subcommands
@@ -184,6 +192,8 @@ function TuiAppContent({
         setCommandPath((prev) => [...prev, cmd.name]);
         initializeConfigValues(cmd);
         setSelectedFieldIndex(0);
+        setFocusedSection(FocusedSection.Config);
+        setLogsVisible(false);
 
         // Check if command should execute immediately
         if (cmd.immediateExecution) {
@@ -199,8 +209,11 @@ function TuiAppContent({
             setSelectedCommand(null);
             setCommandPath((prev) => prev.slice(0, -1));
             setSelectedFieldIndex(0);
+            setFocusedSection(FocusedSection.Config);
+            setLogsVisible(false);
         } else if (mode === Mode.Results || mode === Mode.Error) {
             setMode(Mode.Config);
+            setFocusedSection(FocusedSection.Config);
             resetExecutor();
         } else if (mode === Mode.CommandSelect && commandPath.length > 0) {
             setCommandPath((prev) => prev.slice(0, -1));
@@ -210,7 +223,7 @@ function TuiAppContent({
         }
     }, [mode, commandPath, onExit, resetExecutor]);
 
-    const handleRunCommand = useCallback(async (cmd?: Command) => {
+    const handleRunCommand = useCallback(async (cmd?: AnyCommand) => {
         const cmdToRun = cmd ?? selectedCommand;
         if (!cmdToRun) return;
 
@@ -310,7 +323,7 @@ function TuiAppContent({
         }
 
         // Navigate to current path
-        let current: Command[] = commands;
+        let current: AnyCommand[] = commands;
         for (const pathPart of commandPath.slice(0, -1)) {
             const found = current.find((c) => c.name === pathPart);
             if (found?.subCommands) {

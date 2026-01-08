@@ -1,5 +1,5 @@
 import { TuiApplication } from "@pablozaiden/terminator";
-import { RunCommand, CheckCommand, GenerateCommand } from "./commands/index.ts";
+import { RunCommand, CheckCommand, GenerateCommand, SettingsCommand } from "./commands/index.ts";
 import pkg from "../package.json";
 
 /**
@@ -19,6 +19,7 @@ export class CompassApp extends TuiApplication {
         new RunCommand(),
         new CheckCommand(),
         new GenerateCommand(),
+        new SettingsCommand(),
       ],
       // Enable built-in TUI (default when no args)
       enableTui: true,

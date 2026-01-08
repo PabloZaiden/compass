@@ -127,7 +127,7 @@ export function CommandSelector({
                         return (
                             <box key={item.command.name} flexDirection="column">
                                 <text fg={Theme.value}>
-                                    {prefix}{label} <dim>{modeIndicator}</dim>
+                                    {prefix}{label} {modeIndicator}
                                 </text>
                                 <text fg={Theme.border}>
                                     {"    "}{description}

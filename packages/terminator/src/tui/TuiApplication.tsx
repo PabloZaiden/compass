@@ -1,7 +1,7 @@
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { Application, type ApplicationConfig } from "../core/application.ts";
-import type { Command } from "../core/command.ts";
+import type { AnyCommand } from "../core/command.ts";
 import { TuiApp } from "./TuiApp.tsx";
 import { Theme } from "./theme.ts";
 import type { LogSource } from "./hooks/index.ts";
@@ -131,7 +131,7 @@ export class TuiApplication extends Application {
      * Get commands that can be used in TUI.
      * Filters out internal commands like version/help.
      */
-    private getExecutableCommands(): Command[] {
+    private getExecutableCommands(): AnyCommand[] {
         return this.registry
             .list()
             .filter((cmd) => {

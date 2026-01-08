@@ -65,7 +65,18 @@ export function ResultsPanel({
         );
     } else if (result) {
         if (renderResult) {
-            content = renderResult(result) as ReactNode;
+            const customContent = renderResult(result);
+
+            if (typeof customContent === "string" || typeof customContent === "number" || typeof customContent === "boolean") {
+                // Wrap primitive results so the renderer gets a text node
+                content = (
+                    <text fg={Theme.value}>
+                        {String(customContent)}
+                    </text>
+                );
+            } else {
+                content = customContent as ReactNode;
+            }
         } else {
             // Default JSON display
             content = (
