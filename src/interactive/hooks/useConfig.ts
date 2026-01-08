@@ -63,10 +63,7 @@ export interface UseConfigResult {
 
 export function useConfig(): UseConfigResult {
     const [values, setValues] = useState<RunConfig>(() => {
-        const config = loadConfigFromDisk();
-        // Apply initial log level
-        logger.settings.minLevel = config.logLevel;
-        return config;
+        return loadConfigFromDisk();
     });
 
     const updateValue = useCallback((key: keyof RunConfig, value: unknown) => {
@@ -78,11 +75,6 @@ export function useConfig(): UseConfigResult {
                 const newAgent = value as AgentTypes;
                 updated.model = defaultModels[newAgent] ?? "";
                 updated.evalModel = defaultModels[newAgent] ?? "";
-            }
-
-            // Update log level when changed
-            if (key === "logLevel") {
-                logger.settings.minLevel = value as number;
             }
 
             // Save to disk

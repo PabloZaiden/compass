@@ -32,15 +32,16 @@ export const logger = new Logger({
             const simpleLine = `${logArgs.join(" ")}${logErrors.join("")}`;
             const levelFromMeta = typeof (logMeta as any)?.logLevelId === "number" ? (logMeta as any).logLevelId as LogLevel : LogLevel.Info;
 
+            // Use detailed format (with date/level) or simple format (message only)
+            const output = detailedLogsEnabled ? baseLine : simpleLine;
+
             if (tuiLoggingEnabled) {
                 logEventEmitter.emit("log", {
-                    message: baseLine,
+                    message: output,
                     level: levelFromMeta,
                     timestamp: new Date(),
                 } satisfies TuiLogEvent);
             } else {
-                // Use detailed format (with date/level) or simple format (message only)
-                const output = detailedLogsEnabled ? baseLine : simpleLine;
                 process.stderr.write(output + "\n");
             }
         },
