@@ -1,6 +1,5 @@
 import { Theme } from "../theme.ts";
 import { LogLevel, type LogEntry } from "../hooks/useLogStream.ts";
-import { useKeyboardHandler, KeyboardPriority } from "../hooks/useKeyboardHandler.ts";
 
 // Colors for different log levels
 const LogColors: Record<LogLevel, string> = {
@@ -22,8 +21,6 @@ interface LogsPanelProps {
     focused: boolean;
     /** Whether to expand to fill available space */
     expanded?: boolean;
-    /** Called when content should be copied */
-    onCopy?: (content: string, label: string) => void;
 }
 
 /**
@@ -34,28 +31,7 @@ export function LogsPanel({
     visible,
     focused,
     expanded = false,
-    onCopy,
 }: LogsPanelProps) {
-    // Handle keyboard events at Focused priority (only when focused)
-    useKeyboardHandler(
-        (event) => {
-            const { key } = event;
-            // Ctrl+Y to copy logs
-            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
-                if (logs.length > 0 && onCopy) {
-                    const content = logs
-                        .map((log) => `[${log.level}] ${log.timestamp.toISOString()} ${log.message}`)
-                        .join("\n");
-                    onCopy(content, "Logs");
-                }
-                event.stopPropagation();
-                return;
-            }
-        },
-        KeyboardPriority.Focused,
-        { enabled: focused }
-    );
-
     if (!visible) {
         return null;
     }

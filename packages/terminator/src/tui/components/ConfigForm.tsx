@@ -22,12 +22,8 @@ interface ConfigFormProps {
     onEditField: (fieldKey: string) => void;
     /** Called when the action button is pressed */
     onAction: () => void;
-    /** Called to copy content */
-    onCopy?: (content: string, label: string) => void;
     /** Function to get display value for a field */
     getDisplayValue?: (key: string, value: unknown, type: string) => string;
-    /** Label for the copy notification */
-    copyLabel?: string;
     /** The action button component */
     actionButton: ReactNode;
 }
@@ -58,9 +54,7 @@ export function ConfigForm({
     onSelectionChange,
     onEditField,
     onAction,
-    onCopy,
     getDisplayValue = defaultGetDisplayValue,
-    copyLabel = "Config",
     actionButton,
 }: ConfigFormProps) {
     const borderColor = focused ? Theme.borderFocused : Theme.border;
@@ -78,12 +72,6 @@ export function ConfigForm({
     useKeyboardHandler(
         (event) => {
             const { key } = event;
-            // Ctrl+Y to copy config JSON
-            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
-                onCopy?.(JSON.stringify(values, null, 2), copyLabel);
-                event.stopPropagation();
-                return;
-            }
 
             // Arrow key navigation
             if (key.name === "down") {

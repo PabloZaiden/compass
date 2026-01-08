@@ -311,6 +311,48 @@ function TuiAppContent({
         copyWithMessage(content, label);
     }, [copyWithMessage]);
 
+    /**
+     * Get clipboard content based on current mode and focused section.
+     * Returns { content, label } or null if nothing to copy.
+     */
+    const getClipboardContent = useCallback((): { content: string; label: string } | null => {
+        // In Running mode or when logs are focused, copy logs
+        if (mode === Mode.Running || (logsVisible && focusedSection === FocusedSection.Logs)) {
+            if (logs.length > 0) {
+                const content = logs
+                    .map((log) => `[${log.level}] ${log.timestamp.toISOString()} ${log.message}`)
+                    .join("\n");
+                return { content, label: "Logs" };
+            }
+            return null;
+        }
+
+        // In Results/Error mode with results focused
+        if ((mode === Mode.Results || mode === Mode.Error) && focusedSection === FocusedSection.Results) {
+            if (error) {
+                return { content: error.message, label: "Error" };
+            }
+            if (result) {
+                // Use command's getClipboardContent if available
+                if (selectedCommand?.getClipboardContent) {
+                    const customContent = selectedCommand.getClipboardContent(result);
+                    if (customContent) {
+                        return { content: customContent, label: "Results" };
+                    }
+                }
+                return { content: JSON.stringify(result.data ?? result, null, 2), label: "Results" };
+            }
+            return null;
+        }
+
+        // In Config mode with config focused, copy config JSON
+        if (mode === Mode.Config && focusedSection === FocusedSection.Config) {
+            return { content: JSON.stringify(configValues, null, 2), label: "Config" };
+        }
+
+        return null;
+    }, [mode, focusedSection, logsVisible, logs, error, result, configValues, selectedCommand]);
+
     const cycleFocusedSection = useCallback(() => {
         const sections: FocusedSection[] = [];
         if (mode === Mode.Config) sections.push(FocusedSection.Config);
@@ -332,6 +374,16 @@ function TuiAppContent({
             // Escape to go back
             if (key.name === "escape") {
                 handleBack();
+                event.stopPropagation();
+                return;
+            }
+
+            // C to copy content based on current mode and focus
+            if ((key.name === "c")) {
+                const clipboardData = getClipboardContent();
+                if (clipboardData) {
+                    handleCopy(clipboardData.content, clipboardData.label);
+                }
                 event.stopPropagation();
                 return;
             }
@@ -442,9 +494,7 @@ function TuiAppContent({
                             onSelectionChange={setSelectedFieldIndex}
                             onEditField={handleEditField}
                             onAction={() => handleRunCommand()}
-                            onCopy={handleCopy}
                             getDisplayValue={getDisplayValue}
-                            copyLabel="Config"
                             actionButton={
                                 <ActionButton
                                     label={selectedCommand.actionLabel ?? "Run"}
@@ -457,7 +507,6 @@ function TuiAppContent({
                                 logs={logs}
                                 visible={true}
                                 focused={focusedSection === FocusedSection.Logs}
-                                onCopy={handleCopy}
                             />
                         )}
                     </box>
@@ -470,7 +519,6 @@ function TuiAppContent({
                         visible={true}
                         focused={true}
                         expanded={true}
-                        onCopy={handleCopy}
                     />
                 );
 
@@ -483,14 +531,12 @@ function TuiAppContent({
                             error={error}
                             focused={focusedSection === FocusedSection.Results}
                             renderResult={selectedCommand?.renderResult}
-                            onCopy={handleCopy}
                         />
                         {logsVisible && (
                             <LogsPanel
                                 logs={logs}
                                 visible={true}
                                 focused={focusedSection === FocusedSection.Logs}
-                                onCopy={handleCopy}
                             />
                         )}
                     </box>

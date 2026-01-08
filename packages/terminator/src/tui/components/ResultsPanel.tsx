@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Theme } from "../theme.ts";
-import { useKeyboardHandler, KeyboardPriority } from "../hooks/useKeyboardHandler.ts";
 import type { CommandResult } from "../../core/command.ts";
 
 interface ResultsPanelProps {
@@ -12,8 +11,6 @@ interface ResultsPanelProps {
     focused: boolean;
     /** Custom result renderer */
     renderResult?: (result: CommandResult) => ReactNode;
-    /** Called when content should be copied */
-    onCopy?: (content: string, label: string) => void;
 }
 
 /**
@@ -24,29 +21,7 @@ export function ResultsPanel({
     error,
     focused,
     renderResult,
-    onCopy,
 }: ResultsPanelProps) {
-    // Handle keyboard events at Focused priority (only when focused)
-    useKeyboardHandler(
-        (event) => {
-            const { key } = event;
-            // Ctrl+Y to copy results
-            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
-                if (onCopy) {
-                    if (error) {
-                        onCopy(error.message, "Error");
-                    } else if (result) {
-                        onCopy(JSON.stringify(result.data ?? result, null, 2), "Results");
-                    }
-                }
-                event.stopPropagation();
-                return;
-            }
-        },
-        KeyboardPriority.Focused,
-        { enabled: focused }
-    );
-
     const borderColor = focused ? Theme.borderFocused : Theme.border;
 
     // Determine content to display

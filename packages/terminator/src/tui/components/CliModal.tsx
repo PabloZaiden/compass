@@ -32,8 +32,8 @@ export function CliModal({
                 return;
             }
 
-            // Ctrl+Y to copy
-            if ((key.ctrl && key.name === "y") || key.sequence === "\x19") {
+            // C to copy
+            if (key.name === "c") {
                 onCopy?.(command, "CLI command");
                 event.stopPropagation();
                 return;
