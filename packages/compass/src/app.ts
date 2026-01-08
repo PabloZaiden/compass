@@ -16,7 +16,7 @@ export class CompassApp extends TuiApplication {
   constructor() {
     super({
       name: "compass",
-      displayName: "Compass",
+      displayName: "🧭 Compass",
       version: pkg.version,
       commitHash: pkg.config?.commitHash,
       commands: [
