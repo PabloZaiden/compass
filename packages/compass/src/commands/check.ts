@@ -63,6 +63,7 @@ const checkOptions = convertOptions(checkOptionsSchema);
  */
 export class CheckCommand extends Command<typeof checkOptions> {
   readonly name = "check";
+  override readonly displayName = "Check Dependencies";
   readonly description = "Check if all required agent dependencies are installed";
   readonly options = checkOptions;
 

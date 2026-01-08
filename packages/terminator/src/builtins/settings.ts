@@ -70,6 +70,7 @@ function parseLogLevel(value?: string): LogLevel {
  */
 export class SettingsCommand extends Command<typeof settingsOptions, SettingsConfig> {
   readonly name = "settings";
+  override readonly displayName = "Settings";
   readonly description = "Configure logging level and output format";
   readonly options = settingsOptions;
 

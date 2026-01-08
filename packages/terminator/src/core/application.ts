@@ -30,8 +30,10 @@ export interface GlobalOptions {
  * Application configuration options.
  */
 export interface ApplicationConfig {
-  /** Application name (used in help, version) */
+  /** Application name (used in CLI, help, version) */
   name: string;
+  /** Display name for TUI (human-readable, e.g., "My App") */
+  displayName?: string;
   /** Application version */
   version: string;
   /** Optional commit hash for version display (shows "(dev)" if not set) */
@@ -78,6 +80,7 @@ export interface ApplicationHooks {
  */
 export class Application {
   readonly name: string;
+  readonly displayName: string;
   readonly version: string;
   readonly commitHash?: string;
   readonly registry: CommandRegistry;
@@ -88,6 +91,7 @@ export class Application {
 
   constructor(config: ApplicationConfig) {
     this.name = config.name;
+    this.displayName = config.displayName ?? config.name;
     this.version = config.version;
     this.commitHash = config.commitHash;
     this.defaultCommandName = config.defaultCommand;

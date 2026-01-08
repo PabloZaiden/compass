@@ -99,6 +99,7 @@ function parseEnumValue<T extends object>(value: string, enumObj: T): T[keyof T]
  */
 export class GenerateCommand extends Command<typeof generateOptions, GenerateConfig> {
   readonly name = "generate";
+  override readonly displayName = "Generate Fixtures";
   readonly description = "Generate a compass fixture file for a repository";
   readonly options = generateOptions;
 

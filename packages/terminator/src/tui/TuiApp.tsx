@@ -47,8 +47,10 @@ enum FocusedSection {
 }
 
 interface TuiAppProps {
-    /** Application name */
+    /** Application name (CLI name) */
     name: string;
+    /** Display name for TUI header (human-readable) */
+    displayName?: string;
     /** Application version */
     version: string;
     /** Available commands */
@@ -77,6 +79,7 @@ export function TuiApp(props: TuiAppProps) {
 
 function TuiAppContent({
     name,
+    displayName,
     version,
     commands,
     context,
@@ -478,7 +481,7 @@ function TuiAppContent({
 
     return (
         <box flexDirection="column" flexGrow={1} padding={1}>
-            <Header name={name} version={version} breadcrumb={breadcrumb} />
+            <Header name={displayName ?? name} version={version} breadcrumb={breadcrumb} />
 
             <box key={`content-${mode}-${isExecuting}`} flexDirection="column" flexGrow={1}>
                 {renderContent()}

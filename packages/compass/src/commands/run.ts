@@ -78,6 +78,7 @@ const runOptions = convertOptions(runOptionsSchema);
  */
 export class RunCommand extends Command<typeof runOptions, RunConfig> {
   readonly name = "run";
+  override readonly displayName = "Run Evaluation";
   readonly description = "Run the evaluation with the specified configuration";
   readonly options = runOptions;
 

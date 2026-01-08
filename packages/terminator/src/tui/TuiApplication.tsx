@@ -126,6 +126,7 @@ export class TuiApplication extends Application {
             root.render(
                 <TuiApp
                     name={this.name}
+                    displayName={this.displayName}
                     version={this.version}
                     commands={commands}
                     context={this.context}

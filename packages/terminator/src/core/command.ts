@@ -95,6 +95,9 @@ export abstract class Command<
   /** Command name used in CLI */
   abstract readonly name: string;
 
+  /** Display name for TUI (human-readable, e.g., "Run Evaluation") */
+  displayName?: string;
+
   /** Short description shown in help */
   abstract readonly description: string;
 

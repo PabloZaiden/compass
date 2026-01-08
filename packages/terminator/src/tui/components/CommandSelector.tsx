@@ -105,7 +105,7 @@ export function CommandSelector({
                     {commands.map((item, idx) => {
                         const isSelected = idx === selectedIndex;
                         const prefix = isSelected ? "► " : "  ";
-                        const label = item.label ?? item.command.name;
+                        const label = item.label ?? item.command.displayName ?? item.command.name;
                         const description = item.description ?? item.command.description;
 
                         // Show mode indicators
