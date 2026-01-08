@@ -44,10 +44,10 @@ class GreetCommand extends Command {
     },
   };
 
-  override executeCli(args: string[], options: Record<string, unknown>): void {
-    const name = options.name as string;
+  override execute(ctx: AppContext, config: Record<string, unknown>): void {
+    const name = config.name as string;
     const message = `Hello, ${name}!`;
-    console.log(options.loud ? message.toUpperCase() : message);
+    console.log(config.loud ? message.toUpperCase() : message);
   }
 }
 ```
@@ -119,11 +119,8 @@ abstract class Command {
   hidden?: boolean;
   examples?: string[];
   
-  // Override to support CLI mode
-  executeCli?(args: string[], options: Record<string, unknown>): Promise<void> | void;
-  
-  // Override to support TUI mode
-  executeTui?(args: string[], options: Record<string, unknown>): Promise<void> | void;
+  // Implement to handle command execution (required)
+  abstract execute(ctx: AppContext, config: TConfig): Promise<CommandResult | void> | CommandResult | void;
   
   // Lifecycle hooks
   beforeExecute?(mode: ExecutionMode): Promise<void> | void;
@@ -297,9 +294,9 @@ class RunCommand extends Command {
   override readonly actionLabel = "Start Run";      // Button text
   override readonly immediateExecution = false;     // Run immediately on selection
 
-  // Return structured results for TUI display
-  override async executeTui(ctx, opts): Promise<CommandResult> {
-    const result = await runTask(opts);
+  // Return structured results for display
+  override async execute(ctx: AppContext, config: RunConfig): Promise<CommandResult> {
+    const result = await runTask(config);
     return { 
       success: true, 
       data: result,
@@ -321,7 +318,7 @@ class RunCommand extends Command {
 
 ### CommandResult Interface
 
-TUI commands should return a `CommandResult` from `executeTui()`:
+Commands should return a `CommandResult` from `execute()`:
 
 ```typescript
 interface CommandResult {

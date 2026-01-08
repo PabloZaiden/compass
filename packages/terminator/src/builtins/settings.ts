@@ -84,12 +84,7 @@ export class SettingsCommand extends Command<typeof settingsOptions, SettingsCon
     return { logLevel, detailedLogs };
   }
 
-  override async executeCli(ctx: AppContext, config: SettingsConfig): Promise<void> {
-    this.applySettings(ctx, config);
-    ctx.logger.info(`Logging set to ${LogLevel[config.logLevel]}${config.detailedLogs ? " with detailed format" : ""}`);
-  }
-
-  override async executeTui(ctx: AppContext, config: SettingsConfig): Promise<CommandResult> {
+  override async execute(ctx: AppContext, config: SettingsConfig): Promise<CommandResult> {
     this.applySettings(ctx, config);
     return {
       success: true,

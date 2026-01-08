@@ -13,14 +13,14 @@ const testOptions = {
 } as const satisfies OptionSchema;
 
 // Test command implementations
-class TestCliCommand extends Command<typeof testOptions> {
+class TestCommand extends Command<typeof testOptions> {
   readonly name = "test";
   readonly description = "A test command";
   readonly options = testOptions;
 
   executedWith: Record<string, unknown> | null = null;
 
-  override async executeCli(
+  override async execute(
     _ctx: AppContext,
     opts: OptionValues<typeof testOptions>
   ): Promise<void> {
@@ -28,14 +28,14 @@ class TestCliCommand extends Command<typeof testOptions> {
   }
 }
 
-class TestTuiCommand extends Command<OptionSchema> {
+class TuiCommand extends Command<OptionSchema> {
   readonly name = "tui-cmd";
   readonly description = "A TUI command";
   readonly options = {};
 
   executed = false;
 
-  override async executeTui(_ctx: AppContext): Promise<void> {
+  override async execute(_ctx: AppContext): Promise<void> {
     this.executed = true;
   }
 }
@@ -67,7 +67,7 @@ describe("Application", () => {
     });
 
     test("registers provided commands", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -95,7 +95,7 @@ describe("Application", () => {
     });
 
     test("injects help subcommand into commands", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       // Creating the Application injects help into commands
       new Application({
         name: "test-app",
@@ -123,14 +123,14 @@ describe("Application", () => {
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
-        commands: [new TestCliCommand()],
+        commands: [new TestCommand()],
       });
       // Should not throw
       await app.run([]);
     });
 
     test("runs default command when no args", async () => {
-      const cmd = new TestTuiCommand();
+      const cmd = new TuiCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -142,7 +142,7 @@ describe("Application", () => {
     });
 
     test("runs specified command", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -153,7 +153,7 @@ describe("Application", () => {
     });
 
     test("passes options to command", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -168,7 +168,7 @@ describe("Application", () => {
   describe("lifecycle hooks", () => {
     test("calls onBeforeRun", async () => {
       let called = false;
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -185,7 +185,7 @@ describe("Application", () => {
 
     test("calls onAfterRun", async () => {
       let called = false;
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -208,7 +208,7 @@ describe("Application", () => {
         readonly description = "A command that throws";
         readonly options = {};
 
-        override async executeCli(): Promise<void> {
+        override async execute(): Promise<void> {
           throw new Error("Test error");
         }
       }
@@ -240,7 +240,7 @@ describe("Application", () => {
       count: { type: "string" as const, description: "A count" },
     } as const satisfies OptionSchema;
 
-    test("calls buildConfig before executeCli", async () => {
+    test("calls buildConfig before execute", async () => {
       let buildConfigCalled = false;
       let receivedConfig: ParsedConfig | null = null as ParsedConfig | null;
 
@@ -260,7 +260,7 @@ describe("Application", () => {
           };
         }
 
-        override async executeCli(_ctx: AppContext, config: ParsedConfig): Promise<void> {
+        override async execute(_ctx: AppContext, config: ParsedConfig): Promise<void> {
           receivedConfig = config;
         }
       }
@@ -285,7 +285,7 @@ describe("Application", () => {
         readonly description = "A command without buildConfig";
         readonly options = testOptions;
 
-        override async executeCli(
+        override async execute(
           _ctx: AppContext,
           opts: OptionValues<typeof testOptions>
         ): Promise<void> {
@@ -316,7 +316,7 @@ describe("Application", () => {
           throw new Error("Config validation failed");
         }
 
-        override async executeCli(): Promise<void> {
+        override async execute(): Promise<void> {
           // Should never be called
         }
       }
@@ -341,7 +341,7 @@ describe("Application", () => {
 
   describe("global options", () => {
     test("parses --log-level before command", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -354,7 +354,7 @@ describe("Application", () => {
     });
 
     test("parses --log-level after command", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -366,7 +366,7 @@ describe("Application", () => {
     });
 
     test("applies log-level case-insensitively", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -385,7 +385,7 @@ describe("Application", () => {
     });
 
     test("parses --detailed-logs flag", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -398,7 +398,7 @@ describe("Application", () => {
     });
 
     test("parses --no-detailed-logs flag", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",
@@ -411,7 +411,7 @@ describe("Application", () => {
     });
 
     test("parses --log-level=value format", async () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       const app = new Application({
         name: "test-app",
         version: "1.0.0",

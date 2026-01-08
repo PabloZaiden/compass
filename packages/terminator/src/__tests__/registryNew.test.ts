@@ -14,7 +14,7 @@ class TestCommand extends Command<OptionSchema> {
   }
   readonly options = {};
 
-  override async executeCli(_ctx: AppContext): Promise<void> {}
+  override async execute(_ctx: AppContext): Promise<void> {}
 }
 
 describe("CommandRegistry (new)", () => {
@@ -37,16 +37,6 @@ describe("CommandRegistry (new)", () => {
       expect(() => registry.register(cmd)).toThrow(
         "Command 'test' is already registered"
       );
-    });
-
-    test("validates command on registration", () => {
-      class InvalidCommand extends Command<OptionSchema> {
-        readonly name = "invalid";
-        readonly description = "Invalid";
-        readonly options = {};
-        // No execute methods
-      }
-      expect(() => registry.register(new InvalidCommand())).toThrow();
     });
   });
 

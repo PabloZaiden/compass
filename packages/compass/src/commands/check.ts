@@ -82,29 +82,11 @@ export class CheckCommand extends Command<typeof checkOptions> {
     },
   ];
 
-  override async executeCli(ctx: AppContext, opts: OptionValues<typeof checkOptions>): Promise<void> {
-    // Apply common options
-    const logLevel = opts["log-level"];
-    if (logLevel === "debug") {
-      ctx.logger.setDetailed(true);
-    }
-
-    const agentFilter = opts["agent"] as string | undefined;
-
-    const checker = new Checker();
-    const result = await checker.check(agentFilter);
-
-    checker.logResults(result);
-
-    if (!result.success) {
-      process.exitCode = 1;
-    }
-  }
-
   /**
-   * Execute in TUI mode.
+   * Execute the check command.
    */
-  override async executeTui(ctx: AppContext, opts: OptionValues<typeof checkOptions>): Promise<CommandResult> {
+  override async execute(ctx: AppContext, opts: OptionValues<typeof checkOptions>): Promise<CommandResult> {
+    // Apply common options
     const logLevel = opts["log-level"];
     if (logLevel === "debug") {
       ctx.logger.setDetailed(true);
@@ -115,6 +97,9 @@ export class CheckCommand extends Command<typeof checkOptions> {
     try {
       const checker = new Checker();
       const result = await checker.check(agentFilter);
+      
+      // Log results for both CLI and TUI
+      checker.logResults(result);
       
       if (result.success) {
         return { success: true, data: result, message: "All dependencies OK" };

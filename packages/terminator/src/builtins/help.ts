@@ -33,7 +33,7 @@ export class HelpCommand extends Command<OptionSchema> {
     this.appVersion = config.appVersion;
   }
 
-  override async executeCli(_ctx: AppContext): Promise<void> {
+  override async execute(_ctx: AppContext): Promise<void> {
     let helpText: string;
 
     if (this.parentCommand) {

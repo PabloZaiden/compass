@@ -66,13 +66,9 @@ class GreetCommand extends Command<typeof greetOptions> {
         { command: "greet --name World --loud --times 3", description: "Loud greeting 3 times" },
     ];
 
-    override async executeCli(ctx: AppContext, opts: OptionValues<typeof greetOptions>): Promise<void> {
-        const result = this.createGreeting(opts);
-        ctx.logger.info(result);
-    }
-
-    override async executeTui(_ctx: AppContext, opts: OptionValues<typeof greetOptions>): Promise<CommandResult> {
+    override async execute(ctx: AppContext, opts: OptionValues<typeof greetOptions>): Promise<CommandResult> {
         const greeting = this.createGreeting(opts);
+        ctx.logger.info(greeting);
         return {
             success: true,
             data: { greeting, timestamp: new Date().toISOString() },
@@ -144,18 +140,12 @@ class MathCommand extends Command<typeof mathOptions> {
 
     override readonly actionLabel = "Calculate";
 
-    override async executeCli(ctx: AppContext, opts: OptionValues<typeof mathOptions>): Promise<void> {
+    override async execute(ctx: AppContext, opts: OptionValues<typeof mathOptions>): Promise<CommandResult> {
         const result = this.calculate(opts);
-        if (result.success) {
-            const data = result.data as { result: number };
-            ctx.logger.info(`Result: ${data.result}`);
-        } else {
+        if (!result.success) {
             ctx.logger.error(result.message || "Calculation failed");
         }
-    }
-
-    override async executeTui(_ctx: AppContext, opts: OptionValues<typeof mathOptions>): Promise<CommandResult> {
-        return this.calculate(opts);
+        return result;
     }
 
     override renderResult(result: CommandResult): string {
@@ -236,13 +226,10 @@ class StatusCommand extends Command<typeof statusOptions> {
     override readonly actionLabel = "Check Status";
     override readonly immediateExecution = true; // No required fields
 
-    override async executeCli(ctx: AppContext, opts: OptionValues<typeof statusOptions>): Promise<void> {
+    override async execute(ctx: AppContext, opts: OptionValues<typeof statusOptions>): Promise<CommandResult> {
         const result = await this.getStatus(opts);
         ctx.logger.info(result.message || "Status check complete");
-    }
-
-    override async executeTui(_ctx: AppContext, opts: OptionValues<typeof statusOptions>): Promise<CommandResult> {
-        return this.getStatus(opts);
+        return result;
     }
 
     override renderResult(result: CommandResult): string {

@@ -82,8 +82,9 @@ export type AnyCommand = Command<any, any>;
  *     return { repoPath, iterations: parseInt(opts.iterations) };
  *   }
  * 
- *   async executeCli(ctx: AppContext, config: RunConfig) {
+ *   async execute(ctx: AppContext, config: RunConfig) {
  *     // config is already validated
+ *     return { success: true, data: result };
  *   }
  * }
  * ```
@@ -136,23 +137,14 @@ export abstract class Command<
   buildConfig?(ctx: AppContext, opts: OptionValues<TOptions>): Promise<TConfig> | TConfig;
 
   /**
-   * Execute the command in CLI mode.
-   * Implement this for commands that support command-line execution.
+   * Execute the command.
+   * The framework will call this method for both CLI and TUI modes.
    * 
    * @param ctx - Application context
    * @param config - The configuration object (from buildConfig, or raw options if buildConfig is not implemented)
+   * @returns Optional result for display in TUI results panel
    */
-  executeCli?(ctx: AppContext, config: TConfig): Promise<void> | void;
-
-  /**
-   * Execute the command in TUI mode.
-   * Implement this for commands that support interactive terminal UI.
-   * 
-   * @param ctx - Application context
-   * @param config - The configuration object (from buildConfig, or raw options if buildConfig is not implemented)
-   * @returns Optional result for display in results panel
-   */
-  executeTui?(ctx: AppContext, config: TConfig): Promise<CommandResult | void> | CommandResult | void;
+  abstract execute(ctx: AppContext, config: TConfig): Promise<CommandResult | void> | CommandResult | void;
 
   /**
    * Called before buildConfig. Use for early validation, resource acquisition, etc.
@@ -216,14 +208,14 @@ export abstract class Command<
    * Check if this command supports CLI mode.
    */
   supportsCli(): boolean {
-    return typeof this.executeCli === "function";
+    return true;
   }
 
   /**
    * Check if this command supports TUI mode.
    */
   supportsTui(): boolean {
-    return typeof this.executeTui === "function";
+    return true;
   }
 
   /**
@@ -234,15 +226,11 @@ export abstract class Command<
   }
 
   /**
-   * Validate that the command has at least one execute method.
+   * Validate the command.
    * Called by the framework during registration.
    */
   validate(): void {
-    if (!this.supportsCli() && !this.supportsTui()) {
-      throw new Error(
-        `Command '${this.name}' must implement at least one of: executeCli, executeTui`
-      );
-    }
+    // No validation needed - execute is abstract and required
   }
 
   /**

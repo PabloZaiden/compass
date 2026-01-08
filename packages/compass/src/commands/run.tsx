@@ -107,7 +107,7 @@ Results will be output as JSON to stdout.
 
   /**
    * Build and validate the RunConfig from parsed options.
-   * This is called before executeCli/executeTui.
+   * This is called before execute.
    */
   override async buildConfig(_ctx: AppContext, opts: OptionValues<typeof runOptions>): Promise<RunConfig> {
     // Convert options to the format expected by runConfigFromParsedOptions
@@ -133,32 +133,23 @@ Results will be output as JSON to stdout.
     }
   }
 
-  override async executeCli(ctx: AppContext, config: RunConfig): Promise<void> {
-    const runner = new Runner();
-
-    try {
-      const result = await runner.run(config);
-      ctx.logger.info("Run completed successfully");
-      Bun.stdout.write(JSON.stringify(result, null, 2) + "\n");
-    } catch (error) {
-      ctx.logger.error("Run failed:", error);
-      process.exitCode = 1;
-    }
-  }
-
   /**
-   * Execute in TUI mode - returns CommandResult for display.
+   * Execute the run command.
+   * Returns CommandResult for both CLI and TUI modes.
    */
-  override async executeTui(_ctx: AppContext, config: RunConfig): Promise<CommandResult> {
+  override async execute(ctx: AppContext, config: RunConfig): Promise<CommandResult> {
     try {
       const runner = new Runner();
       const result = await runner.run(config);
+      ctx.logger.info("Run completed successfully");
       return { success: true, data: result };
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      ctx.logger.error("Run failed:", message);
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
-        message: error instanceof Error ? error.message : String(error)
+        error: message,
+        message: message
       };
     }
   }

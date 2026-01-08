@@ -128,7 +128,7 @@ The fixture file contains prompts that can be used to test AI coding agents.
 
   /**
    * Build and validate the GenerateConfig from parsed options.
-   * This is called before executeCli/executeTui.
+   * This is called before execute.
    */
   override buildConfig(_ctx: AppContext, opts: OptionValues<typeof generateOptions>): GenerateConfig {
     // Extract and validate repo path
@@ -182,22 +182,10 @@ The fixture file contains prompts that can be used to test AI coding agents.
     };
   }
 
-  override async executeCli(ctx: AppContext, config: GenerateConfig): Promise<void> {
-    const generator = new Generator();
-    const result = await generator.generate(config);
-
-    if (result.success) {
-      process.exitCode = 0;
-    } else {
-      ctx.logger.error(result.error ?? "Generation failed");
-      process.exitCode = 1;
-    }
-  }
-
   /**
-   * Execute in TUI mode.
+   * Execute the generate command.
    */
-  override async executeTui(_ctx: AppContext, config: GenerateConfig): Promise<CommandResult> {
+  override async execute(ctx: AppContext, config: GenerateConfig): Promise<CommandResult> {
     try {
       const generator = new Generator();
       const result = await generator.generate(config);
@@ -209,16 +197,19 @@ The fixture file contains prompts that can be used to test AI coding agents.
           message: `Generated ${config.count} prompts to fixture file`
         };
       } else {
+        ctx.logger.error(result.error ?? "Generation failed");
         return { 
           success: false, 
           message: result.error ?? "Generation failed"
         };
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      ctx.logger.error(message);
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : String(error),
-        message: error instanceof Error ? error.message : String(error)
+        error: message,
+        message: message
       };
     }
   }

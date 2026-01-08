@@ -20,7 +20,7 @@ import {
     type LogSource,
 } from "./hooks/index.ts";
 import { schemaToFieldConfigs, getFieldDisplayValue, buildCliCommand, loadPersistedParameters, savePersistedParameters } from "./utils/index.ts";
-import type { AnyCommand, CommandResult } from "../core/command.ts";
+import type { AnyCommand } from "../core/command.ts";
 import type { AppContext } from "../core/context.ts";
 import type { OptionValues, OptionSchema, OptionDef } from "../types/command.ts";
 import type { CustomField } from "./TuiApplication.tsx";
@@ -110,13 +110,7 @@ function TuiAppContent({
             configOrValues = await cmd.buildConfig(context, values as OptionValues<OptionSchema>);
         }
 
-        if (cmd.executeTui) {
-            return await cmd.executeTui(context, configOrValues as OptionValues<OptionSchema>);
-        } else if (cmd.executeCli) {
-            await cmd.executeCli(context, configOrValues as OptionValues<OptionSchema>);
-            return { success: true, message: "Command completed" } as CommandResult;
-        }
-        return { success: false, error: "Command has no execute method" } as CommandResult;
+        return await cmd.execute(context, configOrValues as OptionValues<OptionSchema>);
     }, [context]);
 
     const { isExecuting, result, error, execute, reset: resetExecutor } = useCommandExecutor(

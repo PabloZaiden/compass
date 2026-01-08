@@ -1,5 +1,5 @@
 import { AppContext, type AppConfig } from "./context.ts";
-import { type AnyCommand, ConfigValidationError } from "./command.ts";
+import { type AnyCommand, ConfigValidationError, type CommandResult } from "./command.ts";
 import { CommandRegistry } from "./registry.ts";
 import { ExecutionMode } from "../types/execution.ts";
 import { LogLevel, type LoggerConfig } from "./logger.ts";
@@ -318,14 +318,20 @@ export class Application {
       }
 
       // Execute the command with the config
-      if (mode === ExecutionMode.Tui && command.executeTui) {
-        await command.executeTui(this.context, config);
-      } else if (command.executeCli) {
-        await command.executeCli(this.context, config);
-      } else {
-        throw new Error(
-          `Command '${command.name}' does not support ${mode} mode`
-        );
+      const result = await command.execute(this.context, config);
+      
+      // In CLI mode, handle result output
+      if (mode === ExecutionMode.Cli && result) {
+        const commandResult = result as CommandResult;
+        if (commandResult.success) {
+          // Output data as JSON to stdout if present
+          if (commandResult.data !== undefined) {
+            console.log(JSON.stringify(commandResult.data, null, 2));
+          }
+        } else {
+          // Set exit code for failures
+          process.exitCode = 1;
+        }
       }
     } catch (e) {
       error = e as Error;

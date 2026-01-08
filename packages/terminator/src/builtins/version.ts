@@ -54,7 +54,7 @@ export class VersionCommand extends Command<OptionSchema> {
     return formatVersion(this.appVersion, this.commitHash);
   }
 
-  override async executeCli(_ctx: AppContext): Promise<void> {
+  override async execute(_ctx: AppContext): Promise<void> {
     const versionDisplay = this.getFormattedVersion();
     console.log(`${colors.bold(this.appName)} ${colors.dim(`v${versionDisplay}`)}`);
   }

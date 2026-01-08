@@ -1,76 +1,55 @@
 import { describe, test, expect } from "bun:test";
-import { Command } from "../core/command.ts";
+import { Command, type CommandResult } from "../core/command.ts";
 import type { AppContext } from "../core/context.ts";
 import type { OptionSchema, OptionValues } from "../types/command.ts";
 
-// Test command implementations
-class TestCliCommand extends Command<{ name: { type: "string"; description: string } }> {
-  readonly name = "test-cli";
-  readonly description = "A test CLI command";
+// Test command with options
+class TestCommand extends Command<{ name: { type: "string"; description: string } }> {
+  readonly name = "test";
+  readonly description = "A test command";
   readonly options = {
     name: { type: "string" as const, description: "Name option" },
   };
 
   executedWith: OptionValues<typeof this.options> | null = null;
 
-  override async executeCli(
+  override async execute(
     _ctx: AppContext,
     opts: OptionValues<typeof this.options>
-  ): Promise<void> {
+  ): Promise<CommandResult> {
     this.executedWith = opts;
+    return { success: true, message: "Executed" };
   }
 }
 
-class TestTuiCommand extends Command<OptionSchema> {
-  readonly name = "test-tui";
-  readonly description = "A test TUI command";
+// Simple command without options
+class SimpleCommand extends Command<OptionSchema> {
+  readonly name = "simple";
+  readonly description = "A simple command";
   readonly options = {};
 
   executed = false;
 
-  override async executeTui(_ctx: AppContext): Promise<void> {
+  override async execute(_ctx: AppContext): Promise<CommandResult> {
     this.executed = true;
+    return { success: true, message: "Done" };
   }
-}
-
-class TestBothCommand extends Command<OptionSchema> {
-  readonly name = "test-both";
-  readonly description = "A command supporting both modes";
-  readonly options = {};
-
-  cliExecuted = false;
-  tuiExecuted = false;
-
-  override async executeCli(_ctx: AppContext): Promise<void> {
-    this.cliExecuted = true;
-  }
-
-  override async executeTui(_ctx: AppContext): Promise<void> {
-    this.tuiExecuted = true;
-  }
-}
-
-class InvalidCommand extends Command<OptionSchema> {
-  readonly name = "invalid";
-  readonly description = "A command with no execute methods";
-  readonly options = {};
-  // No execute methods - should fail validation
 }
 
 describe("Command", () => {
   describe("core properties", () => {
     test("has name", () => {
-      const cmd = new TestCliCommand();
-      expect(cmd.name).toBe("test-cli");
+      const cmd = new TestCommand();
+      expect(cmd.name).toBe("test");
     });
 
     test("has description", () => {
-      const cmd = new TestCliCommand();
-      expect(cmd.description).toBe("A test CLI command");
+      const cmd = new TestCommand();
+      expect(cmd.description).toBe("A test command");
     });
 
     test("has options", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       expect(cmd.options).toEqual({
         name: { type: "string", description: "Name option" },
       });
@@ -79,99 +58,72 @@ describe("Command", () => {
 
   describe("optional metadata", () => {
     test("subCommands defaults to undefined", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       expect(cmd.subCommands).toBeUndefined();
     });
 
     test("examples defaults to undefined", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       expect(cmd.examples).toBeUndefined();
     });
 
     test("longDescription defaults to undefined", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       expect(cmd.longDescription).toBeUndefined();
     });
   });
 
   describe("supportsCli", () => {
-    test("returns true when executeCli is implemented", () => {
-      const cmd = new TestCliCommand();
+    test("returns true for command with execute", () => {
+      const cmd = new TestCommand();
       expect(cmd.supportsCli()).toBe(true);
-    });
-
-    test("returns false when executeCli is not implemented", () => {
-      const cmd = new TestTuiCommand();
-      expect(cmd.supportsCli()).toBe(false);
     });
   });
 
   describe("supportsTui", () => {
-    test("returns true when executeTui is implemented", () => {
-      const cmd = new TestTuiCommand();
+    test("returns true for command with execute", () => {
+      const cmd = new TestCommand();
       expect(cmd.supportsTui()).toBe(true);
-    });
-
-    test("returns false when executeTui is not implemented", () => {
-      const cmd = new TestCliCommand();
-      expect(cmd.supportsTui()).toBe(false);
     });
   });
 
   describe("both modes", () => {
-    test("command can support both CLI and TUI", () => {
-      const cmd = new TestBothCommand();
+    test("command supports both CLI and TUI", () => {
+      const cmd = new TestCommand();
       expect(cmd.supportsCli()).toBe(true);
       expect(cmd.supportsTui()).toBe(true);
     });
   });
 
   describe("validate", () => {
-    test("passes for CLI command", () => {
-      const cmd = new TestCliCommand();
+    test("passes for command with execute", () => {
+      const cmd = new TestCommand();
       expect(() => cmd.validate()).not.toThrow();
-    });
-
-    test("passes for TUI command", () => {
-      const cmd = new TestTuiCommand();
-      expect(() => cmd.validate()).not.toThrow();
-    });
-
-    test("passes for command supporting both", () => {
-      const cmd = new TestBothCommand();
-      expect(() => cmd.validate()).not.toThrow();
-    });
-
-    test("throws for command with no execute methods", () => {
-      const cmd = new InvalidCommand();
-      expect(() => cmd.validate()).toThrow(
-        "Command 'invalid' must implement at least one of: executeCli, executeTui"
-      );
     });
   });
 
   describe("subcommands", () => {
     test("hasSubCommands returns false when no subcommands", () => {
-      const cmd = new TestCliCommand();
+      const cmd = new TestCommand();
       expect(cmd.hasSubCommands()).toBe(false);
     });
 
     test("hasSubCommands returns true when subcommands exist", () => {
-      const cmd = new TestCliCommand();
-      cmd.subCommands = [new TestTuiCommand()];
+      const cmd = new TestCommand();
+      cmd.subCommands = [new SimpleCommand()];
       expect(cmd.hasSubCommands()).toBe(true);
     });
 
     test("getSubCommand finds subcommand by name", () => {
-      const cmd = new TestCliCommand();
-      const subCmd = new TestTuiCommand();
+      const cmd = new TestCommand();
+      const subCmd = new SimpleCommand();
       cmd.subCommands = [subCmd];
-      expect(cmd.getSubCommand("test-tui")).toBe(subCmd);
+      expect(cmd.getSubCommand("simple")).toBe(subCmd);
     });
 
     test("getSubCommand returns undefined for unknown name", () => {
-      const cmd = new TestCliCommand();
-      cmd.subCommands = [new TestTuiCommand()];
+      const cmd = new TestCommand();
+      cmd.subCommands = [new SimpleCommand()];
       expect(cmd.getSubCommand("unknown")).toBeUndefined();
     });
   });
