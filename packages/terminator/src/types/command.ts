@@ -34,15 +34,11 @@ export type OptionSchema = Record<string, OptionDef>;
  * Inferred option values from a schema
  */
 export type OptionValues<T extends OptionSchema> = {
-  [K in keyof T]: T[K]["type"] extends "string"
-    ? string
-    : T[K]["type"] extends "number"
-      ? number
-      : T[K]["type"] extends "boolean"
-        ? boolean
-        : T[K]["type"] extends "array"
-          ? string[]
-          : unknown;
+  [K in keyof T]: T[K]["type"] extends "string" ? string
+  : T[K]["type"] extends "number" ? number
+  : T[K]["type"] extends "boolean" ? boolean
+  : T[K]["type"] extends "array" ? string[]
+  : unknown;
 };
 
 /**

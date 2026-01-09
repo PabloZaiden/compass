@@ -43,7 +43,7 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 - OpenAI Codex (`codex`)
 - OpenCode (`opencode`)
 - Google Gemini CLI (`gemini`)
-- Claude Code (`claudeCode`) — *coming soon*
+- Claude Code (`claudeCode`)
 
 ## Requirements
 
@@ -65,12 +65,10 @@ Compass supports the following commands:
 
 ### Interactive Mode (default)
 
-Launch the interactive Terminal UI:
+Launch the interactive Terminal UI by running compass without arguments:
 
 ```bash
 compass
-# or explicitly:
-compass interactive
 ```
 
 ### Run Mode
@@ -144,7 +142,7 @@ Options are specified via command-line arguments with the `--` prefix.
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to evaluate |
 | `--fixture` | Yes | Path to the fixture JSON file |
-| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini` |
+| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini`, `claudeCode` |
 | `--iterations` | No | Number of iterations per prompt (default: `1`) |
 | `--output-mode` | No | Output format: `Detailed`, `Aggregated` (default) |
 | `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: `false`) |
@@ -158,7 +156,7 @@ Options are specified via command-line arguments with the `--` prefix.
 | Option | Required | Description |
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to analyze |
-| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini` |
+| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini`, `claudeCode` |
 | `--count` | Yes | Number of prompts to generate |
 | `--model` | No | Model to use for the agent |
 | `--steering` | No | Additional instructions to steer generation |
@@ -187,10 +185,25 @@ compass
 ```
 
 Features:
-- Interactive form for all CLI options.
-- Live `tslog` stream in the right panel and spinner-based activity indicator while running
-- Pretty-printed JSON results inside the TUI (no JSON is written to stdout when TUI is enabled)
-- "Show as CLI flags" overlay to copy the equivalent command
+- Interactive form for all CLI options
+- Live log streaming with real-time updates
+- Pretty-printed JSON results inside the TUI
+- Copy to clipboard with Ctrl+Y
+- "Show as CLI flags" overlay to copy the equivalent command (press `C`)
+- Cancellation support during command execution (press `Esc`)
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| ↑/↓ | Navigate fields/commands |
+| Enter | Edit field / Execute command |
+| Tab | Cycle focus between panels |
+| C | Show CLI command modal |
+| L | Toggle logs panel |
+| Ctrl+Y | Copy current content to clipboard |
+| Esc | Back / Cancel running command |
+| Q | Quit |
 
 ## Docker
 

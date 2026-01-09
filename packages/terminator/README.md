@@ -6,12 +6,15 @@ A type-safe, class-based framework for building CLI and TUI applications in Type
 
 - **Type-safe CLI parsing** - Define options with schemas that provide full TypeScript types
 - **Class-based architecture** - Extend `Command` and `Application` classes for structured apps
-- **Dual execution modes** - Commands can support CLI, TUI, or both modes
+- **Unified execution** - Single `execute()` method handles both CLI and TUI modes
+- **Auto-generated TUI** - Interactive terminal UI generated from command definitions
 - **Built-in commands** - Automatic `help` and `version` commands
 - **Nested subcommands** - Hierarchical command structures with path resolution
 - **Lifecycle hooks** - `beforeExecute()` and `afterExecute()` hooks on commands
 - **Service container** - `AppContext` provides dependency injection for services
 - **Integrated logging** - Logger with TUI-aware output handling
+- **Cancellation support** - AbortSignal-based cancellation for long-running commands
+- **Config validation** - `buildConfig()` hook for transforming and validating options
 
 ## Installation
 
@@ -24,30 +27,31 @@ bun add @pablozaiden/terminator
 ### 1. Define a Command
 
 ```typescript
-import { Command, ExecutionMode, type OptionSchema } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
 
-class GreetCommand extends Command {
-  name = "greet";
-  description = "Greet someone";
-  
-  options: Record<string, OptionSchema> = {
-    name: {
-      type: "string",
-      description: "Name to greet",
-      required: true,
-    },
-    loud: {
-      type: "boolean",
-      description: "Use uppercase",
-      alias: "l",
-      default: false,
-    },
-  };
+const greetOptions = {
+  name: {
+    type: "string",
+    description: "Name to greet",
+    required: true,
+  },
+  loud: {
+    type: "boolean",
+    description: "Use uppercase",
+    alias: "l",
+    default: false,
+  },
+} satisfies OptionSchema;
 
-  override execute(ctx: AppContext, config: Record<string, unknown>): void {
-    const name = config.name as string;
-    const message = `Hello, ${name}!`;
+class GreetCommand extends Command<typeof greetOptions> {
+  readonly name = "greet";
+  readonly description = "Greet someone";
+  readonly options = greetOptions;
+
+  override execute(ctx: AppContext, config: { name: string; loud: boolean }): CommandResult {
+    const message = `Hello, ${config.name}!`;
     console.log(config.loud ? message.toUpperCase() : message);
+    return { success: true, message };
   }
 }
 ```
@@ -93,38 +97,69 @@ myapp greet help
 
 ## Core Concepts
 
-### ExecutionMode
-
-Commands can support different execution modes:
-
-```typescript
-import { ExecutionMode } from "@pablozaiden/terminator";
-
-ExecutionMode.Cli  // Command-line interface
-ExecutionMode.Tui  // Terminal user interface (interactive)
-```
-
 ### Command
 
 The `Command` abstract class is the base for all commands:
 
 ```typescript
-abstract class Command {
-  abstract name: string;
-  abstract description: string;
+abstract class Command<TOptions extends OptionSchema = OptionSchema, TConfig = unknown> {
+  abstract readonly name: string;
+  abstract readonly description: string;
+  abstract readonly options: TOptions;
   
-  options?: Record<string, OptionSchema>;
-  subCommands?: Command[];
-  aliases?: string[];
-  hidden?: boolean;
-  examples?: string[];
+  // Optional properties
+  displayName?: string;           // Human-readable name for TUI
+  subCommands?: Command[];        // Nested subcommands
+  aliases?: string[];             // Command aliases
+  hidden?: boolean;               // Hide from help
+  examples?: CommandExample[];    // Usage examples
+  longDescription?: string;       // Extended description
   
-  // Implement to handle command execution (required)
-  abstract execute(ctx: AppContext, config: TConfig): Promise<CommandResult | void> | CommandResult | void;
+  // TUI customization
+  actionLabel?: string;           // Button text (default: "Run")
+  immediateExecution?: boolean;   // Execute on selection without config
   
-  // Lifecycle hooks
-  beforeExecute?(mode: ExecutionMode): Promise<void> | void;
-  afterExecute?(mode: ExecutionMode): Promise<void> | void;
+  // Required: Main execution method
+  abstract execute(
+    ctx: AppContext, 
+    config: TConfig,
+    execCtx?: CommandExecutionContext
+  ): Promise<CommandResult | void> | CommandResult | void;
+  
+  // Optional: Transform/validate options before execute
+  buildConfig?(ctx: AppContext, opts: OptionValues<TOptions>): TConfig | Promise<TConfig>;
+  
+  // Optional: Custom result rendering for TUI
+  renderResult?(result: CommandResult): ReactNode;
+  
+  // Optional: Custom clipboard content
+  getClipboardContent?(result: CommandResult): string | undefined;
+  
+  // Optional: Handle config changes in TUI form
+  onConfigChange?(key: string, value: unknown, allValues: Record<string, unknown>): Record<string, unknown> | undefined;
+}
+```
+
+### CommandExecutionContext
+
+Provides execution context including cancellation support:
+
+```typescript
+interface CommandExecutionContext {
+  signal: AbortSignal;  // For cancellation
+}
+```
+
+### CommandResult
+
+Commands should return a `CommandResult` from `execute()`:
+
+```typescript
+interface CommandResult {
+  success: boolean;
+  data?: unknown;         // Result data
+  error?: string;         // Error message if failed
+  message?: string;       // User-friendly message
 }
 ```
 
@@ -140,15 +175,18 @@ class Application {
   getContext(): AppContext;
   
   // Lifecycle hooks (override in subclass)
-  beforeRun?(): Promise<void> | void;
-  afterRun?(): Promise<void> | void;
+  onBeforeRun?(command: Command, options: Record<string, unknown>): void;
+  onAfterRun?(command: Command, result: unknown): void;
+  onError?(error: Error): void;
 }
 
 interface ApplicationConfig {
   name: string;
   version: string;
+  commitHash?: string;    // Git commit for version display
   description?: string;
   commands: Command[];
+  defaultCommand?: string;
 }
 ```
 
@@ -180,13 +218,91 @@ const service = ctx.requireService<MyService>("myService");
 Define typed options for commands:
 
 ```typescript
-interface OptionSchema {
-  type: "string" | "boolean" | "number";
+interface OptionDef {
+  type: "string" | "boolean" | "number" | "array";
   description: string;
   required?: boolean;
   default?: unknown;
   alias?: string;
-  enum?: string[];  // For string type, restrict to values
+  enum?: readonly string[];  // For string type, restrict to values
+  
+  // TUI metadata
+  label?: string;            // Custom label in form
+  order?: number;            // Field ordering
+  group?: string;            // Group fields together
+  placeholder?: string;      // Placeholder text
+  tuiHidden?: boolean;       // Hide from TUI form
+}
+
+type OptionSchema = Record<string, OptionDef>;
+```
+
+## Config Validation with buildConfig
+
+Use `buildConfig()` to transform and validate options before execution:
+
+```typescript
+import { Command, ConfigValidationError, type AppContext, type OptionValues } from "@pablozaiden/terminator";
+
+interface MyConfig {
+  resolvedPath: string;
+  count: number;
+}
+
+class MyCommand extends Command<typeof myOptions, MyConfig> {
+  readonly name = "mycommand";
+  readonly description = "Do something";
+  readonly options = myOptions;
+
+  override buildConfig(ctx: AppContext, opts: OptionValues<typeof myOptions>): MyConfig {
+    const pathRaw = opts["path"] as string | undefined;
+    if (!pathRaw) {
+      throw new ConfigValidationError("Missing required option: path", "path");
+    }
+    
+    const count = parseInt(opts["count"] as string ?? "1", 10);
+    if (isNaN(count) || count <= 0) {
+      throw new ConfigValidationError("Count must be a positive integer", "count");
+    }
+
+    return {
+      resolvedPath: path.resolve(pathRaw),
+      count,
+    };
+  }
+
+  override async execute(ctx: AppContext, config: MyConfig): Promise<CommandResult> {
+    // config is now typed as MyConfig
+    ctx.logger.info(`Processing ${config.count} items from ${config.resolvedPath}`);
+    return { success: true };
+  }
+}
+```
+
+## Cancellation Support
+
+Commands can support cancellation via AbortSignal:
+
+```typescript
+class LongRunningCommand extends Command<typeof options> {
+  // ...
+
+  override async execute(
+    ctx: AppContext, 
+    config: Config,
+    execCtx?: CommandExecutionContext
+  ): Promise<CommandResult> {
+    for (const item of items) {
+      // Check for cancellation
+      if (execCtx?.signal.aborted) {
+        throw new AbortError("Command was cancelled");
+      }
+      
+      await processItem(item, execCtx?.signal);
+    }
+    
+    return { success: true };
+  }
 }
 ```
 
@@ -231,12 +347,13 @@ Terminator provides built-in TUI (Terminal User Interface) support that automati
 Extend `TuiApplication` instead of `Application` to get automatic TUI support:
 
 ```typescript
-import { TuiApplication, Command, type OptionSchema } from "@pablozaiden/terminator";
+import { TuiApplication, Command } from "@pablozaiden/terminator";
 
 class MyApp extends TuiApplication {
   constructor() {
     super({
       name: "myapp",
+      displayName: "🚀 My App",  // Human-readable name for TUI header
       version: "1.0.0",
       commands: [new RunCommand(), new ConfigCommand()],
       enableTui: true, // default: true
@@ -245,11 +362,10 @@ class MyApp extends TuiApplication {
 }
 ```
 
-When run with no arguments (or `--interactive`), the app launches an interactive TUI instead of showing help:
+When run with no arguments, the app launches an interactive TUI instead of showing help:
 
 ```bash
 myapp              # Launches TUI
-myapp --interactive # Same as above
 myapp run --verbose # Runs in CLI mode
 ```
 
@@ -267,7 +383,7 @@ const myOptions = {
     label: "Repository",    // Custom label in form
     order: 1,               // Field ordering
     group: "Required",      // Group fields together
-    placeholder: "path",    // Placeholder text
+    placeholder: "/path",   // Placeholder text
     tuiHidden: false,       // Hide from TUI form
   },
   verbose: {
@@ -285,10 +401,11 @@ const myOptions = {
 Commands can customize their TUI behavior:
 
 ```typescript
-class RunCommand extends Command {
-  name = "run";
-  description = "Run the task";
-  options = runOptions;
+class RunCommand extends Command<typeof runOptions, RunConfig> {
+  readonly name = "run";
+  override readonly displayName = "Run Task";  // Shown in command selector
+  readonly description = "Run the task";
+  readonly options = runOptions;
 
   // TUI customization
   override readonly actionLabel = "Start Run";      // Button text
@@ -304,28 +421,27 @@ class RunCommand extends Command {
     };
   }
 
-  // Custom result rendering
-  override renderResult(result: CommandResult): string {
-    return JSON.stringify(result.data, null, 2);
+  // Custom result rendering (React/TSX)
+  override renderResult(result: CommandResult): ReactNode {
+    return <MyCustomResultView data={result.data} />;
   }
 
-  // Content for clipboard (Ctrl+C in results view)
+  // Content for clipboard (Ctrl+Y in results view)
   override getClipboardContent(result: CommandResult): string | undefined {
     return JSON.stringify(result.data, null, 2);
   }
-}
-```
-
-### CommandResult Interface
-
-Commands should return a `CommandResult` from `execute()`:
-
-```typescript
-interface CommandResult {
-  success: boolean;
-  data?: unknown;         // Result data
-  error?: Error;          // Error object if failed
-  message?: string;       // User-friendly message
+  
+  // React to config changes in the TUI form
+  override onConfigChange(
+    key: string, 
+    value: unknown, 
+    allValues: Record<string, unknown>
+  ): Record<string, unknown> | undefined {
+    if (key === "preset" && value === "fast") {
+      return { iterations: 1, parallel: true };
+    }
+    return undefined;
+  }
 }
 ```
 
@@ -334,22 +450,26 @@ interface CommandResult {
 The built-in TUI provides:
 
 - **Command Selector** - Navigate and select commands with arrow keys
-- **Config Form** - Auto-generated forms from option schemas
+- **Config Form** - Auto-generated forms from option schemas with field groups
 - **Field Editor** - Edit field values (text, number, boolean, enum)
 - **CLI Modal** - View equivalent CLI command (press `C`)
 - **Results Panel** - Display command results with custom rendering
 - **Logs Panel** - View application logs in real-time
-- **Clipboard Support** - Copy results with Ctrl+C
+- **Clipboard Support** - Centralized copy with Ctrl+Y
+- **Cancellation** - Cancel running commands with Esc
+- **Parameter Persistence** - Remembers last-used values per command
 
 ### Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
-| ↑/↓ | Navigate fields |
+| ↑/↓ | Navigate fields/commands |
 | Enter | Edit field / Execute command |
-| C | Show CLI command |
-| Esc | Back / Cancel |
-| Q | Quit |
+| Tab | Cycle focus between panels |
+| C | Show CLI command modal |
+| L | Toggle logs panel |
+| Ctrl+Y | Copy current content to clipboard |
+| Esc | Back / Cancel running command |
 
 ### TUI Utilities
 
@@ -357,13 +477,46 @@ The package exports utilities for building custom TUI components:
 
 ```typescript
 import { 
+  // Form utilities
   schemaToFieldConfigs,  // Convert OptionSchema to form fields
+  getFieldDisplayValue,  // Format field values for display
   buildCliCommand,       // Build CLI command from config
+  
+  // Hooks
+  useKeyboardHandler,    // Register keyboard handlers with priority
+  useClipboard,          // Clipboard operations with OSC 52
+  useLogStream,          // Stream logs from logger
+  useSpinner,            // Animated spinner
+  useCommandExecutor,    // Execute commands with cancellation
+  
+  // Context
   KeyboardProvider,      // Keyboard context provider
-  useKeyboardHandler,    // Register keyboard handlers
-  useSpinner,            // Animated spinner hook
-  useClipboard,          // Clipboard operations
+  KeyboardPriority,      // Global < Focused < Modal
+  
+  // Components
+  Theme,                 // TUI color theme
+  JsonHighlight,         // Syntax-highlighted JSON display
 } from "@pablozaiden/terminator";
+```
+
+## Output Formatting
+
+Terminator includes utilities for formatted CLI output:
+
+```typescript
+import { colors, table, bulletList, keyValueList } from "@pablozaiden/terminator";
+
+// Colors
+console.log(colors.red("Error!"));
+console.log(colors.success("Done!"));  // ✓ Done!
+console.log(colors.bold(colors.blue("Title")));
+
+// Tables
+console.log(table(data, ["name", "value", "status"]));
+
+// Lists
+console.log(bulletList(["Item 1", "Item 2", "Item 3"]));
+console.log(keyValueList({ name: "Test", count: 42 }));
 ```
 
 ## Examples

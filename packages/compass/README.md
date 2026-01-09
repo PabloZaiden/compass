@@ -31,7 +31,8 @@ The TUI provides:
 - Visual form-based configuration
 - Command selection via keyboard shortcuts
 - Live log streaming
-- Results display with copy-to-clipboard
+- Results display with Ctrl+Y to copy to clipboard
+- Cancellation support with Esc during execution
 
 ### CLI Mode
 
@@ -45,7 +46,7 @@ compass run --repo /path/to/repo --fixture test.json --agent copilot
 compass check --agent all
 
 # Generate fixtures
-compass generate --repo /path/to/repo --output fixtures.json
+compass generate --repo /path/to/repo --agent opencode --count 10
 
 # Show help
 compass help
@@ -67,15 +68,15 @@ compass run [options]
 |--------|-------------|---------|
 | `--repo` | Path to the repository to evaluate | (required) |
 | `--fixture` | Path to the fixture file | (required) |
-| `--agent` | Agent to use: `copilot`, `codex`, `opencode`, `claudecode`, `gemini` | (required) |
+| `--agent` | Agent to use: `copilot`, `codex`, `opencode`, `claudeCode`, `gemini` | (required) |
 | `--iterations` | Number of iterations to run | `1` |
-| `--output-mode` | Output format: `quiet`, `normal`, `verbose`, `json` | `normal` |
-| `--model` | Model override for the agent | - |
-| `--eval-model` | Model for evaluation | - |
-| `--use-cache` | Use cached results | `true` |
-| `--stop-on-error` | Stop on first error | `false` |
-| `--allow-full-access` | Allow agent full repository access | `false` |
-| `--log-level` | Log level: `trace`, `debug`, `info`, `warn`, `error` | `info` |
+| `--output-mode` | Output format: `Detailed`, `Aggregated` | `Aggregated` |
+| `--model` | Model override for the agent | agent default |
+| `--eval-model` | Model for evaluation | agent default |
+| `--use-cache` | Use cached results | `false` |
+| `--stop-on-error` | Stop on first error | `true` |
+| `--allow-full-access` | Allow agent full repository access | `true` |
+| `--log-level` | Log level: `Trace`, `Debug`, `Info`, `Warn`, `Error` | `Info` |
 
 ### `check`
 
@@ -88,15 +89,25 @@ compass check [options]
 **Options:**
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--agent` | Agent to check: `all`, `copilot`, `codex`, `opencode`, `claudecode`, `gemini` | `all` |
+| `--agent` | Agent to check: `all`, `copilot`, `codex`, `opencode`, `claudeCode`, `gemini` | `all` |
 
 ### `generate`
 
-Generate fixture files from a repository.
+Generate fixture files from a repository using an AI agent.
 
 ```bash
 compass generate [options]
 ```
+
+**Options:**
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--repo` | Path to the repository to analyze | (required) |
+| `--agent` | Agent to use for generation | (required) |
+| `--count` | Number of prompts to generate | (required) |
+| `--model` | Model override for the agent | agent default |
+| `--steering` | Additional instructions to steer generation | - |
+| `--use-cache` | Use cached results | `false` |
 
 ### `version`
 
@@ -111,28 +122,44 @@ compass version
 Compass is built on the [Terminator](../terminator/README.md) framework, which provides:
 
 - **TuiApplication**: Auto-generates a TUI from command definitions
-- **Command**: Base class with CLI and TUI support
+- **Command**: Base class with unified CLI and TUI support
 - **OptionSchema**: Type-safe option definitions with TUI metadata
+- **Cancellation**: AbortSignal-based cancellation support
 
 ### Project Structure
 
 ```
 src/
 ├── app.ts           # CompassApp entry point
+├── index.ts         # Main entry point
+├── models.ts        # Data models and types
+├── utils.ts         # Utility functions
+├── prompts.ts       # Prompt templates
 ├── commands/        # Command implementations
-│   ├── run.ts       # Run command
+│   ├── run.ts       # Run command with RunConfig
 │   ├── check.ts     # Check command
-│   └── generate.ts  # Generate command
+│   └── generate.ts  # Generate command with GenerateConfig
 ├── agents/          # Agent implementations
-│   ├── copilot.ts
-│   ├── codex.ts
-│   ├── opencode.ts
-│   ├── claudeCode.ts
-│   └── gemini.ts
+│   ├── agent.ts     # Agent interface
+│   ├── factory.ts   # Agent factory
+│   ├── cache.ts     # Caching agent wrapper
+│   ├── copilot.ts   # GitHub Copilot
+│   ├── codex.ts     # OpenAI Codex
+│   ├── opencode.ts  # OpenCode
+│   ├── claudeCode.ts # Claude Code
+│   └── gemini.ts    # Google Gemini
 ├── run/             # Runner logic
+│   └── runner.ts    # Benchmark runner
 ├── check/           # Checker logic
+│   └── checker.ts   # Agent availability checker
 ├── generate/        # Generator logic
+│   └── generator.ts # Fixture generator
+├── react/           # React/TSX components
+│   └── RunResultRenderer.tsx  # Custom result rendering
 └── options/         # Option schema definitions
+    ├── run.ts       # Run options
+    ├── check.ts     # Check options
+    └── generate.ts  # Generate options
 ```
 
 ## Adding New Agents
@@ -142,22 +169,48 @@ To add a new agent:
 1. Create a new agent class in `src/agents/`:
 
 ```typescript
-import { type Agent } from "./agent.ts";
+import { type Agent, type AgentOptions } from "./agent.ts";
+import type { ProcessOutput } from "../models.ts";
 
 export class MyAgent implements Agent {
   readonly name = "myagent";
   
   async check(): Promise<boolean> {
-    // Return true if agent is available
+    // Return true if agent CLI is available
+    try {
+      const result = await run(".", ["myagent", "--version"]);
+      return result.exitCode === 0;
+    } catch {
+      return false;
+    }
   }
   
-  async execute(prompt: string, options: AgentOptions): Promise<AgentResult> {
+  async execute(
+    prompt: string, 
+    model: string, 
+    workingDirectory: string,
+    signal?: AbortSignal
+  ): Promise<ProcessOutput> {
     // Execute the agent and return result
+    return run(workingDirectory, ["myagent", "run", prompt], signal);
   }
 }
 ```
 
-2. Register it in `src/agents/factory.ts`
+2. Register it in `src/agents/factory.ts`:
+
+```typescript
+export enum AgentTypes {
+  // ... existing agents
+  MyAgent = "myagent",
+}
+
+export const defaultModels: Record<AgentTypes, string> = {
+  // ... existing defaults
+  [AgentTypes.MyAgent]: "my-default-model",
+};
+```
+
 3. Add it to the valid agent values in `src/options/run.ts`
 
 ## Configuration
@@ -177,6 +230,18 @@ const options: OptionSchema = {
 };
 ```
 
+## Keyboard Shortcuts (TUI)
+
+| Key | Action |
+|-----|--------|
+| ↑/↓ | Navigate fields/commands |
+| Enter | Edit field / Execute command |
+| Tab | Cycle focus between panels |
+| C | Show CLI command modal |
+| L | Toggle logs panel |
+| Ctrl+Y | Copy current content to clipboard |
+| Esc | Back / Cancel running command |
+
 ## Development
 
 ```bash
@@ -187,7 +252,7 @@ bun run start
 bun test
 
 # Run agent tests (requires agent setup)
-bun test:agents
+COMPASS_TEST_AGENTS=1 bun test:agents
 
 # Build type checking
 bun run build
