@@ -24,7 +24,7 @@ import {
   type OptionSchema, 
   type OptionValues,
   type CommandResult 
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 
 // Raw CLI options
 const options = {
@@ -200,7 +200,7 @@ export class DeployCommand extends Command<typeof options, DeployConfig> {
 Create `src/index.ts`:
 
 ```typescript
-import { TuiApplication } from "@pablozaiden/terminator";
+import { TuiApplication } from "@pablozaiden/terminatui";
 import { DeployCommand } from "./commands/deploy";
 
 class DeployCLI extends TuiApplication {

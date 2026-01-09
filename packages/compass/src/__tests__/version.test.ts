@@ -1,10 +1,10 @@
 import { describe, test, expect } from "bun:test";
-import { formatVersion } from "@pablozaiden/terminator";
+import { formatVersion } from "@pablozaiden/terminatui";
 import { CompassApp } from "../app";
 import pkg from "../../package.json";
 
 describe("version", () => {
-    describe("formatVersion (from terminator)", () => {
+    describe("formatVersion (from terminatui)", () => {
         test("formats version correctly with commit hash", () => {
             const result = formatVersion("1.0.0", "abc1234567890");
             expect(result).toBe("1.0.0 - abc1234");

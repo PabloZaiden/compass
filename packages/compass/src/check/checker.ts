@@ -1,7 +1,7 @@
 import { AgentTypes, createAgent } from "../agents/factory";
 import { defaultAgentOptions } from "../agents/agent";
 import { parseEnum } from "../models";
-import { AppContext, type Logger } from "@pablozaiden/terminator";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
 
 /**
  * Get the current logger from AppContext.

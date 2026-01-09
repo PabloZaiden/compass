@@ -11,7 +11,7 @@ const getAgentTypes = () => values(AgentTypes).join(", ");
  * Schema for the "check" command options.
  * 
  * Note: Logging options (--log-level, --detailed-logs) are handled
- * automatically by the terminator framework at the application level.
+ * automatically by the terminatui framework at the application level.
  */
 export const checkOptionsSchema = {
     agent: {

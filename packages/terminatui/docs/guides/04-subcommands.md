@@ -17,7 +17,7 @@ dbctl db status
 Create `src/commands/db/migrate.ts`:
 
 ```typescript
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   target: {
@@ -55,7 +55,7 @@ export class MigrateCommand extends Command<typeof options> {
 Create `src/commands/db/seed.ts`:
 
 ```typescript
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   file: {
@@ -83,7 +83,7 @@ export class SeedCommand extends Command<typeof options> {
 Create `src/commands/db/status.ts`:
 
 ```typescript
-import { Command, type AppContext, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type CommandResult } from "@pablozaiden/terminatui";
 
 export class StatusCommand extends Command {
   readonly name = "status";
@@ -105,7 +105,7 @@ export class StatusCommand extends Command {
 Create `src/commands/db/index.ts`:
 
 ```typescript
-import { Command, type AppContext, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type CommandResult } from "@pablozaiden/terminatui";
 import { MigrateCommand } from "./migrate";
 import { SeedCommand } from "./seed";
 import { StatusCommand } from "./status";
@@ -136,7 +136,7 @@ export class DbCommand extends Command {
 Create `src/index.ts`:
 
 ```typescript
-import { Application } from "@pablozaiden/terminator";
+import { Application } from "@pablozaiden/terminatui";
 import { DbCommand } from "./commands/db";
 
 class DbCtlApp extends Application {

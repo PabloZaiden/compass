@@ -1,5 +1,5 @@
 import type { ProcessOutput } from "./models";
-import { AppContext, type Logger } from "@pablozaiden/terminator";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
 
 /**
  * Get the current logger from AppContext.

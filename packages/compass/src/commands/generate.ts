@@ -1,6 +1,6 @@
 import path from "node:path";
 import { existsSync } from "node:fs";
-import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult, type CommandExecutionContext } from "@pablozaiden/terminator";
+import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult, type CommandExecutionContext } from "@pablozaiden/terminatui";
 import { Generator } from "../generate/generator";
 import { generateOptionsSchema } from "../options";
 import { AgentTypes, defaultModels } from "../agents/factory";
@@ -31,7 +31,7 @@ const tuiMetadata: Record<string, { label?: string; order?: number; group?: stri
 };
 
 /**
- * Convert compass option schema to terminator option schema with TUI metadata.
+ * Convert compass option schema to terminatui option schema with TUI metadata.
  */
 function convertOptions(compassSchema: Record<string, unknown>): OptionSchema {
   const result: OptionSchema = {};

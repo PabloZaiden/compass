@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import type { AgentOutput } from "../models";
 import { run } from "../utils";
-import { AppContext, type Logger } from "@pablozaiden/terminator";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
 
 /**
  * Get the current logger from AppContext.

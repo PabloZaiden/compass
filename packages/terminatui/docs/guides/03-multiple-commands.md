@@ -20,7 +20,7 @@ Create `src/commands/list.ts`:
 
 ```typescript
 import { readdirSync } from "fs";
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   dir: {
@@ -55,7 +55,7 @@ Create `src/commands/count.ts`:
 
 ```typescript
 import { readdirSync } from "fs";
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   dir: {
@@ -98,7 +98,7 @@ export class CountCommand extends Command<typeof options> {
 Create `src/index.ts`:
 
 ```typescript
-import { Application } from "@pablozaiden/terminator";
+import { Application } from "@pablozaiden/terminatui";
 import { ListCommand } from "./commands/list";
 import { CountCommand } from "./commands/count";
 

@@ -9,12 +9,12 @@ This repository is organized as a monorepo with the following packages:
 | Package | Description |
 |---------|-------------|
 | [compass](packages/compass/README.md) | Main CLI/TUI application for benchmarking AI coding agents |
-| [terminator](packages/terminator/README.md) | CLI/TUI application framework with auto-generated terminal UIs |
+| [terminatui](packages/terminatui/README.md) | CLI/TUI application framework with auto-generated terminal UIs |
 
 ```
 packages/
-├── compass/     # Benchmarking tool (uses terminator)
-└── terminator/  # CLI/TUI framework library
+├── compass/     # Benchmarking tool (uses terminatui)
+└── terminatui/  # CLI/TUI framework library
 ```
 
 ## Installation

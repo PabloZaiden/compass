@@ -1,5 +1,5 @@
 {
-  "name": "@pablozaiden/terminator",
+  "name": "@pablozaiden/terminatui",
   "version": "0.1.0",
   "description": "A framework for building CLI and TUI applications with TypeScript",
   "type": "module",

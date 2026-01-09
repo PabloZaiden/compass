@@ -63,7 +63,7 @@ export interface ApplicationHooks {
 /**
  * Main application class.
  * 
- * The Application is the entry point for a Terminator-based CLI/TUI app.
+ * The Application is the entry point for a Terminatui-based CLI/TUI app.
  * It manages the command registry, context, lifecycle, and execution flow.
  * 
  * @example

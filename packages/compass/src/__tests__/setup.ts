@@ -1,4 +1,4 @@
-import { createLogger } from "@pablozaiden/terminator";
+import { createLogger } from "@pablozaiden/terminatui";
 
 // Create a test logger with detailed logging enabled
 const testLogger = createLogger({ detailed: true });

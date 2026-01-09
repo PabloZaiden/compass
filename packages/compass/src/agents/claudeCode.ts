@@ -1,6 +1,6 @@
 import type { AgentOutput } from "../models";
 import { run } from "../utils";
-import { AppContext, type Logger } from "@pablozaiden/terminator";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
 import { Agent, type AgentOptions } from "./agent";
 
 /**

@@ -1,5 +1,5 @@
 import React from "react";
-import { Theme, JsonHighlight, type CommandResult } from "@pablozaiden/terminator";
+import { Theme, JsonHighlight, type CommandResult } from "@pablozaiden/terminatui";
 import type { RunnerResult, IterationResult, AggregatedResult } from "../models";
 
 /**

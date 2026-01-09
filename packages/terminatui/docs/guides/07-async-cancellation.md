@@ -28,7 +28,7 @@ import {
   type OptionValues,
   type CommandResult,
   type CommandExecutionContext 
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 
 const options = {
   url: {
@@ -302,7 +302,7 @@ export class DownloadCommand extends Command<typeof options, DownloadConfig> {
 Create `src/index.ts`:
 
 ```typescript
-import { TuiApplication } from "@pablozaiden/terminator";
+import { TuiApplication } from "@pablozaiden/terminatui";
 import { DownloadCommand } from "./commands/download";
 
 class DownloadManager extends TuiApplication {

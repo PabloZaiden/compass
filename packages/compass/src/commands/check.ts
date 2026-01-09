@@ -1,4 +1,4 @@
-import { Command, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminatui";
 import { Checker } from "../check/checker";
 import { checkOptionsSchema } from "../options";
 
@@ -11,7 +11,7 @@ const tuiMetadata: Record<string, { label?: string; order?: number; group?: stri
 };
 
 /**
- * Convert compass option schema to terminator option schema with TUI metadata.
+ * Convert compass option schema to terminatui option schema with TUI metadata.
  */
 function convertOptions(compassSchema: Record<string, unknown>): OptionSchema {
   const result: OptionSchema = {};

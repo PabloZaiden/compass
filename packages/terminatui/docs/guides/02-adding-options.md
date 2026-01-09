@@ -19,7 +19,7 @@ myapp greet --name Alice --loud
 Update `src/greet.ts`:
 
 ```typescript
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   name: {

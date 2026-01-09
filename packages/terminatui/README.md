@@ -1,4 +1,4 @@
-# @pablozaiden/terminator
+# @pablozaiden/terminatui
 
 A type-safe, class-based framework for building CLI and TUI applications in TypeScript.
 
@@ -19,7 +19,7 @@ A type-safe, class-based framework for building CLI and TUI applications in Type
 ## Installation
 
 ```bash
-bun add @pablozaiden/terminator
+bun add @pablozaiden/terminatui
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ bun add @pablozaiden/terminator
 ### 1. Define a Command
 
 ```typescript
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const greetOptions = {
   name: {
@@ -59,7 +59,7 @@ class GreetCommand extends Command<typeof greetOptions> {
 ### 2. Create an Application
 
 ```typescript
-import { Application } from "@pablozaiden/terminator";
+import { Application } from "@pablozaiden/terminatui";
 
 class MyApp extends Application {
   constructor() {
@@ -195,7 +195,7 @@ interface ApplicationConfig {
 Access application-wide services and configuration:
 
 ```typescript
-import { AppContext } from "@pablozaiden/terminator";
+import { AppContext } from "@pablozaiden/terminatui";
 
 // Get the current context (set during Application.run())
 const ctx = AppContext.current;
@@ -242,7 +242,7 @@ type OptionSchema = Record<string, OptionDef>;
 Use `buildConfig()` to transform and validate options before execution:
 
 ```typescript
-import { Command, ConfigValidationError, type AppContext, type OptionValues } from "@pablozaiden/terminator";
+import { Command, ConfigValidationError, type AppContext, type OptionValues } from "@pablozaiden/terminatui";
 
 interface MyConfig {
   resolvedPath: string;
@@ -340,14 +340,14 @@ myapp version        # Shows version
 
 ## TUI Mode
 
-Terminator provides built-in TUI (Terminal User Interface) support that automatically generates interactive UIs from your command definitions.
+Terminatui provides built-in TUI (Terminal User Interface) support that automatically generates interactive UIs from your command definitions.
 
 ### TuiApplication
 
 Extend `TuiApplication` instead of `Application` to get automatic TUI support:
 
 ```typescript
-import { TuiApplication, Command } from "@pablozaiden/terminator";
+import { TuiApplication, Command } from "@pablozaiden/terminatui";
 
 class MyApp extends TuiApplication {
   constructor() {
@@ -496,15 +496,15 @@ import {
   // Components
   Theme,                 // TUI color theme
   JsonHighlight,         // Syntax-highlighted JSON display
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 ```
 
 ## Output Formatting
 
-Terminator includes utilities for formatted CLI output:
+Terminatui includes utilities for formatted CLI output:
 
 ```typescript
-import { colors, table, bulletList, keyValueList } from "@pablozaiden/terminator";
+import { colors, table, bulletList, keyValueList } from "@pablozaiden/terminatui";
 
 // Colors
 console.log(colors.red("Error!"));
@@ -521,7 +521,7 @@ console.log(keyValueList({ name: "Test", count: 42 }));
 
 ## Examples
 
-See the [compass](../compass) package for a complete example application using terminator.
+See the [compass](../compass) package for a complete example application using terminatui.
 
 ## License
 

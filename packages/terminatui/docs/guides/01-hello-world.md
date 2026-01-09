@@ -1,6 +1,6 @@
 # Guide 1: Hello World CLI (Super Simple)
 
-Create your first CLI app with Terminator in under 5 minutes.
+Create your first CLI app with Terminatui in under 5 minutes.
 
 ## What You'll Build
 
@@ -20,7 +20,7 @@ myapp greet --name Alice
 ```bash
 mkdir hello-cli && cd hello-cli
 bun init -y
-bun add @pablozaiden/terminator
+bun add @pablozaiden/terminatui
 ```
 
 ## Step 2: Create the Command
@@ -28,7 +28,7 @@ bun add @pablozaiden/terminator
 Create `src/greet.ts`:
 
 ```typescript
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   name: {
@@ -55,7 +55,7 @@ export class GreetCommand extends Command<typeof options> {
 Create `src/index.ts`:
 
 ```typescript
-import { Application } from "@pablozaiden/terminator";
+import { Application } from "@pablozaiden/terminatui";
 import { GreetCommand } from "./greet";
 
 class MyApp extends Application {

@@ -119,7 +119,7 @@ compass version
 
 ## Architecture
 
-Compass is built on the [Terminator](../terminator/README.md) framework, which provides:
+Compass is built on the [Terminatui](../terminatui/README.md) framework, which provides:
 
 - **TuiApplication**: Auto-generates a TUI from command definitions
 - **Command**: Base class with unified CLI and TUI support

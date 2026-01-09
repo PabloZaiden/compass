@@ -1,6 +1,6 @@
-# Terminator Framework Guides
+# Terminatui Framework Guides
 
-Step-by-step tutorials for building CLI applications with the terminator framework.
+Step-by-step tutorials for building CLI applications with the terminatui framework.
 
 ## Guide Overview
 
@@ -32,11 +32,11 @@ Work through guides 5-8 to master TUI features, validation, and production patte
 # Create a new project
 mkdir my-cli && cd my-cli
 bun init -y
-bun add @pablozaiden/terminator
+bun add @pablozaiden/terminatui
 
 # Create your first command
 cat > src/index.ts << 'EOF'
-import { Command, Application, type AppContext, type OptionSchema } from "@pablozaiden/terminator";
+import { Command, Application, type AppContext, type OptionSchema } from "@pablozaiden/terminatui";
 
 const options = {
   name: { type: "string", description: "Your name" },

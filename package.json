@@ -2,15 +2,15 @@
   "name": "compass-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "Monorepo for Compass and Terminator framework",
+  "description": "Monorepo for Compass and Terminatui framework",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "start": "bun run --cwd packages/compass src/index.ts",
     "start:interactive": "bun run --cwd packages/compass src/index.ts interactive",
-    "build": "bun run --cwd packages/terminator build && bun run --cwd packages/compass build",
-    "test": "bun run --cwd packages/terminator test && bun run --cwd packages/compass test",
+    "build": "bun run --cwd packages/terminatui build && bun run --cwd packages/compass build",
+    "test": "bun run --cwd packages/terminatui test && bun run --cwd packages/compass test",
     "test:agents": "bun run --cwd packages/compass test:agents"
   }
 }

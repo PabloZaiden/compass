@@ -121,7 +121,7 @@ Create `src/services/notifications.ts`:
 
 ```typescript
 import type { Task } from "../types";
-import type { Logger } from "@pablozaiden/terminator";
+import type { Logger } from "@pablozaiden/terminatui";
 
 export class NotificationService {
   constructor(private logger: Logger) {}
@@ -158,7 +158,7 @@ import {
   type OptionSchema,
   type OptionValues,
   type CommandResult,
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 import { Database } from "../services/database";
 import { NotificationService } from "../services/notifications";
 import type { Task } from "../types";
@@ -280,7 +280,7 @@ import {
   type OptionSchema,
   type OptionValues,
   type CommandResult,
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 import { Database } from "../services/database";
 import type { Task } from "../types";
 
@@ -390,7 +390,7 @@ import {
   type OptionSchema,
   type OptionValues,
   type CommandResult,
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 import { Database } from "../services/database";
 import { NotificationService } from "../services/notifications";
 import type { Task } from "../types";
@@ -481,7 +481,7 @@ import {
   type AppContext,
   type OptionSchema,
   type CommandResult,
-} from "@pablozaiden/terminator";
+} from "@pablozaiden/terminatui";
 import { Database } from "../services/database";
 import type { TaskStats } from "../types";
 
@@ -562,7 +562,7 @@ export class StatsCommand extends Command<typeof options> {
 Create `src/index.ts`:
 
 ```typescript
-import { TuiApplication } from "@pablozaiden/terminator";
+import { TuiApplication } from "@pablozaiden/terminatui";
 import { AddCommand } from "./commands/add";
 import { ListCommand } from "./commands/list";
 import { CompleteCommand } from "./commands/complete";
@@ -617,7 +617,7 @@ Update `package.json`:
     "build": "bun build src/index.ts --outdir dist --target bun"
   },
   "dependencies": {
-    "@pablozaiden/terminator": "^1.0.0"
+    "@pablozaiden/terminatui": "^1.0.0"
   }
 }
 ```
@@ -670,4 +670,4 @@ bun start --verbose add "Debug task" --priority low
 7. **Async Cancellation** - Cancellable operations
 8. **Complete Application** - Full production app
 
-You now have all the tools to build powerful CLI applications with terminator! 🎉
+You now have all the tools to build powerful CLI applications with terminatui! 🎉

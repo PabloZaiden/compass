@@ -18,7 +18,7 @@ const getOutputModes = () => values(OutputMode).join(", ");
  * - Required/optional status
  * 
  * Note: Logging options (--log-level, --detailed-logs) are handled
- * automatically by the terminator framework at the application level.
+ * automatically by the terminatui framework at the application level.
  */
 export const runOptionsSchema = {
     repo: {

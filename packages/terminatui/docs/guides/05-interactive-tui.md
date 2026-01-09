@@ -21,7 +21,7 @@ When you run without arguments, an interactive form appears!
 Create `src/commands/run.ts`:
 
 ```typescript
-import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminator";
+import { Command, type AppContext, type OptionSchema, type CommandResult } from "@pablozaiden/terminatui";
 
 const options = {
   task: {
@@ -96,7 +96,7 @@ export class RunCommand extends Command<typeof options, RunConfig> {
 Create `src/index.ts`:
 
 ```typescript
-import { TuiApplication } from "@pablozaiden/terminator";
+import { TuiApplication } from "@pablozaiden/terminatui";
 import { RunCommand } from "./commands/run";
 
 class TaskRunnerApp extends TuiApplication {

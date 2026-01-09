@@ -37,7 +37,7 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "@pablozaiden/terminator": "workspace:*",
+    "@pablozaiden/terminatui": "workspace:*",
     "@opentui/core": "0.1.68",
     "@opentui/react": "^0.1.68",
     "react": "19",

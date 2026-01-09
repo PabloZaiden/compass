@@ -28,7 +28,7 @@
     "noPropertyAccessFromIndexSignature": true
   },
   "references": [
-    { "path": "./packages/terminator" },
+    { "path": "./packages/terminatui" },
     { "path": "./packages/compass" }
   ],
   "include": [],

@@ -2,7 +2,7 @@ import path from "node:path";
 import { createAgent, AgentTypes, defaultModels } from "../agents/factory";
 import { Cache } from "../agents/cache";
 import { generator } from "../prompts";
-import { AppContext, type Logger } from "@pablozaiden/terminator";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
 
 /**
  * Get the current logger from AppContext.
