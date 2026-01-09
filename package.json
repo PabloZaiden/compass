@@ -37,7 +37,7 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "@pablozaiden/terminatui": "github:PabloZaiden/terminatui#v0.1.0",
+    "@pablozaiden/terminatui": "0.1.2",
     "@opentui/react": "0.1.68"
   },
   "scripts": {
