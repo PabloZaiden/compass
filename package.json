@@ -1,16 +1,54 @@
 {
-  "name": "compass-monorepo",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Monorepo for Compass and Terminatui framework",
-  "workspaces": [
-    "packages/*"
+  "name": "@pablozaiden/compass",
+  "version": "0.0.0-development",
+  "description": "Console tool to benchmark coding agents across prompts and fixtures.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pablozaiden/compass.git"
+  },
+  "license": "MIT",
+  "author": "Pablo Zaidenvoren",
+  "keywords": [
+    "ai",
+    "cli",
+    "benchmark",
+    "agents",
+    "coding",
+    "copilot",
+    "codex",
+    "opencode",
+    "gemini",
+    "claude",
+    "tui"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "module": "src/index.ts",
+  "type": "module",
+  "bin": {
+    "compass": "src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19"
+  },
+  "peerDependencies": {
+    "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "@pablozaiden/terminatui": "github:PabloZaiden/terminatui#v0.1.0",
+    "@opentui/react": "0.1.68"
+  },
   "scripts": {
-    "start": "bun run --cwd packages/compass src/index.ts",
-    "start:interactive": "bun run --cwd packages/compass src/index.ts interactive",
-    "build": "bun run --cwd packages/terminatui build && bun run --cwd packages/compass build",
-    "test": "bun run --cwd packages/terminatui test && bun run --cwd packages/compass test",
-    "test:agents": "bun run --cwd packages/compass test:agents"
+    "start": "bun run src/index.ts",
+    "start:interactive": "bun run src/index.ts interactive",
+    "build": "bunx tsc --noEmit",
+    "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
+    "test:agents": "COMPASS_TEST_AGENTS=1 bun test",
+    "test": "bun test"
+  },
+  "config": {
+    "commitHash": ""
   }
 }

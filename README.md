@@ -1,25 +1,16 @@
 # Compass
 
-Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes.
+A CLI and TUI tool for benchmarking AI coding agents across prompts and fixtures.
 
-## Monorepo Structure
+## Overview
 
-This repository is organized as a monorepo with the following packages:
-
-| Package | Description |
-|---------|-------------|
-| [compass](packages/compass/README.md) | Main CLI/TUI application for benchmarking AI coding agents |
-| [terminatui](packages/terminatui/README.md) | CLI/TUI application framework with auto-generated terminal UIs |
-
-```
-packages/
-├── compass/     # Benchmarking tool (uses terminatui)
-└── terminatui/  # CLI/TUI framework library
-```
+Compass runs agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) against a target repository using a fixture file (prompts + expected outcomes), then aggregates results.
 
 ## Installation
 
-This package is hosted on GitHub Package Registry. To install, you need to be authenticated with GitHub CLI:
+### Install pre-built binary (recommended)
+
+This installs from GitHub Package Registry. You need GitHub CLI authenticated with the `read:packages` scope.
 
 ```bash
 curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
@@ -36,6 +27,13 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 ```
 
 > **⚠️ Warning:** This installs a development build from the `main` branch, which may contain unstable or untested features, breaking changes, or bugs not present in official releases. For production use, prefer the standard installation method above.
+
+### Run from source
+
+```bash
+bun install
+bun run start
+```
 
 ## Supported Agents
 
@@ -70,6 +68,13 @@ Launch the interactive Terminal UI by running compass without arguments:
 ```bash
 compass
 ```
+
+The TUI provides:
+- Visual form-based configuration
+- Command selection via keyboard shortcuts
+- Live log streaming
+- Results display with Ctrl+Y to copy to clipboard
+- Cancellation support with Esc during execution
 
 ### Run Mode
 
@@ -217,6 +222,112 @@ docker run --rm -ti \
   --fixture /fixture.json \
   --agent opencode
 ```
+
+Mount your fixture as `/fixture.json` and your repo as `/target-repo` so the container can reset git state via git commands.
+
+For instance, to run the sample configuration against Compass itself:
+
+```bash
+docker run --rm -ti \
+  -v $(pwd):/target-repo \
+  -v $(pwd)/src/sample-fixture.json:/fixture.json \
+  ghcr.io/pablozaiden/compass:latest \
+  run \
+  --repo /target-repo \
+  --fixture /fixture.json \
+  --agent opencode
+```
+
+## Fixture File
+
+A fixture file defines the prompts and expected outcomes for benchmarking. See [src/sample-fixture.json](src/sample-fixture.json) for an example.
+
+```json
+{
+  "prompts": [
+    {
+      "id": "explain_repo",
+      "prompt": "Describe this repo.",
+      "expected": "This repo is a console tool to benchmark coding agents..."
+    }
+  ]
+}
+```
+
+## Architecture
+
+Compass uses the `@pablozaiden/terminatui` framework to provide a unified CLI + TUI experience (auto-generated forms, command routing, option validation, and cancellation).
+
+### Project Structure
+
+```
+src/
+├── app.ts           # CompassApp entry point
+├── index.ts         # Main entry point
+├── models.ts        # Data models and types
+├── utils.ts         # Utility functions
+├── prompts.ts       # Prompt templates
+├── commands/        # Command implementations
+│   ├── run.ts       # Run command with RunConfig
+│   ├── check.ts     # Check command
+│   └── generate.ts  # Generate command with GenerateConfig
+├── agents/          # Agent implementations
+│   ├── agent.ts     # Agent interface
+│   ├── factory.ts   # Agent factory
+│   ├── cache.ts     # Caching agent wrapper
+│   ├── copilot.ts   # GitHub Copilot
+│   ├── codex.ts     # OpenAI Codex
+│   ├── opencode.ts  # OpenCode
+│   ├── claudeCode.ts # Claude Code
+│   └── gemini.ts    # Google Gemini
+├── run/             # Runner logic
+│   └── runner.ts    # Benchmark runner
+├── check/           # Checker logic
+│   └── checker.ts   # Agent availability checker
+├── generate/        # Generator logic
+│   └── generator.ts # Fixture generator
+├── react/           # React/TSX components
+│   └── RunResultRenderer.tsx  # Custom result rendering
+└── options/         # Option schema definitions
+    ├── run.ts       # Run options
+    ├── check.ts     # Check options
+    └── generate.ts  # Generate options
+```
+
+## Development
+
+```bash
+# Run in development
+bun run start
+
+# Run tests
+bun test
+
+# Run agent tests (requires agent setup)
+COMPASS_TEST_AGENTS=1 bun test
+
+# Build type checking
+bun run build
+
+# Compile to binary
+bun run compile
+```
+
+### Using a local `terminatui` checkout
+
+If you have a local checkout of `@pablozaiden/terminatui` in a sibling directory, you can link it for local development:
+
+```bash
+# from ../terminatui
+bun link
+
+# from ./compass
+bun link @pablozaiden/terminatui
+```
+
+## License
+
+MIT
 
 Mount your fixture as `/fixture.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands.
 
