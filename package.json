@@ -27,7 +27,7 @@
   "module": "src/index.ts",
   "type": "module",
   "bin": {
-    "compass": "src/index.ts"
+    "compass": "src/bin.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
