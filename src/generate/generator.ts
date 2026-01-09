@@ -2,7 +2,14 @@ import path from "node:path";
 import { createAgent, AgentTypes, defaultModels } from "../agents/factory";
 import { Cache } from "../agents/cache";
 import { generator } from "../prompts";
-import { logger } from "../logging";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 import type { Fixture } from "../models";
 
 /**
@@ -44,7 +51,7 @@ export class Generator {
     /**
      * Generate a fixture file for a repository.
      */
-    async generate(config: GeneratorConfig): Promise<GeneratorResult> {
+    async generate(config: GeneratorConfig, signal?: AbortSignal): Promise<GeneratorResult> {
         const { repoPath, agentType, count, steering, useCache } = config;
         const model = config.model ?? defaultModels[agentType];
 
@@ -65,16 +72,16 @@ export class Generator {
             .replaceAll("{{STEERING}}", steeringSection);
 
 
-        logger.info(`Generating fixture for ${repoFolderName} with ${count} prompts using ${AgentTypes[agentType]}`);
-        logger.trace(`Repository path: ${repoPath}`);
-        logger.trace(`Expected output: ${expectedFileName}`);
-        logger.trace(`Model: ${model}`);
-        logger.trace(`Use cache: ${useCache ?? false}`);
+        getLogger().info(`Generating fixture for ${repoFolderName} with ${count} prompts using ${AgentTypes[agentType]}`);
+        getLogger().trace(`Repository path: ${repoPath}`);
+        getLogger().trace(`Expected output: ${expectedFileName}`);
+        getLogger().trace(`Model: ${model}`);
+        getLogger().trace(`Use cache: ${useCache ?? false}`);
         if (steering) {
-            logger.trace(`Steering: ${steering}`);
+            getLogger().trace(`Steering: ${steering}`);
         }
 
-        logger.trace("Generated prompt for fixture generation: \n" + prompt);
+        getLogger().trace("Generated prompt for fixture generation: \n" + prompt);
 
         // Create and initialize the agent
         const agentOptions = {
@@ -88,11 +95,18 @@ export class Generator {
             agent = new Cache(agent, agentOptions, repoPath, "generate");
         }
 
+        // Check for cancellation before init
+        if (signal?.aborted) {
+            const abortError = new Error("Generation was cancelled");
+            abortError.name = "AbortError";
+            throw abortError;
+        }
+
         try {
             await agent.init();
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            logger.error("Failed to initialize agent:", error);
+            getLogger().error("Failed to initialize agent:", error);
             return {
                 success: false,
                 filePath: expectedFilePath,
@@ -102,11 +116,18 @@ export class Generator {
 
         // Execute the agent
         try {
-            logger.trace("Running agent to generate fixture...");
-            await agent.execute(prompt, model, repoPath);
+            // Check for cancellation before execute
+            if (signal?.aborted) {
+                const abortError = new Error("Generation was cancelled");
+                abortError.name = "AbortError";
+                throw abortError;
+            }
+
+            getLogger().trace("Running agent to generate fixture...");
+            await agent.execute(prompt, model, repoPath, signal);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            logger.error("Agent execution failed:", error);
+            getLogger().error("Agent execution failed:", error);
             return {
                 success: false,
                 filePath: expectedFilePath,
@@ -119,7 +140,7 @@ export class Generator {
         const exists = await file.exists();
 
         if (!exists) {
-            logger.error(`✗ Fixture file was not created: ${expectedFilePath}`);
+            getLogger().error(`✗ Fixture file was not created: ${expectedFilePath}`);
             return {
                 success: false,
                 filePath: expectedFilePath,
@@ -127,7 +148,7 @@ export class Generator {
             };
         }
 
-        logger.info(`✓ Fixture created: ${expectedFileName}`);
+        getLogger().info(`✓ Fixture created: ${expectedFileName}`);
 
         // Validate it's valid JSON
         try {
@@ -135,7 +156,7 @@ export class Generator {
             const parsed = JSON.parse(content) as Fixture;
 
             if (!parsed.prompts || !Array.isArray(parsed.prompts)) {
-                logger.warn("Warning: Fixture file does not contain a 'prompts' array");
+                getLogger().warn("Warning: Fixture file does not contain a 'prompts' array");
                 return {
                     success: false,
                     filePath: expectedFilePath,
@@ -143,14 +164,14 @@ export class Generator {
                 };
             }
 
-            logger.trace(`Fixture contains ${parsed.prompts.length} prompts`);
+            getLogger().trace(`Fixture contains ${parsed.prompts.length} prompts`);
             return {
                 success: true,
                 filePath: expectedFilePath,
                 fixture: parsed,
             };
         } catch {
-            logger.warn("Warning: Fixture file is not valid JSON");
+            getLogger().warn("Warning: Fixture file is not valid JSON");
             return {
                 success: false,
                 filePath: expectedFilePath,

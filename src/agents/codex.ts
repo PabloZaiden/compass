@@ -1,28 +1,32 @@
 import type { AgentOutput } from "../models";
 import { run } from "../utils";
-import { logger } from "../logging";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
 import { Agent, type AgentOptions } from "./agent";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 
 export class Codex extends Agent {
     constructor(options: AgentOptions) {
         super("Codex", options);
     }
 
-    override async execute(prompt: string, model: string, workingDirectory: string): Promise<AgentOutput> {
-        logger.trace(`Executing Codex with model ${model} on prompt ${prompt}`);
+    override async execute(prompt: string, model: string, workingDirectory: string, signal?: AbortSignal): Promise<AgentOutput> {
+        getLogger().trace(`Executing Codex with model ${model} on prompt ${prompt}`);
         
         const sandboxParameters = this.options.allowFullAccess ? ["--sandbox", "danger-full-access"] : [];
         const processOutput = await run(
             workingDirectory,
-            "codex",
-            "exec",
-            "--model", model, 
-            ...sandboxParameters,
-            prompt);
+            ["codex", "exec", "--model", model, ...sandboxParameters, prompt],
+            signal);
 
-        logger.trace("Collecting git diff after agent execution");
+        getLogger().trace("Collecting git diff after agent execution");
         
-        const diff = await run(workingDirectory, "git", "--no-pager", "diff");
+        const diff = await run(workingDirectory, ["git", "--no-pager", "diff"], signal);
 
         return {
             stdOut: Bun.stripANSI(processOutput.stdOut.trim()),
@@ -33,7 +37,7 @@ export class Codex extends Agent {
     }
 
     override async init(): Promise<void> {
-        const checkLogin = await run(".", "codex", "login", "status");
+        const checkLogin = await run(".", ["codex", "login", "status"]);
 
         if (checkLogin.exitCode !== 0) {
             const loginProcess = Bun.spawn(

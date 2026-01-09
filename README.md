@@ -1,10 +1,16 @@
 # Compass
 
-Console tool to benchmark Coding agents using different agents and models across prompts against expected outcomes.
+A CLI and TUI tool for benchmarking AI coding agents across prompts and fixtures.
+
+## Overview
+
+Compass runs agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) against a target repository using a fixture file (prompts + expected outcomes), then aggregates results.
 
 ## Installation
 
-This package is hosted on GitHub Package Registry. To install, you need to be authenticated with GitHub CLI:
+### Install pre-built binary (recommended)
+
+This installs from GitHub Package Registry. You need GitHub CLI authenticated with the `read:packages` scope.
 
 ```bash
 curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
@@ -22,13 +28,20 @@ curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercont
 
 > **⚠️ Warning:** This installs a development build from the `main` branch, which may contain unstable or untested features, breaking changes, or bugs not present in official releases. For production use, prefer the standard installation method above.
 
+### Run from source
+
+```bash
+bun install
+bun run start
+```
+
 ## Supported Agents
 
 - GitHub Copilot (`copilot`)
 - OpenAI Codex (`codex`)
 - OpenCode (`opencode`)
 - Google Gemini CLI (`gemini`)
-- Claude Code (`claudeCode`) — *coming soon*
+- Claude Code (`claudeCode`)
 
 ## Requirements
 
@@ -50,13 +63,18 @@ Compass supports the following commands:
 
 ### Interactive Mode (default)
 
-Launch the interactive Terminal UI:
+Launch the interactive Terminal UI by running compass without arguments:
 
 ```bash
 compass
-# or explicitly:
-compass interactive
 ```
+
+The TUI provides:
+- Visual form-based configuration
+- Command selection via keyboard shortcuts
+- Live log streaming
+- Results display with Ctrl+Y to copy to clipboard
+- Cancellation support with Esc during execution
 
 ### Run Mode
 
@@ -129,7 +147,7 @@ Options are specified via command-line arguments with the `--` prefix.
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to evaluate |
 | `--fixture` | Yes | Path to the fixture JSON file |
-| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini` |
+| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini`, `claudeCode` |
 | `--iterations` | No | Number of iterations per prompt (default: `1`) |
 | `--output-mode` | No | Output format: `Detailed`, `Aggregated` (default) |
 | `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: `false`) |
@@ -143,7 +161,7 @@ Options are specified via command-line arguments with the `--` prefix.
 | Option | Required | Description |
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to analyze |
-| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini` |
+| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini`, `claudeCode` |
 | `--count` | Yes | Number of prompts to generate |
 | `--model` | No | Model to use for the agent |
 | `--steering` | No | Additional instructions to steer generation |
@@ -172,10 +190,26 @@ compass
 ```
 
 Features:
-- Interactive form for all CLI options.
-- Live `tslog` stream in the right panel and spinner-based activity indicator while running
-- Pretty-printed JSON results inside the TUI (no JSON is written to stdout when TUI is enabled)
-- "Show as CLI flags" overlay to copy the equivalent command
+- Interactive form for all CLI options
+- Live log streaming with real-time updates
+- Pretty-printed JSON results inside the TUI
+- Copy panel content to clipboard (press `Y`)
+- "Show as CLI flags" overlay to copy the equivalent command (press `C`)
+- Cancellation support during command execution (press `Esc`)
+- Log panel toggle (press `L`)
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| ↑/↓ | Navigate fields/commands |
+| Enter | Edit field / Execute command |
+| Tab | Cycle focus between panels |
+| C | Show CLI command modal |
+| L | Toggle logs panel |
+| Y | Copy current content to clipboard |
+| Esc | Back / Cancel running command |
+| Q | Quit |
 
 ## Docker
 
@@ -190,7 +224,7 @@ docker run --rm -ti \
   --agent opencode
 ```
 
-Mount your fixture as `/fixture.json` and repo to evaluate at `/target-repo` so the container can reset git state via git commands.
+Mount your fixture as `/fixture.json` and your repo as `/target-repo` so the container can reset git state via git commands.
 
 For instance, to run the sample configuration against Compass itself:
 
@@ -207,7 +241,7 @@ docker run --rm -ti \
 
 ## Fixture File
 
-A fixture file defines the prompts and expected outcomes for benchmarking. See [src/sample-fixture.json](src/sample-fixture.json) for an example:
+A fixture file defines the prompts and expected outcomes for benchmarking. See [src/sample-fixture.json](src/sample-fixture.json) for an example.
 
 ```json
 {
@@ -220,3 +254,42 @@ A fixture file defines the prompts and expected outcomes for benchmarking. See [
   ]
 }
 ```
+
+## Architecture
+
+Compass uses the `@pablozaiden/terminatui` framework to provide a unified CLI + TUI experience (auto-generated forms, command routing, option validation, and cancellation).
+
+## Development
+
+```bash
+# Run in development
+bun run start
+
+# Run tests
+bun run test
+
+# Run agent tests (requires agent setup)
+bun run test:agents
+
+# Build type checking
+bun run build
+
+# Compile to binary
+bun run compile
+```
+
+### Using a local `terminatui` checkout
+
+If you have a local checkout of `@pablozaiden/terminatui` in a sibling directory, you can link it for local development:
+
+```bash
+# from the @pablozaiden/terminatui directory
+bun link
+
+# from ./compass
+bun link @pablozaiden/terminatui
+```
+
+## License
+
+MIT

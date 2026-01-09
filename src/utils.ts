@@ -1,5 +1,12 @@
 import type { ProcessOutput } from "./models";
-import { logger } from "./logging";
+import { AppContext, type Logger } from "@pablozaiden/terminatui";
+
+/**
+ * Get the current logger from AppContext.
+ */
+function getLogger(): Logger {
+    return AppContext.current.logger;
+}
 
 /// Reads a stream and logs each chunk as it arrives, populating the chunks array with the content.
 async function readAndLogStream(
@@ -24,22 +31,34 @@ async function readAndLogStream(
         buffer = lines.pop() ?? "";
         for (const line of lines) {
             if (line.trim()) {
-                logger.trace(`${prefix}: ${line}`);
+                getLogger().trace(`${prefix}: ${line}`);
             }
         }
     }
 
     // Log any remaining content in the buffer
     if (buffer.trim()) {
-        logger.trace(`${prefix}: ${buffer}`);
+        getLogger().trace(`${prefix}: ${buffer}`);
     }
 }
 
 /// Executes a command in a given working directory and returns the process output.
 /// Streams stdout and stderr to the logger as the command executes.
-export async function run(workingDirectory: string, ...commandWithArgs: string[]): Promise<ProcessOutput> {
+/// Supports cancellation via AbortSignal - will kill the process when aborted.
+export async function run(
+    workingDirectory: string,
+    commandWithArgs: string[],
+    signal?: AbortSignal
+): Promise<ProcessOutput> {
     const commandForLogging = commandWithArgs[0] + " " + commandWithArgs.slice(1).map(arg => escapeArg(arg)).join(" ");
-    logger.trace(`Running command: ${commandForLogging} in directory: ${workingDirectory}`);
+    getLogger().trace(`Running command: ${commandForLogging} in directory: ${workingDirectory}`);
+
+    // Check if already aborted before starting
+    if (signal?.aborted) {
+        const error = new Error("Command was cancelled before starting");
+        error.name = "AbortError";
+        throw error;
+    }
 
     const process = Bun.spawn({
         cmd: commandWithArgs,
@@ -49,23 +68,47 @@ export async function run(workingDirectory: string, ...commandWithArgs: string[]
         stdin: "ignore"
     });
 
-    const stdOutChunks: string[] = [];
-    const stdErrChunks: string[] = [];
-
-    await Promise.all([
-        readAndLogStream(process.stdout, stdOutChunks, "stdout"),
-        readAndLogStream(process.stderr, stdErrChunks, "stderr"),
-    ]);
-
-    const exitCode = await process.exited;
-
-    logger.trace(`Command exited with code: ${exitCode}`);
-
-    return {
-        stdOut: stdOutChunks.join(""),
-        stdErr: stdErrChunks.join(""),
-        exitCode
+    // Set up abort handler to kill the process
+    const abortHandler = () => {
+        getLogger().trace(`Killing process due to abort signal`);
+        process.kill();
     };
+    
+    if (signal) {
+        signal.addEventListener("abort", abortHandler, { once: true });
+    }
+
+    try {
+        const stdOutChunks: string[] = [];
+        const stdErrChunks: string[] = [];
+
+        await Promise.all([
+            readAndLogStream(process.stdout, stdOutChunks, "stdout"),
+            readAndLogStream(process.stderr, stdErrChunks, "stderr"),
+        ]);
+
+        const exitCode = await process.exited;
+
+        // Check if we were aborted
+        if (signal?.aborted) {
+            const error = new Error("Command was cancelled");
+            error.name = "AbortError";
+            throw error;
+        }
+
+        getLogger().trace(`Command exited with code: ${exitCode}`);
+
+        return {
+            stdOut: stdOutChunks.join(""),
+            stdErr: stdErrChunks.join(""),
+            exitCode
+        };
+    } finally {
+        // Clean up abort listener
+        if (signal) {
+            signal.removeEventListener("abort", abortHandler);
+        }
+    }
 }
 
 export async function copyDirectory(sourceDir: string, destinationDir: string): Promise<void> {

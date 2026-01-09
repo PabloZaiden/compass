@@ -1,7 +1,6 @@
 import type { OptionSchema } from "./schema";
 import { AgentTypes } from "../agents/factory";
 import { OutputMode, values } from "../models";
-import { commonOptionsSchema, type CommonOptions } from "./common";
 
 /**
  * Lazy evaluation helpers for dynamic enum values.
@@ -17,6 +16,9 @@ const getOutputModes = () => values(OutputMode).join(", ");
  * - Help text descriptions
  * - Default values
  * - Required/optional status
+ * 
+ * Note: Logging options (--log-level, --detailed-logs) are handled
+ * automatically by the terminatui framework at the application level.
  */
 export const runOptionsSchema = {
     repo: {
@@ -70,21 +72,20 @@ export const runOptionsSchema = {
         type: "string",
         description: "Model to use for the agent",
         placeholder: "name",
-        default: "based on --agent",
+        default: "",
     },
     "eval-model": {
         type: "string",
         description: "Model to use for evaluation",
         placeholder: "name",
-        default: "based on --agent",
+        default: "",
     },
-    ...commonOptionsSchema,
 } as const satisfies OptionSchema;
 
 /**
  * Type for parsed run options (derived from schema).
  */
-export type RunOptions = CommonOptions & {
+export type RunOptions = {
     repo?: string;
     fixture?: string;
     agent?: string;

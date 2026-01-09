@@ -1,3 +1,2 @@
-// Run mode - executes evaluation runs
+// Run - executes evaluation runs
 export { Runner } from "./runner";
-export { runMode, type RunOptions } from "./mode";

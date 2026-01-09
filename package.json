@@ -37,10 +37,8 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "@opentui/core": "0.1.68",
-    "@opentui/react": "^0.1.68",
-    "react": "19",
-    "tslog": "^4.10.2"
+    "@pablozaiden/terminatui": "github:PabloZaiden/terminatui#v0.1.0",
+    "@opentui/react": "0.1.68"
   },
   "scripts": {
     "start": "bun run src/index.ts",
@@ -48,7 +46,7 @@
     "build": "bunx tsc --noEmit",
     "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:agents": "COMPASS_TEST_AGENTS=1 bun test",
-    "docker:build": "docker build -t compass ."
+    "test": "bun test"
   },
   "config": {
     "commitHash": ""

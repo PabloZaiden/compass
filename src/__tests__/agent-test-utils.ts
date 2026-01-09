@@ -2,9 +2,8 @@ import { expect } from "bun:test";
 import { AgentTypes, createAgent, defaultModels } from "../agents/factory";
 import path, { dirname } from "path";
 import { OutputMode, type Fixture } from "../models";
-import { LogLevel } from "../logging";
 import { Runner } from "../run/runner";
-import type { RunConfig } from "../runconfig/runconfig";
+import type { RunConfig } from "../commands/run";
 import { Generator } from "../generate/generator";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -63,7 +62,6 @@ export async function endToEnd(type: AgentTypes) {
     stopOnError: true,
     useCache: false,
     allowFullAccess: true,
-    logLevel: LogLevel.Trace
   };
 
   const runner = new Runner();
