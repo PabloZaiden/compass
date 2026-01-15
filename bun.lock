@@ -6,7 +6,7 @@
       "name": "@pablozaiden/compass",
       "dependencies": {
         "@opentui/react": "0.1.68",
-        "@pablozaiden/terminatui": "0.2.0",
+        "@pablozaiden/terminatui": "link:@pablozaiden/terminatui",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -92,7 +92,7 @@
 
     "@opentui/react": ["@opentui/react@0.1.68", "", { "dependencies": { "@opentui/core": "0.1.68", "react-reconciler": "^0.32.0" }, "peerDependencies": { "react": ">=19.0.0", "react-devtools-core": "^7.0.1", "ws": "^8.18.0" } }, "sha512-dN2I60zINykyty31fFt0q8oZuod3O3LTygzdLPmXl0m4FLLYTiINqtvJqt12z4ikRnwMW+t2Ia4C17LnZn19Hw=="],
 
-    "@pablozaiden/terminatui": ["@pablozaiden/terminatui@0.2.0", "", { "dependencies": { "@opentui/react": "0.1.68", "tslog": "^4.9.3" }, "peerDependencies": { "typescript": "5.9.3" } }, "sha512-UkouoN9esOTDKQnTI19X2O0aLHZGUePCt3BooV0v6OERjExX9HTVAlq/eBn1qeioPISvk22AKOsquYEXY3ysuw=="],
+    "@pablozaiden/terminatui": ["@pablozaiden/terminatui@link:@pablozaiden/terminatui", {}],
 
     "@tokenizer/token": ["@tokenizer/token@0.3.0", "", {}, "sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A=="],
 
@@ -205,8 +205,6 @@
     "tinycolor2": ["tinycolor2@1.6.0", "", {}, "sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw=="],
 
     "token-types": ["token-types@4.2.1", "", { "dependencies": { "@tokenizer/token": "^0.3.0", "ieee754": "^1.2.1" } }, "sha512-6udB24Q737UD/SDsKAHI9FCRP7Bqc9D/MQUV02ORQg5iskjtLJlZJNdN4kKtcdtwCeWIwIHDGaUsTsCCAa8sFQ=="],
-
-    "tslog": ["tslog@4.10.2", "", {}, "sha512-XuELoRpMR+sq8fuWwX7P0bcj+PRNiicOKDEb3fGNURhxWVyykCi9BNq7c4uVz7h7P0sj8qgBsr5SWS6yBClq3g=="],
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 

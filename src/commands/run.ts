@@ -1,6 +1,6 @@
 import path from "node:path";
 import { existsSync } from "node:fs";
-import { Command, ConfigValidationError, type AppContext, type OptionSchema, type OptionValues, type CommandResult, type CommandExecutionContext } from "@pablozaiden/terminatui";
+import { AppContext, Command, ConfigValidationError, type OptionSchema, type OptionValues, type CommandResult, type CommandExecutionContext } from "@pablozaiden/terminatui";
 import { Runner } from "../run/runner";
 import { runOptionsSchema } from "../options";
 import { AgentTypes, defaultModels } from "../agents/factory";
@@ -137,7 +137,7 @@ Results will be output as JSON to stdout.
    * Build and validate the RunConfig from parsed options.
    * This is called before execute.
    */
-  override buildConfig(_ctx: AppContext, opts: OptionValues<typeof runOptions>): RunConfig {
+  override buildConfig(opts: OptionValues<typeof runOptions>): RunConfig {
     // Extract and validate repo path
     const repoPathRaw = opts["repo"] as string | undefined;
     if (!repoPathRaw) {
@@ -218,20 +218,20 @@ Results will be output as JSON to stdout.
    * Execute the run command.
    * Returns CommandResult for both CLI and TUI modes.
    */
-  override async execute(ctx: AppContext, config: RunConfig, execCtx?: CommandExecutionContext): Promise<CommandResult> {
+  override async execute(config: RunConfig, execCtx?: CommandExecutionContext): Promise<CommandResult> {
     try {
       const runner = new Runner();
       const result = await runner.run(config, execCtx?.signal);
-      ctx.logger.info("Run completed successfully");
+      AppContext.current.logger.info("Run completed successfully");
       return { success: true, data: result };
     } catch (error) {
       // Check if this was a cancellation
       if (error instanceof Error && error.name === "AbortError") {
-        ctx.logger.info("Run was cancelled");
+        AppContext.current.logger.info("Run was cancelled");
         throw error; // Re-throw to let framework handle it
       }
       const message = error instanceof Error ? error.message : String(error);
-      ctx.logger.error("Run failed:", message);
+      AppContext.current.logger.error("Run failed:", message);
       return {
         success: false,
         error: message,

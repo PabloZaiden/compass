@@ -1,4 +1,4 @@
-import { Command, type AppContext, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminatui";
+import { AppContext, Command, type OptionSchema, type OptionValues, type CommandResult } from "@pablozaiden/terminatui";
 import { Checker } from "../check/checker";
 import { checkOptionsSchema } from "../options";
 
@@ -85,11 +85,11 @@ export class CheckCommand extends Command<typeof checkOptions> {
   /**
    * Execute the check command.
    */
-  override async execute(ctx: AppContext, opts: OptionValues<typeof checkOptions>): Promise<CommandResult> {
+  override async execute(opts: OptionValues<typeof checkOptions>): Promise<CommandResult> {
     // Apply common options
     const logLevel = opts["log-level"];
     if (logLevel === "debug") {
-      ctx.logger.setDetailed(true);
+      AppContext.current.logger.setDetailed(true);
     }
 
     const agentFilter = opts["agent"] as string | undefined;

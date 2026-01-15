@@ -1,4 +1,4 @@
-import { TuiApplication } from "@pablozaiden/terminatui";
+import { AppContext, TuiApplication, type ModeOptions } from "@pablozaiden/terminatui";
 import { RunCommand, CheckCommand, GenerateCommand } from "./commands/index.ts";
 import pkg from "../package.json";
 
@@ -13,6 +13,8 @@ import pkg from "../package.json";
  * provided by the framework.
  */
 export class CompassApp extends TuiApplication {
+  protected override defaultMode: ModeOptions = "opentui";
+  
   constructor() {
     super({
       name: "compass",
@@ -34,8 +36,8 @@ export class CompassApp extends TuiApplication {
 
     // Set up lifecycle hooks
     this.setHooks({
-      onError: async (ctx, error) => {
-        ctx.logger.error(`Error: ${error.message}`);
+      onError: async (error) => {
+        AppContext.current.logger.error(`Error: ${error.message}`);
         process.exitCode = 1;
       },
     });

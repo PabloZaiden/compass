@@ -1,5 +1,5 @@
 import React from "react";
-import { Theme, JsonHighlight, type CommandResult } from "@pablozaiden/terminatui";
+import { JsonHighlight, SemanticColors, type CommandResult } from "@pablozaiden/terminatui";
 import type { RunnerResult, IterationResult, AggregatedResult } from "../models";
 
 /**
@@ -16,15 +16,15 @@ export function renderRunResult(result: CommandResult): React.ReactNode {
   return (
     <box flexDirection="column" gap={1}>
       {/* Summary Section */}
-      <box flexDirection="column" border={true} borderStyle="single" borderColor={Theme.border} padding={1}>
-        <text fg={Theme.overlayTitle}>── Summary ───────────────────────────</text>
+      <box flexDirection="column" border={true} borderStyle="single" borderColor={SemanticColors.border} padding={1}>
+        <text fg={SemanticColors.selectionText}>── Summary ───────────────────────────</text>
 
         {/* Iteration Results */}
         <box flexDirection="column" marginTop={1}>
-          <text fg={Theme.warning}>📋 Iteration Results ({iterationResults.length})</text>
+          <text fg={SemanticColors.primary}>📋 Iteration Results ({iterationResults.length})</text>
           {iterationResults.map((ir: IterationResult, i: number) => {
             const icon = ir.classification === "SUCCESS" ? "✓" : ir.classification === "PARTIAL" ? "◐" : "✗";
-            const color = ir.classification === "SUCCESS" ? Theme.success : ir.classification === "PARTIAL" ? Theme.warning : Theme.error;
+            const color = ir.classification === "SUCCESS" ? SemanticColors.success : ir.classification === "PARTIAL" ? SemanticColors.warning : SemanticColors.error;
             return (
               <text key={i} fg={color}>
                 {"   "}{icon} {ir.promptId} #{ir.iteration}: {ir.classification} ({ir.points} pts)
@@ -35,12 +35,12 @@ export function renderRunResult(result: CommandResult): React.ReactNode {
 
         {/* Aggregated Results */}
         <box flexDirection="column" marginTop={1}>
-          <text fg={Theme.borderFocused}>📊 Aggregated Results ({aggregatedResults.length})</text>
+          <text fg={SemanticColors.primary}>📊 Aggregated Results ({aggregatedResults.length})</text>
           {aggregatedResults.map((ar: AggregatedResult, i: number) => {
             const color = 
-              ar.averagePoints > 0.7 ? Theme.success : 
-              ar.averagePoints >= 0.4 ? Theme.warning : 
-              Theme.error;
+              ar.averagePoints > 0.7 ? SemanticColors.success : 
+              ar.averagePoints >= 0.4 ? SemanticColors.warning : 
+              SemanticColors.error;
 
             return (<text key={i}>
               {"   "}• {ar.promptId}: <span fg={color}>{ar.averagePoints.toFixed(2)}</span> pts ({ar.iterations} iterations)
@@ -51,8 +51,8 @@ export function renderRunResult(result: CommandResult): React.ReactNode {
       </box>
 
       {/* Raw JSON Section */}
-      <box flexDirection="column" border={true} borderStyle="single" borderColor={Theme.border} padding={1}>
-        <text fg={Theme.overlayTitle}>── Raw JSON ───────────────────────────</text>
+      <box flexDirection="column" border={true} borderStyle="single" borderColor={SemanticColors.border} padding={1}>
+        <text fg={SemanticColors.selectionText}>── Raw JSON ───────────────────────────</text>
         <box marginTop={1}>
           <JsonHighlight value={data} />
         </box>
