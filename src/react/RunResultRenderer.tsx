@@ -17,7 +17,7 @@ export function renderRunResult(result: CommandResult): React.ReactNode {
     <box flexDirection="column" gap={1}>
       {/* Summary Section */}
       <box flexDirection="column" border={true} borderStyle="single" borderColor={SemanticColors.border} padding={1}>
-        <text fg={SemanticColors.selectionText}>── Summary ───────────────────────────</text>
+        <text fg={SemanticColors.selectionBackground}>── Summary ───────────────────────────</text>
 
         {/* Iteration Results */}
         <box flexDirection="column" marginTop={1}>
@@ -52,7 +52,7 @@ export function renderRunResult(result: CommandResult): React.ReactNode {
 
       {/* Raw JSON Section */}
       <box flexDirection="column" border={true} borderStyle="single" borderColor={SemanticColors.border} padding={1}>
-        <text fg={SemanticColors.selectionText}>── Raw JSON ───────────────────────────</text>
+        <text fg={SemanticColors.selectionBackground}>── Raw JSON ───────────────────────────</text>
         <box marginTop={1}>
           <JsonHighlight value={data} />
         </box>
