@@ -63,10 +63,4 @@ bun install -g @google/gemini-cli
 # install opencode
 bun install -g opencode-ai
 
-# install az cli
-if ! command -v az &> /dev/null
-then
-    echo "Azure CLI not found, installing..."
-    
-    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-fi
+

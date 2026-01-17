@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1
+
+# Base image for compass that pre-installs all prerequisites
+# This image is built separately via workflow_dispatch and cached in ghcr.io
+
+FROM oven/bun:1 AS base
+WORKDIR /usr/src/app
+
+RUN apt-get update && apt-get install -y curl git sudo xz-utils \
+    && curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY docker/install-prerequisites.sh ./install-prerequisites.sh
+
+USER bun
+RUN bash ./install-prerequisites.sh
+
+USER root
+RUN rm ./install-prerequisites.sh
+
+USER bun
+
+ENV PATH="/home/bun/.local/bin:/home/bun/.bun/bin:/home/bun/.bun/global/bin:${PATH}"
