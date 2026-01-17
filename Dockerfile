@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM ghcr.io/pablozaiden/compass-base:latest AS base
+ARG BASE_IMAGE=ghcr.io/pablozaiden/compass-base:latest
+FROM ${BASE_IMAGE} AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp directory
