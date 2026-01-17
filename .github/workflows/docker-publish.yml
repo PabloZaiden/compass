@@ -9,8 +9,9 @@ on:
   push:
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" ]
+  # For now, we do not run any steps on PRs
+  # pull_request:
+  #   branches: [ "main" ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -25,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: ${{ github.event_name == 'pull_request' && 'read' || 'write' }}
+      packages: write
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
