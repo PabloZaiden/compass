@@ -1,8 +1,9 @@
 name: Release NPM Package
 
 on:
-  release:
-    types: [published]
+  # For now, keep the release trigger commented out
+  # release:
+  #   types: [published]
   workflow_dispatch:
     inputs:
       tag:
