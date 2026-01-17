@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM oven/bun:1 AS base
+FROM ghcr.io/pablozaiden/compass-base:latest AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp directory
@@ -25,25 +25,9 @@ COPY . .
 ENV NODE_ENV=production
 RUN bun test
 RUN bun build --compile --outfile=compass ./src/index.ts
-# copy production dependencies and source code into final image
+
+# copy compiled binary into final image
 FROM base AS release
-
-RUN apt-get update && apt-get install -y curl git sudo xz-utils
-
-# install az cli here, since it requires sudo permissions
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-COPY docker/install-prerequisites.sh ./install-prerequisites.sh
-
-USER bun
-RUN bash ./install-prerequisites.sh
-
-USER root
-RUN rm ./install-prerequisites.sh
-
-USER bun
-
-ENV PATH="/home/bun/.local/bin:/home/bun/.bun/bin:/home/bun/.bun/global/bin:${PATH}"
 
 COPY --from=prerelease /usr/src/app/compass .
 
