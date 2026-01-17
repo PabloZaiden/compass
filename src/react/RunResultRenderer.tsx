@@ -1,5 +1,5 @@
 import React from "react";
-import { JsonHighlight, SemanticColors, type CommandResult } from "@pablozaiden/terminatui";
+import { SemanticColors, type CommandResult } from "@pablozaiden/terminatui";
 import type { RunnerResult, IterationResult, AggregatedResult } from "../models";
 
 /**
@@ -7,7 +7,7 @@ import type { RunnerResult, IterationResult, AggregatedResult } from "../models"
  */
 export function renderRunResult(result: CommandResult): React.ReactNode {
   if (!result.data) {
-    return result.message ?? "No data";
+    return result.message ?? <box>No data</box>;
   }
 
   const data = result.data as RunnerResult;
@@ -54,7 +54,7 @@ export function renderRunResult(result: CommandResult): React.ReactNode {
       <box flexDirection="column" border={true} borderStyle="single" borderColor={SemanticColors.border} padding={1}>
         <text fg={SemanticColors.selectionBackground}>── Raw JSON ───────────────────────────</text>
         <box marginTop={1}>
-          <JsonHighlight value={data} />
+          <text>{JSON.stringify(data, null, 2)}</text>
         </box>
       </box>
     </box>
