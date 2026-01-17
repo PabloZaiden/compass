@@ -8,31 +8,18 @@ Compass runs agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) again
 
 ## Installation
 
-### Install pre-built binary (recommended)
-
-This installs from GitHub Package Registry. You need GitHub CLI authenticated with the `read:packages` scope.
+### Install from sources
 
 ```bash
-curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | bash
+bun local-install
 ```
 
-> **Note:** Make sure you have [GitHub CLI](https://cli.github.com/) installed, and authenticated with the `read:packages` scope (`gh auth login --scopes read:packages`).
-
-### Install Development Build
-
-To install the latest development build from the `main` branch:
-
-```bash
-curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/pablozaiden/compass/main/install.sh | COMPASS_VERSION=0.0.0-development bash
-```
-
-> **⚠️ Warning:** This installs a development build from the `main` branch, which may contain unstable or untested features, breaking changes, or bugs not present in official releases. For production use, prefer the standard installation method above.
+This will build and install `compass` binary to your `~/.local/bin` folder.
 
 ### Run from source
 
 ```bash
-bun install
-bun run start
+bun start
 ```
 
 ## Supported Agents
