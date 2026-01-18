@@ -24,21 +24,21 @@ bun start
 
 ## Supported Agents
 
-- GitHub Copilot (`copilot`)
-- OpenAI Codex (`codex`)
-- OpenCode (`opencode`)
-- Google Gemini CLI (`gemini`)
-- Claude Code (`claudeCode`)
+- GitHub Copilot
+- OpenAI Codex
+- OpenCode
+- Google Gemini CLI
+- Claude Code
 
 ## Requirements
 
 - Git
 - [Bun runtime](https://bun.sh/) (if not using Docker or pre-built binaries)
-- `copilot` in path for GitHub Copilot CLI
-- `codex` in path for OpenAI Codex CLI
-- `opencode` in path for OpenCode CLI
-- `gemini` in path for Google Gemini CLI
-- `claude` in path for Anthropic Claude CLI
+- `copilot` in path for GitHub Copilot
+- `codex` in path for OpenAI Codex
+- `opencode` in path for OpenCode
+- `gemini` in path for Google Gemini
+- `claude` in path for Anthropic Claude
 
 ## Optional Requirements
 
@@ -48,7 +48,7 @@ bun start
 
 Compass supports the following commands:
 
-### Interactive Mode (default)
+### Interactive Mode (Terminal UI)
 
 Launch the interactive Terminal UI by running compass without arguments:
 
@@ -56,7 +56,14 @@ Launch the interactive Terminal UI by running compass without arguments:
 compass
 ```
 
-The TUI provides:
+### Interactive Mode (Basic)
+
+```bash
+compass --mode ink
+```
+
+
+The Interactive Modes provides:
 - Visual form-based configuration
 - Command selection via keyboard shortcuts
 - Live log streaming
@@ -68,7 +75,7 @@ The TUI provides:
 Execute the benchmark runner:
 
 ```bash
-compass run \
+compass --mode cli run \
   --repo "/path/to/target/repo" \
   --fixture "/path/to/fixture.json" \
   --agent opencode
@@ -79,7 +86,7 @@ compass run \
 Auto-generate a fixture file for a repository using an AI agent:
 
 ```bash
-compass generate \
+compass --mode cli generate \
   --repo "/path/to/target/repo" \
   --agent opencode \
   --count 10
@@ -90,7 +97,7 @@ The agent will analyze the repository and create a `{repo-folder-name}.compass.j
 You can optionally steer the generation with additional instructions:
 
 ```bash
-compass generate \
+compass --mode cli generate \
   --repo "/path/to/target/repo" \
   --agent copilot \
   --count 15 \
@@ -102,8 +109,8 @@ compass generate \
 Verify that required agent dependencies are installed:
 
 ```bash
-compass check                    # Check all agent dependencies
-compass check --agent copilot    # Check copilot dependencies only
+compass --mode cli check                    # Check all agent dependencies
+compass --mode cli check --agent copilot    # Check copilot dependencies only
 ```
 
 ### Version
@@ -111,7 +118,7 @@ compass check --agent copilot    # Check copilot dependencies only
 Show the application version:
 
 ```bash
-compass version
+compass --mode cli --version
 ```
 
 ### Help
@@ -119,9 +126,9 @@ compass version
 Show all available options:
 
 ```bash
-compass help
-compass run help      # Help for run command
-compass generate help # Help for generate command
+compass --mode cli help
+compass --mode cli run help      # Help for run command
+compass --mode cli generate help # Help for generate command
 ```
 
 ### Options
@@ -134,7 +141,7 @@ Options are specified via command-line arguments with the `--` prefix.
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to evaluate |
 | `--fixture` | Yes | Path to the fixture JSON file |
-| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini`, `claudeCode` |
+| `--agent` | Yes | Agent type: `Copilot`, `Codex`, `OpenCode`, `Gemini`, `ClaudeCode` |
 | `--iterations` | No | Number of iterations per prompt (default: `1`) |
 | `--output-mode` | No | Output format: `Detailed`, `Aggregated` (default) |
 | `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: `false`) |
@@ -165,38 +172,9 @@ These options are available for all commands:
 
 | Option | Description |
 |--------|-------------|
+| `--mode` | Execution mode: `cli` (default), `opentui` (Default Terminal UI), `ink` (Basic UI) |
 | `--log-level` | Logging verbosity: `Trace`, `Debug`, `Info`, `Warn`, `Error` (default: `Info`) |
 | `--detailed-logs` / `--no-detailed-logs` | Show detailed logs with timestamp and level (default: `false`) |
-
-## Terminal UI
-
-The default mode launches an interactive Terminal UI. To start it, simply run:
-
-```bash
-compass
-```
-
-Features:
-- Interactive form for all CLI options
-- Live log streaming with real-time updates
-- Pretty-printed JSON results inside the TUI
-- Copy panel content to clipboard (press `Y`)
-- "Show as CLI flags" overlay to copy the equivalent command (press `C`)
-- Cancellation support during command execution (press `Esc`)
-- Log panel toggle (press `L`)
-
-### Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| ↑/↓ | Navigate fields/commands |
-| Enter | Edit field / Execute command |
-| Tab | Cycle focus between panels |
-| C | Show CLI command modal |
-| L | Toggle logs panel |
-| Y | Copy current content to clipboard |
-| Esc | Back / Cancel running command |
-| Q | Quit |
 
 ## Docker
 
@@ -205,7 +183,7 @@ docker run --rm -ti \
   -v /absolute/path/to/target-repo:/target-repo \
   -v /absolute/path/to/fixture.json:/fixture.json \
   ghcr.io/pablozaiden/compass:latest \
-  run \
+  --mode cli run \
   --repo /target-repo \
   --fixture /fixture.json \
   --agent opencode
@@ -220,7 +198,7 @@ docker run --rm -ti \
   -v $(pwd):/target-repo \
   -v $(pwd)/src/sample-fixture.json:/fixture.json \
   ghcr.io/pablozaiden/compass:latest \
-  run \
+  --mode cli run \
   --repo /target-repo \
   --fixture /fixture.json \
   --agent opencode
