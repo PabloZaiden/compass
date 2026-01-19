@@ -8,6 +8,21 @@ Compass runs agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) again
 
 ## Installation
 
+### Install latest release
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/PabloZaiden/compass/main/install.sh | bash
+```
+
+This will download and install the latest `compass` binary to `~/.local/bin`.
+
+Ensure `gh` CLI is installed and authenticated with the `repo` scope:
+
+```bash
+gh auth login
+gh auth refresh -s repo
+```
+
 ### Install from sources
 
 ```bash

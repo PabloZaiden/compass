@@ -7,62 +7,130 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Version to install (defaults to latest release)
-VERSION="${COMPASS_VERSION:-latest}"
+REPO="PabloZaiden/compass"
+VERSION="${COMPASS_VERSION:-}"
+GH_TOKEN=""
+USE_AUTH=false
 
-if [ "$VERSION" = "latest" ]; then
-    echo -e "${GREEN}Installing @pablozaiden/compass (latest)...${NC}"
-    PACKAGE_SPEC="@pablozaiden/compass"
+# Detect OS
+case "$(uname -s)" in
+    Linux*)  OS="linux";;
+    Darwin*) OS="darwin";;
+    *)
+        echo -e "${RED}Error: Unsupported operating system: $(uname -s)${NC}"
+        exit 1
+        ;;
+esac
+
+# Detect architecture
+case "$(uname -m)" in
+    x86_64)  ARCH="x64";;
+    aarch64) ARCH="arm64";;
+    arm64)   ARCH="arm64";;
+    *)
+        echo -e "${RED}Error: Unsupported architecture: $(uname -m)${NC}"
+        exit 1
+        ;;
+esac
+
+echo -e "${GREEN}Detected OS: ${OS}, Architecture: ${ARCH}${NC}"
+
+# Check if repo is accessible (try to get latest release)
+echo -e "${YELLOW}Checking repository access...${NC}"
+LATEST_CHECK=$(curl -sI "https://github.com/${REPO}/releases/latest" | grep -i location | sed 's|.*/tag/||' | tr -d '\r\n')
+
+if [ -z "$LATEST_CHECK" ]; then
+    echo -e "${YELLOW}Public access unavailable, trying with GitHub authentication...${NC}"
+    
+    # Check if gh CLI is available and authenticated
+    if command -v gh &> /dev/null && gh auth status &> /dev/null; then
+        GH_TOKEN=$(gh auth token)
+        
+        if [ -n "$GH_TOKEN" ]; then
+            USE_AUTH=true
+            # Try again with authentication using API
+            LATEST_CHECK=$(curl -sH "Authorization: token ${GH_TOKEN}" \
+                "https://api.github.com/repos/${REPO}/releases/latest" | \
+                grep -o '"tag_name": *"[^"]*"' | sed 's/"tag_name": *"//;s/"//')
+        fi
+    fi
+    
+    if [ -z "$LATEST_CHECK" ]; then
+        echo -e "${RED}Error: Could not access repository. GitHub CLI not available or not authenticated.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}Successfully authenticated with GitHub.${NC}"
+fi
+
+# Determine version to install
+if [ -n "$VERSION" ]; then
+    echo -e "${GREEN}Using specified version: ${VERSION}${NC}"
 else
-    echo -e "${GREEN}Installing @pablozaiden/compass@${VERSION}...${NC}"
-    PACKAGE_SPEC="@pablozaiden/compass@${VERSION}"
+    VERSION="$LATEST_CHECK"
+    echo -e "${GREEN}Latest release: ${VERSION}${NC}"
 fi
 
-# Check if gh CLI is installed
-if ! command -v gh &> /dev/null; then
-    echo -e "${RED}Error: GitHub CLI (gh) is not installed.${NC}"
-    echo "Please install it from: https://cli.github.com/"
-    exit 1
-fi
+# Construct download URL
+BINARY_NAME="compass-${VERSION}-${OS}-${ARCH}"
+DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/${BINARY_NAME}"
 
-# Check if gh is authenticated
-if ! gh auth status &> /dev/null; then
-    echo -e "${RED}Error: GitHub CLI is not authenticated.${NC}"
-    echo "Please run: gh auth login"
-    exit 1
-fi
+echo -e "${YELLOW}Downloading ${BINARY_NAME}...${NC}"
 
-# Get GitHub token
-GH_TOKEN=$(gh auth token)
+# Create temp directory for download
+TMP_DIR=$(mktemp -d)
+trap "rm -rf $TMP_DIR" EXIT
 
-if [ -z "$GH_TOKEN" ]; then
-    echo -e "${RED}Error: Could not retrieve GitHub token.${NC}"
-    exit 1
-fi
-
-# Determine package manager
-if command -v bun &> /dev/null; then
-    PKG_MANAGER="bun"
-    echo -e "${YELLOW}Using Bun as package manager...${NC}"
-elif command -v npm &> /dev/null; then
-    PKG_MANAGER="npm"
-    echo -e "${YELLOW}Using npm as package manager...${NC}"
+# Download the binary (use auth if required)
+if [ "$USE_AUTH" = true ]; then
+    echo -e "${YELLOW}Using authenticated download...${NC}"
+    
+    # For private repos, we need to get the asset ID from the API and download via API
+    ASSET_ID=$(curl -sH "Authorization: token ${GH_TOKEN}" \
+        "https://api.github.com/repos/${REPO}/releases/tags/${VERSION}" | \
+        grep -B 3 "\"name\": \"${BINARY_NAME}\"" | \
+        grep -o '"id": [0-9]*' | head -1 | sed 's/"id": //')
+    
+    if [ -z "$ASSET_ID" ]; then
+        echo -e "${RED}Error: Could not find asset ${BINARY_NAME} in release ${VERSION}${NC}"
+        exit 1
+    fi
+    
+    API_DOWNLOAD_URL="https://api.github.com/repos/${REPO}/releases/assets/${ASSET_ID}"
+    HTTP_STATUS=$(curl -sL -w "%{http_code}" -o "${TMP_DIR}/compass" \
+        -H "Authorization: token ${GH_TOKEN}" \
+        -H "Accept: application/octet-stream" \
+        "$API_DOWNLOAD_URL")
 else
-    echo -e "${RED}Error: Neither Bun nor npm is installed.${NC}"
-    echo "Please install one of the following:"
-    echo "  - Bun: https://bun.sh/"
-    echo "  - Node.js/npm: https://nodejs.org/"
+    echo -e "${YELLOW}Using public download...${NC}"
+    HTTP_STATUS=$(curl -sL -w "%{http_code}" -o "${TMP_DIR}/compass" "$DOWNLOAD_URL")
+fi
+
+if [ "$HTTP_STATUS" != "200" ]; then
+    echo -e "${RED}Error: Failed to download binary from ${DOWNLOAD_URL} (HTTP ${HTTP_STATUS})${NC}"
     exit 1
 fi
 
-echo -e "${YELLOW}Removing old version (if installed)...${NC}"
+# Make it executable
+chmod +x "${TMP_DIR}/compass"
 
-# Try to uninstall any existing version first (ignore errors)
-$PKG_MANAGER uninstall -g @pablozaiden/compass 2>/dev/null || true
+# Ensure target directory exists
+INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
 
-echo -e "${YELLOW}Installing package...${NC}"
+# Copy the compiled binary
+cp "${TMP_DIR}/compass" "$INSTALL_DIR/compass"
+echo -e "${GREEN}Installed compass to $INSTALL_DIR/compass${NC}"
 
-NPM_CONFIG_TOKEN="$GH_TOKEN" $PKG_MANAGER install -g "$PACKAGE_SPEC" --registry=https://npm.pkg.github.com/
-
-echo -e "${GREEN}✓ @pablozaiden/compass installed successfully!${NC}"
-echo -e "Run ${YELLOW}compass${NC} to get started."
+# Check if the directory is in PATH
+if [[ ":$PATH:" == *":$INSTALL_DIR:"* ]]; then
+    echo -e "${GREEN}You can now run 'compass' from anywhere.${NC}"
+else
+    echo ""
+    echo -e "${YELLOW}Warning: $INSTALL_DIR is not in your PATH.${NC}"
+    echo "Add the following line to your shell profile (~/.bashrc, ~/.zshrc, etc.):"
+    echo ""
+    echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo ""
+    echo "Then restart your shell or run 'source ~/.bashrc' (or equivalent)."
+fi

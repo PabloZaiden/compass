@@ -46,7 +46,7 @@
     "compile": "export workspace_dir=$(pwd); export build_output=$(mktemp); bun install; (cd /tmp; bun build --compile --outfile=$build_output $workspace_dir/src/index.ts; mkdir -p $workspace_dir/out; mv $build_output $workspace_dir/out/compass)",
     "test:agents": "COMPASS_TEST_AGENTS=1 bun test",
     "test": "bun test",
-    "local-install": "./install-local.sh"
+    "local-install": "./local-install.sh"
   },
   "config": {
     "commitHash": ""
