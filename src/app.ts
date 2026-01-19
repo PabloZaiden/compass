@@ -1,4 +1,4 @@
-import { AppContext, TuiApplication, type ModeOptions } from "@pablozaiden/terminatui";
+import { AppContext, TuiApplication, type SupportedMode } from "@pablozaiden/terminatui";
 import { RunCommand, CheckCommand, GenerateCommand } from "./commands/index.ts";
 import pkg from "../package.json";
 
@@ -13,7 +13,7 @@ import pkg from "../package.json";
  * provided by the framework.
  */
 export class CompassApp extends TuiApplication {
-  protected override defaultMode: ModeOptions = "opentui";
+  protected override defaultMode: SupportedMode = "opentui";
   
   constructor() {
     super({
@@ -27,8 +27,7 @@ export class CompassApp extends TuiApplication {
         new GenerateCommand(),
         // SettingsCommand is automatically added by TuiApplication
       ],
-      // Enable built-in TUI (default when no args)
-      enableTui: true,
+
       logger: {
         detailed: false,
       },
