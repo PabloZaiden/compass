@@ -1,14 +1,61 @@
 # Compass
 
-A CLI and TUI tool for benchmarking AI coding agents across prompts and fixtures.
+[![Latest Release](https://img.shields.io/github/v/release/pablozaiden/compass?style=flat-square&label=Latest%20Release)](https://github.com/pablozaiden/compass/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![Built with Bun](https://img.shields.io/badge/Built%20with-Bun-f9f1e1?style=flat-square&logo=bun)](https://bun.sh)
 
-## Overview
+**A CLI and TUI tool for benchmarking AI coding agents across prompts and fixtures.**
 
-Compass runs agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) against a target repository using a fixture file (prompts + expected outcomes), then aggregates results.
+Run agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) against a target repository using fixture files, then aggregate and compare results.
+
+**[Download Latest Release](https://github.com/pablozaiden/compass/releases/latest)**
+
+---
+
+![Compass Main Screen](screenshots/main.png)
+
+*Interactive Terminal UI for configuring and running benchmarks*
+
+<details>
+<summary><strong>More Screenshots</strong></summary>
+
+---
+
+![Run Configuration](screenshots/config-run.png)
+
+*Configure benchmark runs with visual form-based options*
+
+---
+
+![Live Logs](screenshots/logs.png)
+
+*Real-time log streaming during agent execution*
+
+---
+
+![Results View](screenshots/result.png)
+
+*Benchmark results with detailed scoring and analysis*
+
+</details>
+
+---
+
+## Supported Agents
+
+| Agent | Command |
+|-------|---------|
+| GitHub Copilot | `copilot` |
+| OpenAI Codex | `codex` |
+| OpenCode | `opencode` |
+| Google Gemini CLI | `gemini` |
+| Claude Code | `claude` |
+
+---
 
 ## Installation
 
-### Install latest release
+### Install Latest Release (Recommended)
 
 Ensure `gh` CLI is installed and authenticated with the `repo` scope:
 
@@ -23,47 +70,33 @@ Then run the install script:
 curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/PabloZaiden/compass/main/install.sh | bash
 ```
 
-This will download and install the latest `compass` binary to `~/.local/bin`.
+This downloads and installs the latest `compass` binary to `~/.local/bin`.
 
-### Install from sources
+### Install from Source
 
 ```bash
 bun local-install
 ```
 
-This will build and install `compass` binary to your `~/.local/bin` folder.
-
-### Run from source
+### Run from Source
 
 ```bash
 bun start
 ```
 
-## Supported Agents
-
-- GitHub Copilot
-- OpenAI Codex
-- OpenCode
-- Google Gemini CLI
-- Claude Code
+---
 
 ## Requirements
 
 - Git
 - [Bun runtime](https://bun.sh/) (if not using Docker or pre-built binaries)
-- `copilot` in path for GitHub Copilot
-- `codex` in path for OpenAI Codex
-- `opencode` in path for OpenCode
-- `gemini` in path for Google Gemini
-- `claude` in path for Anthropic Claude
+- Agent CLI tools in your PATH (see table above)
 
-## Optional Requirements
+**Optional:** `az` authenticated for Azure AI Foundry models
 
-- `az` authenticated for Azure AI Foundry models
+---
 
-## Usage
-
-Compass supports the following commands:
+## Quick Start
 
 ### Interactive Mode (Terminal UI)
 
@@ -73,23 +106,16 @@ Launch the interactive Terminal UI by running compass without arguments:
 compass
 ```
 
-### Interactive Mode (Basic)
-
-```bash
-compass --mode ink
-```
-
-
-The Interactive Modes provides:
+The Interactive Mode provides:
 - Visual form-based configuration
 - Command selection via keyboard shortcuts
 - Live log streaming
 - Results display with Ctrl+Y to copy to clipboard
 - Cancellation support with Esc during execution
 
-### Run Mode
+### CLI Mode
 
-Execute the benchmark runner:
+#### Run Benchmarks
 
 ```bash
 compass --mode cli run \
@@ -98,7 +124,7 @@ compass --mode cli run \
   --agent opencode
 ```
 
-### Generate Mode
+#### Generate Fixtures
 
 Auto-generate a fixture file for a repository using an AI agent:
 
@@ -109,9 +135,7 @@ compass --mode cli generate \
   --count 10
 ```
 
-The agent will analyze the repository and create a `{repo-folder-name}.compass.json` fixture file with the specified number of prompts and expectations.
-
-You can optionally steer the generation with additional instructions:
+Optionally steer the generation with additional instructions:
 
 ```bash
 compass --mode cli generate \
@@ -121,38 +145,18 @@ compass --mode cli generate \
   --steering "Focus on API endpoints and error handling"
 ```
 
-### Check Mode
-
-Verify that required agent dependencies are installed:
+#### Check Dependencies
 
 ```bash
-compass --mode cli check                    # Check all agent dependencies
-compass --mode cli check --agent copilot    # Check copilot dependencies only
+compass --mode cli check                    # Check all agents
+compass --mode cli check --agent copilot    # Check specific agent
 ```
 
-### Version
+---
 
-Show the application version:
+## Configuration Options
 
-```bash
-compass --mode cli --version
-```
-
-### Help
-
-Show all available options:
-
-```bash
-compass --mode cli help
-compass --mode cli run help      # Help for run command
-compass --mode cli generate help # Help for generate command
-```
-
-### Options
-
-Options are specified via command-line arguments with the `--` prefix.
-
-#### Run Options
+### Run Options
 
 | Option | Required | Description |
 |--------|----------|-------------|
@@ -161,37 +165,31 @@ Options are specified via command-line arguments with the `--` prefix.
 | `--agent` | Yes | Agent type: `Copilot`, `Codex`, `OpenCode`, `Gemini`, `ClaudeCode` |
 | `--iterations` | No | Number of iterations per prompt (default: `1`) |
 | `--output-mode` | No | Output format: `Detailed`, `Aggregated` (default) |
-| `--use-cache` / `--no-use-cache` | No | Enable/disable caching of agent responses (default: `false`) |
-| `--stop-on-error` / `--no-stop-on-error` | No | Stop on first error or continue (default: `true`) |
-| `--allow-full-access` / `--no-allow-full-access` | No | Allow/restrict full repository access (default: `true`) |
+| `--use-cache` | No | Enable caching of agent responses (default: `false`) |
+| `--stop-on-error` | No | Stop on first error (default: `true`) |
+| `--allow-full-access` | No | Allow full repository access (default: `true`) |
 | `--model` | No | Model to use for the agent |
 | `--eval-model` | No | Model to use for evaluation |
 
-#### Generate Options
+### Generate Options
 
 | Option | Required | Description |
 |--------|----------|-------------|
 | `--repo` | Yes | Path to the repository to analyze |
-| `--agent` | Yes | Agent type: `copilot`, `codex`, `opencode`, `gemini`, `claudeCode` |
+| `--agent` | Yes | Agent type |
 | `--count` | Yes | Number of prompts to generate |
 | `--model` | No | Model to use for the agent |
 | `--steering` | No | Additional instructions to steer generation |
 
-#### Check Options
-
-| Option | Required | Description |
-|--------|----------|-------------|
-| `--agent` | No | Check dependencies for a specific agent only |
-
-#### Common Options
-
-These options are available for all commands:
+### Common Options
 
 | Option | Description |
 |--------|-------------|
-| `--mode` | Execution mode: `cli` (default), `opentui` (Default Terminal UI), `ink` (Basic UI) |
-| `--log-level` | Logging verbosity: `Trace`, `Debug`, `Info`, `Warn`, `Error` (default: `Info`) |
-| `--detailed-logs` / `--no-detailed-logs` | Show detailed logs with timestamp and level (default: `false`) |
+| `--mode` | Execution mode: `cli`, `opentui` (default), `ink` |
+| `--log-level` | Logging verbosity: `Trace`, `Debug`, `Info`, `Warn`, `Error` |
+| `--detailed-logs` | Show detailed logs with timestamp and level |
+
+---
 
 ## Docker
 
@@ -206,9 +204,7 @@ docker run --rm -ti \
   --agent opencode
 ```
 
-Mount your fixture as `/fixture.json` and your repo as `/target-repo` so the container can reset git state via git commands.
-
-For instance, to run the sample configuration against Compass itself:
+**Example:** Run against Compass itself:
 
 ```bash
 docker run --rm -ti \
@@ -221,7 +217,9 @@ docker run --rm -ti \
   --agent opencode
 ```
 
-## Fixture File
+---
+
+## Fixture File Format
 
 A fixture file defines the prompts and expected outcomes for benchmarking. See [src/sample-fixture.json](src/sample-fixture.json) for an example.
 
@@ -237,9 +235,7 @@ A fixture file defines the prompts and expected outcomes for benchmarking. See [
 }
 ```
 
-## Architecture
-
-Compass uses the `@pablozaiden/terminatui` framework to provide a unified CLI + TUI experience (auto-generated forms, command routing, option validation, and cancellation).
+---
 
 ## Development
 
@@ -260,9 +256,9 @@ bun run build
 bun run compile
 ```
 
-### Using a local `terminatui` checkout
+### Using a Local `terminatui` Checkout
 
-If you have a local checkout of `@pablozaiden/terminatui` in a sibling directory, you can link it for local development:
+If you have a local checkout of `@pablozaiden/terminatui` in a sibling directory:
 
 ```bash
 # from the @pablozaiden/terminatui directory
@@ -272,6 +268,14 @@ bun link
 bun link @pablozaiden/terminatui
 ```
 
+---
+
+## Architecture
+
+Compass uses the `@pablozaiden/terminatui` framework to provide a unified CLI + TUI experience with auto-generated forms, command routing, option validation, and cancellation support.
+
+---
+
 ## License
 
-MIT
+[MIT](LICENSE)
