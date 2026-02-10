@@ -57,17 +57,10 @@ Run agents (GitHub Copilot, Claude Code, OpenCode, Codex, Gemini) against a targ
 
 ### Install Latest Release (Recommended)
 
-Ensure `gh` CLI is installed and authenticated with the `repo` scope:
+Run the install script:
 
 ```bash
-gh auth login
-gh auth refresh -s repo
-```
-
-Then run the install script:
-
-```bash
-curl -fsSL -H "Authorization: token $(gh auth token)" https://raw.githubusercontent.com/PabloZaiden/compass/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/PabloZaiden/compass/main/install.sh | bash
 ```
 
 This downloads and installs the latest `compass` binary to `~/.local/bin`.
